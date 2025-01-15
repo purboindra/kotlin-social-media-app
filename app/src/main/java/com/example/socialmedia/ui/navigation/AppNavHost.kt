@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
+import com.example.socialmedia.ui.splash.SplashScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
@@ -18,7 +19,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             startDestination = Screens.Splash.route
         ) {
             composable(Screens.Splash.route) {
-                Box() {}
+                SplashScreen()
             }
         }
     }
