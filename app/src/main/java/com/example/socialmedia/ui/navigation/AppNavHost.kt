@@ -1,0 +1,30 @@
+package com.example.socialmedia.ui.navigation
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.navigation.compose.NavHost
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.createGraph
+
+@Composable
+fun AppNavHost(navController: NavHostController = rememberNavController()) {
+    
+    val navGraph = remember(navController) {
+        navController.createGraph(
+            startDestination = Screens.Splash.route
+        ) {
+            composable(Screens.Splash.route) {
+                Box() {}
+            }
+        }
+    }
+    
+    NavHost(
+        navController = navController,
+        navGraph
+    )
+}
