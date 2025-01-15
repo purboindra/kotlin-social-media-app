@@ -90,4 +90,5 @@ dependencies {
     // COIL
     implementation(libs.coil)
     implementation(libs.coil.network)
+    implementation(libs.coil.svg)
 }
