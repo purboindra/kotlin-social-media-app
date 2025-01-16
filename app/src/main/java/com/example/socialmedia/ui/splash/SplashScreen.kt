@@ -12,15 +12,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.socialmedia.R
 import com.example.socialmedia.ui.components.SvgImage
+import com.example.socialmedia.ui.navigation.Screens
+import com.example.socialmedia.ui.splash.viewmodel.SplashViewModel
+import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen() {
+fun SplashScreen(
+    splashViewModel: SplashViewModel = hiltViewModel(),
+    navHostController: NavHostController
+) {
+    
+    LaunchedEffect(Unit) {
+        delay(1000)
+        navHostController.navigate(Screens.Login.route)
+    }
+    
     Scaffold { paddingValues ->
         Box(
             modifier = Modifier
@@ -32,9 +47,11 @@ fun SplashScreen() {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Instagram", style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                ))
+                Text(
+                    "Instagram", style = MaterialTheme.typography.headlineLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                    )
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 SvgImage(
                     R.raw.instagram_logo,
