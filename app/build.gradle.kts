@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -20,14 +21,37 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     
+    buildFeatures {
+        buildConfig = true
+    }
+    
     packaging {
         resources {
             excludes += "META-INF/gradle/incremental.annotation.processors"
         }
     }
     
-    
     buildTypes {
+        
+        debug {
+            isMinifyEnabled = false
+            buildConfigField(
+                "String",
+                "PROJECT_ID",
+                "\"${project.findProperty("PROJECT_ID")}\""
+            )
+            buildConfigField(
+                "String",
+                "PROJECT_URL",
+                "\"${project.findProperty("PROJECT_URL")}\""
+            )
+            buildConfigField(
+                "String",
+                "PROJECT_API_KEY",
+                "\"${project.findProperty("PROJECT_API_KEY")}\""
+            )
+        }
+        
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -75,7 +99,8 @@ dependencies {
     
     // SUPABASE
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.3"))
-    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation(libs.postgrest.kt)
+    implementation(libs.storage.kt)
     
     // KTOR
     implementation(libs.ktor.client)
@@ -92,4 +117,10 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.coil.network)
     implementation(libs.coil.svg)
+    
+    // Auth0Java
+    implementation(libs.auth0)
+    
+    // JBCRYPT
+    implementation(libs.jbcrypt)
 }

@@ -53,28 +53,29 @@ import androidx.navigation.NavHostController
 import com.example.socialmedia.R
 import com.example.socialmedia.ui.components.AppElevatedButton
 import com.example.socialmedia.ui.components.SvgImage
-import com.example.socialmedia.ui.login.viewmodel.LoginViewModel
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.theme.BluePrimary
 import com.example.socialmedia.ui.theme.GrayDark
 import com.example.socialmedia.ui.theme.GrayPrimary
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
+import com.example.socialmedia.viewmodel.AuthViewModel
+import com.example.socialmedia.viewmodel.ObsecurePasswordType
 
 @Composable
 fun LoginScreen(
     navHostController: NavHostController,
-    loginViewModel: LoginViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
-
+    
     val context = LocalContext.current
-
-    val emailText by loginViewModel.emailText.collectAsState()
-    val passwordText by loginViewModel.passwordText.collectAsState()
-    val hasObsecurePassword by loginViewModel.hasObsecurePassword.collectAsState()
-
+    
+    val emailText by authViewModel.emailText.collectAsState()
+    val passwordText by authViewModel.passwordText.collectAsState()
+    val hasObsecurePassword by authViewModel.hasObsecurePassword.collectAsState()
+    
     val textLayoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
-
+    
     val annotedString = buildAnnotatedString {
         append("Don't have an account? ")
         withStyle(
@@ -85,7 +86,7 @@ fun LoginScreen(
             pop()
         }
     }
-
+    
     Scaffold(
         modifier = Modifier
             .statusBarsPadding()
@@ -108,7 +109,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = emailText,
                     onValueChange = {
-                        loginViewModel.onChangeEmailText(it)
+                        authViewModel.onChangeEmailText(it)
                     },
                     modifier = Modifier.fillParentMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -129,7 +130,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = passwordText,
                     onValueChange = {
-                        loginViewModel.onChangePasswordText(it)
+                        authViewModel.onChangePasswordText(it)
                     },
                     modifier = Modifier.fillParentMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -152,7 +153,7 @@ fun LoginScreen(
                             if (!hasObsecurePassword) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                             contentDescription = "Visibility",
                             modifier = Modifier.clickable {
-                                loginViewModel.toggleObsecure()
+                                authViewModel.toggleObsecure(ObsecurePasswordType.Password)
                             }
                         )
                     }
@@ -163,9 +164,9 @@ fun LoginScreen(
                     text = "Log In",
                     modifier = Modifier.fillMaxWidth()
                 )
-
+                
                 5.VerticalSpacer()
-
+                
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -179,7 +180,7 @@ fun LoginScreen(
                         thickness = 2.dp
                     )
                     8.HorizontalSpacer()
-
+                    
                     Text(
                         text = "Or",
                         modifier = Modifier.padding(horizontal = 8.dp),
@@ -188,7 +189,7 @@ fun LoginScreen(
                         )
                     )
                     8.HorizontalSpacer()
-
+                    
                     HorizontalDivider(
                         modifier = Modifier
                             .weight(1f)
@@ -196,9 +197,9 @@ fun LoginScreen(
                         thickness = 2.dp
                     )
                 }
-
+                
                 5.VerticalSpacer()
-
+                
                 OutlinedButton(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
@@ -220,7 +221,7 @@ fun LoginScreen(
                         )
                     }
                 }
-
+                
                 5.VerticalSpacer()
                 BasicText(
                     annotedString,
