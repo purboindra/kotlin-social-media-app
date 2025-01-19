@@ -51,6 +51,8 @@ private data class UserEmail(
     val email: String
 )
 
+class AuthException(message: String) : Exception(message)
+
 class AuthDataSourceImpl(
     private val supabase: SupabaseClient
 ) : AuthDatasource {
@@ -133,7 +135,6 @@ class AuthDataSourceImpl(
         }
     }
     
-    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override suspend fun loginWithGoogle(context: Context): Result<Boolean> {
         val credentialManager = CredentialManager.create(context)
         
@@ -162,42 +163,10 @@ class AuthDataSourceImpl(
                 context = context,
             )
             
-            Log.d(TAG, "Google ID token: ${result.credential.data}")
-            
             val googleIdTokenCredential = GoogleIdTokenCredential
                 .createFrom(result.credential.data)
             
             val googleIdToken = googleIdTokenCredential.idToken
-            
-            try {
-                val parts = googleIdToken.split(".")
-                if (parts.size == 3) {
-                    // Decode the payload part of the JWT
-                    val payloadJson = String(
-                        Base64.decode(
-                            parts[1],
-                            Base64.URL_SAFE or Base64.NO_PADDING
-                        )
-                    )
-                    val payload = JSONObject(payloadJson)
-                    
-                    // Extract claims from the payload
-                    val userId = payload.optString("sub") // Subject (User ID)
-                    val email = payload.optString("email") // Email
-                    val emailVerified =
-                        payload.optBoolean("email_verified") // Email verified
-                    
-                    Log.d("JWT", "Decoded Payload: $payload")
-                    Log.d(
-                        "JWT",
-                        "User ID: $userId, Email: $email, Email Verified: $emailVerified"
-                    )
-                } else {
-                    Log.e("JWT", "Invalid JWT format")
-                }
-            } catch (e: Exception) {
-                Log.e("JWT", "Failed to decode token: ${e.message}")
-            }
             
             supabase.auth.signInWith(IDToken) {
                 idToken = googleIdToken
@@ -205,20 +174,58 @@ class AuthDataSourceImpl(
                 nonce = rawNonce
             }
             
+            val session = supabase.auth.currentSessionOrNull()
+                ?: throw AuthException("No active session found. Please log in again.")
+            
+            val user = session.user
+                ?: throw AuthException("Unable to retrieve user information from the session.")
+            
+            val userId = user.identities?.get(0)?.userId
+                ?: throw AuthException("User ID not found in user identities.")
+            
+            val userModel = UserModel(
+                id = userId,
+                email = user.email!!,
+                username = user.userMetadata?.get("name")?.toString()
+                    ?.trim('\"') ?: "",
+                profilePicture = user.userMetadata?.get("avatar_url")
+                    .toString().trim('\"') ?: "",
+                password = "",
+                createdAt = user.createdAt!!,
+                accessToken = session.accessToken,
+                refreshToken = session.accessToken,
+                fullName = user.userMetadata?.get("full_name").toString()
+                    .trim('\"'),
+            )
+            
+            val checkUserExist = checkUserExist(userModel.email)
+            
+            if (!checkUserExist) {
+                supabase.from("users").insert(userModel)
+            }
+            
             return Result.success(true)
             
-        } catch (e: GetCredentialException) {
-            Log.e(TAG, "Error Get Credential: ${e.message}")
+        } catch (e: AuthException) {
+            Log.e(TAG, "Error Auth Exception: ${e.message}")
             return Result.failure(e)
         } catch (e: GoogleIdTokenParsingException) {
             Log.e(TAG, "Error parsing Google ID token: ${e.message}")
             return Result.failure(e)
         } catch (e: RestException) {
             Log.e(TAG, "Error Rest Exception: ${e.message}")
-            return Result.failure<Boolean>(e)
+            return Result.failure(e)
         } catch (e: Exception) {
-            Log.e(TAG, "Error General Exception: ${e.message}")
-            return Result.failure<Boolean>(e)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                if (e is GetCredentialException) {
+                    Log.e(TAG, "Error Get Credential: ${e.message}")
+                    return Result.failure(e)
+                }
+            } else {
+                Log.e(TAG, "Error occurred: ${e.message}")
+                return Result.failure(e)
+            }
+            return Result.failure(e)
         }
     }
     
