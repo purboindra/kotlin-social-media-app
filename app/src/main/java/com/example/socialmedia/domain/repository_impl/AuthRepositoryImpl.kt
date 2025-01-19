@@ -1,5 +1,6 @@
 package com.example.socialmedia.domain.repository_impl
 
+import android.content.Context
 import com.example.socialmedia.data.datasource.AuthDatasource
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UserModel
@@ -35,4 +36,19 @@ class AuthRepositoryImpl(private val authDatasource: AuthDatasource) :
             emit(State.Failure(e))
         }
     }
+    
+    override suspend fun loginWithGoogle(context: Context): Flow<State<Boolean>> =
+        flow {
+            emit(State.Loading)
+            try {
+                val response = authDatasource.loginWithGoogle(context)
+                response.onFailure {
+                    emit(State.Failure(it))
+                }.onSuccess {
+                    emit(State.Success(it))
+                }
+            } catch (e: Exception) {
+                emit(State.Failure(e))
+            }
+        }
 }

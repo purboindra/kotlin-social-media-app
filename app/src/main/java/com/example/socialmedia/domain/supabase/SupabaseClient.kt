@@ -1,4 +1,5 @@
 package com.example.socialmedia.domain.supabase
+
 import com.example.socialmedia.BuildConfig
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
@@ -11,12 +12,13 @@ import kotlin.time.Duration.Companion.seconds
 
 object SupabaseClientModule {
     
-    val supabaseUrl = BuildConfig.PROJECT_URL
-    val supabaseKey = BuildConfig.PROJECT_API_KEY
+    private const val SUPABASE_URL = BuildConfig.PROJECT_URL
+    private const val SUPABASE_KEY = BuildConfig.PROJECT_API_KEY
+    const val SUPABASE_SERVER_CLIENT_ID = BuildConfig.SERVER_CLIENT_ID
     
     val supabase = createSupabaseClient(
-        supabaseUrl = supabaseUrl,
-        supabaseKey = supabaseKey,
+        supabaseUrl = SUPABASE_URL,
+        supabaseKey = SUPABASE_KEY,
     ) {
         install(Auth)
         install(Postgrest)

@@ -50,6 +50,11 @@ android {
                 "PROJECT_API_KEY",
                 "\"${project.findProperty("PROJECT_API_KEY")}\""
             )
+            buildConfigField(
+                "String",
+                "SERVER_CLIENT_ID",
+                "\"${project.findProperty("SERVER_CLIENT_ID")}\""
+            )
         }
         
         release {
@@ -123,4 +128,8 @@ dependencies {
     
     // JBCRYPT
     implementation(libs.jbcrypt)
+    
+    implementation(libs.credentials)
+    implementation(libs.googleid)
+    implementation(libs.play.service.auth)
 }

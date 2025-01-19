@@ -1,5 +1,6 @@
 package com.example.socialmedia.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmedia.data.model.State
@@ -28,6 +29,10 @@ class AuthViewModel @Inject constructor(
     private val _loginState: MutableStateFlow<State<Boolean>> =
         MutableStateFlow(State.Idle)
     val loginState = _loginState.asStateFlow()
+    
+    private val _loginWithGoogleState: MutableStateFlow<State<Boolean>> =
+        MutableStateFlow(State.Idle)
+    val loginWithGoogleState = _loginWithGoogleState.asStateFlow()
     
     private val _hasObsecurePassword = MutableStateFlow(true)
     val hasObsecurePassword = _hasObsecurePassword.asStateFlow()
@@ -92,6 +97,12 @@ class AuthViewModel @Inject constructor(
             password = _passwordText.value,
         ).collectLatest { state ->
             _loginState.value = state
+        }
+    }
+    
+    fun loginWithGoogle(context: Context) = viewModelScope.launch {
+        authUseCase.loginWithGoogle(context).collectLatest { state ->
+            _loginWithGoogleState.value = state
         }
     }
 }

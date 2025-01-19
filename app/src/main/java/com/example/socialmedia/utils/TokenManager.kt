@@ -21,9 +21,9 @@ object TokenManager {
         .withIssuer(TokenConfig.ISSUER)
         .build()
     
-    fun createAccessToken(userId: String): String {
+    fun createAccessToken(user: String): String {
         val jwt =
-            JWT.create().withSubject(userId).withIssuer(TokenConfig.ISSUER).withIssuedAt(Date())
+            JWT.create().withSubject(user).withIssuer(TokenConfig.ISSUER).withIssuedAt(Date())
                 .withExpiresAt(
                     Date(System.currentTimeMillis() + TokenConfig.ACCESS_TOKEN_EXPIRATION)
                 ).sign(algorithm)
@@ -31,9 +31,9 @@ object TokenManager {
         return jwt
     }
     
-    fun createRefreshToken(userId: String): String {
+    fun createRefreshToken(user: String): String {
         val jwt =
-            JWT.create().withSubject(userId).withIssuer(TokenConfig.ISSUER).withIssuedAt(Date())
+            JWT.create().withSubject(user).withIssuer(TokenConfig.ISSUER).withIssuedAt(Date())
                 .withExpiresAt(
                     Date(System.currentTimeMillis() + TokenConfig.REFRESH_TOKEN_EXPIRATION)
                 ).sign(algorithm)

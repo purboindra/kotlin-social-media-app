@@ -1,6 +1,8 @@
 package com.example.socialmedia.ui.login
 
+import android.os.Build
 import android.provider.CalendarContract.Colors
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +62,7 @@ import com.example.socialmedia.R
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.AppElevatedButton
 import com.example.socialmedia.ui.components.AppOutlinedTextField
+import com.example.socialmedia.ui.components.GoogleSignInButton
 import com.example.socialmedia.ui.components.SvgImage
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.theme.BluePrimary
@@ -71,13 +74,17 @@ import com.example.socialmedia.viewmodel.AuthViewModel
 import com.example.socialmedia.viewmodel.ObsecurePasswordType
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun LoginScreen(
     navHostController: NavHostController,
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     
+    val context = LocalContext.current
+    
     val loginState by authViewModel.loginState.collectAsState()
+    val loginWithGoogleState by authViewModel.loginWithGoogleState.collectAsState()
     
     val emailText by authViewModel.emailText.collectAsState()
     val passwordText by authViewModel.passwordText.collectAsState()
@@ -117,6 +124,34 @@ fun LoginScreen(
             is State.Failure -> {
                 val message =
                     (loginState as State.Failure).throwable.message
+                        ?: "Something went wrong"
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = message,
+                        duration = SnackbarDuration.Long,
+                    )
+                }
+            }
+            
+            else -> {}
+        }
+    }
+    
+    
+    LaunchedEffect(loginWithGoogleState) {
+        when (loginWithGoogleState) {
+            is State.Success -> {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Successfully registered",
+                        duration = SnackbarDuration.Long,
+                    )
+                }
+            }
+            
+            is State.Failure -> {
+                val message =
+                    (loginWithGoogleState as State.Failure).throwable.message
                         ?: "Something went wrong"
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar(
@@ -224,13 +259,20 @@ fun LoginScreen(
                 }
                 
                 5.VerticalSpacer()
+
+//                GoogleSignInButton()
+//
+//                5.VerticalSpacer()
                 
                 OutlinedButton(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(vertical = 8.dp),
                     border = BorderStroke(1.dp, BluePrimary),
-                    onClick = {},
+                    enabled = loginWithGoogleState !is State.Loading,
+                    onClick = {
+                        authViewModel.loginWithGoogle(context)
+                    },
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         SvgImage(
@@ -240,7 +282,7 @@ fun LoginScreen(
                         )
                         5.HorizontalSpacer()
                         Text(
-                            "Log In With Google",
+                            if (loginWithGoogleState is State.Loading) "Loading..." else "Log In With Google",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = BluePrimary,
                             )
