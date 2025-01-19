@@ -2,9 +2,12 @@ package com.example.socialmedia.ui.register
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
@@ -78,7 +81,10 @@ fun RegisterScreen(
     val annotatedString = buildAnnotatedString {
         append("Already have an account? ")
         withStyle(
-            style = SpanStyle(color = BluePrimary, fontWeight = FontWeight.SemiBold)
+            style = SpanStyle(
+                color = BluePrimary,
+                fontWeight = FontWeight.SemiBold
+            )
         ) {
             pushStringAnnotation(tag = "SIGN_IN", annotation = "sign_in")
             append("Login")
@@ -98,7 +104,9 @@ fun RegisterScreen(
             }
             
             is State.Failure -> {
-                val message = (registerState as State.Failure).throwable.message ?: "Something went wrong"
+                val message =
+                    (registerState as State.Failure).throwable.message
+                        ?: "Something went wrong"
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar(
                         message = message,
@@ -118,15 +126,18 @@ fun RegisterScreen(
             .safeContentPadding()
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             
             item {
                 SvgImage(
-                    svgResource = R.raw.instagram_logo,
+                    svgResource = R.raw.instagram_horizontal_logo,
                     contentDescription = "Instagram Logo",
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.height(72.dp)
                 )
                 10.VerticalSpacer()
                 AppOutlinedTextField(
@@ -134,7 +145,14 @@ fun RegisterScreen(
                     onValueChange = {
                         authViewModel.onChangeEmailText(it)
                     },
-                    placeholderText = "Email"
+                    placeholderText = "Email",
+                    validator = {
+                        if (it.isEmpty()) "Email is required"
+                        else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(it)
+                                .matches()
+                        ) "Invalid email"
+                        else null
+                    }
                 )
                 8.VerticalSpacer()
                 AppOutlinedTextField(
@@ -142,7 +160,7 @@ fun RegisterScreen(
                     onValueChange = {
                         authViewModel.onChangeUsernameText(it)
                     },
-                    placeholderText = "Username"
+                    placeholderText = "Username",
                 )
                 8.VerticalSpacer()
                 AppOutlinedTextField(
@@ -151,6 +169,11 @@ fun RegisterScreen(
                         authViewModel.onChangePasswordText(it)
                     },
                     placeholderText = "Password",
+                    validator = {
+                        if (it.isEmpty()) "Password is required"
+                        else if (it.length < 6) "Password must be at least 6 characters"
+                        else null
+                    },
                     visualTransformation = if (!hasObsecurePassword) VisualTransformation.None else
                         PasswordVisualTransformation(),
                     trailingIcon = {
@@ -158,7 +181,9 @@ fun RegisterScreen(
                             if (!hasObsecurePassword) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                             contentDescription = "Visibility",
                             modifier = Modifier.clickable {
-                                authViewModel.toggleObsecure(ObsecurePasswordType.Password)
+                                authViewModel.toggleObsecure(
+                                    ObsecurePasswordType.Password
+                                )
                             }
                         )
                     }
@@ -170,6 +195,11 @@ fun RegisterScreen(
                         authViewModel.onChangeConfirmPasswordText(it)
                     },
                     placeholderText = "Confirm Password",
+                    validator = {
+                        if (it.isEmpty()) "Confirm Password is required"
+                        else if (it != passwordText) "Password does not match"
+                        else null
+                    },
                     visualTransformation = if (!hasObsecureConfirmPassword) VisualTransformation.None else
                         PasswordVisualTransformation(),
                     trailingIcon = {
@@ -177,7 +207,9 @@ fun RegisterScreen(
                             if (!hasObsecureConfirmPassword) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                             contentDescription = "Visibility",
                             modifier = Modifier.clickable {
-                                authViewModel.toggleObsecure(ObsecurePasswordType.ConfirmPassword)
+                                authViewModel.toggleObsecure(
+                                    ObsecurePasswordType.ConfirmPassword
+                                )
                             }
                         )
                     }
@@ -185,6 +217,13 @@ fun RegisterScreen(
                 10.VerticalSpacer()
                 AppElevatedButton(
                     onClick = {
+                        if (!authViewModel.validateRegisterInput()) {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Please fill out all fields")
+                            }
+                            return@AppElevatedButton
+                            
+                        }
                         authViewModel.register()
                     },
                     enabled = registerState != State.Loading,

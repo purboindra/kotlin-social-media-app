@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
@@ -28,12 +29,17 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,7 +57,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.socialmedia.R
+import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.AppElevatedButton
+import com.example.socialmedia.ui.components.AppOutlinedTextField
 import com.example.socialmedia.ui.components.SvgImage
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.theme.BluePrimary
@@ -61,6 +69,7 @@ import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
 import com.example.socialmedia.viewmodel.AuthViewModel
 import com.example.socialmedia.viewmodel.ObsecurePasswordType
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -68,7 +77,7 @@ fun LoginScreen(
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     
-    val context = LocalContext.current
+    val loginState by authViewModel.loginState.collectAsState()
     
     val emailText by authViewModel.emailText.collectAsState()
     val passwordText by authViewModel.passwordText.collectAsState()
@@ -76,10 +85,17 @@ fun LoginScreen(
     
     val textLayoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
     
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    val coroutineScope = rememberCoroutineScope()
+    
     val annotedString = buildAnnotatedString {
         append("Don't have an account? ")
         withStyle(
-            style = SpanStyle(color = BluePrimary, fontWeight = FontWeight.SemiBold)
+            style = SpanStyle(
+                color = BluePrimary,
+                fontWeight = FontWeight.SemiBold
+            )
         ) {
             pushStringAnnotation(tag = "SIGN_UP", annotation = "sign_up")
             append("Register")
@@ -87,7 +103,37 @@ fun LoginScreen(
         }
     }
     
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            is State.Success -> {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Successfully registered",
+                        duration = SnackbarDuration.Long,
+                    )
+                }
+            }
+            
+            is State.Failure -> {
+                val message =
+                    (loginState as State.Failure).throwable.message
+                        ?: "Something went wrong"
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = message,
+                        duration = SnackbarDuration.Long,
+                    )
+                }
+            }
+            
+            else -> {}
+        }
+    }
+    
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState)
+        },
         modifier = Modifier
             .statusBarsPadding()
             .safeContentPadding()
@@ -101,67 +147,46 @@ fun LoginScreen(
         ) {
             item {
                 SvgImage(
-                    svgResource = R.raw.instagram_logo,
+                    svgResource = R.raw.instagram_horizontal_logo,
                     contentDescription = "Instagram Logo",
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.height(72.dp)
                 )
                 10.VerticalSpacer()
-                OutlinedTextField(
-                    value = emailText,
+                AppOutlinedTextField(
+                    query = emailText,
+                    placeholderText = "Email",
                     onValueChange = {
                         authViewModel.onChangeEmailText(it)
-                    },
-                    modifier = Modifier.fillParentMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = BluePrimary,
-                        unfocusedBorderColor = GrayPrimary,
-                    ),
-                    placeholder = {
-                        Text(
-                            "Username or email",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                color = GrayPrimary,
-                            )
-                        )
-                    },
+                    }
                 )
                 8.VerticalSpacer()
-                OutlinedTextField(
-                    value = passwordText,
+                AppOutlinedTextField(
+                    query = passwordText,
                     onValueChange = {
                         authViewModel.onChangePasswordText(it)
                     },
-                    modifier = Modifier.fillParentMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = BluePrimary,
-                        unfocusedBorderColor = GrayPrimary,
-                    ),
+                    placeholderText = "Password",
                     visualTransformation = if (!hasObsecurePassword) VisualTransformation.None else
                         PasswordVisualTransformation(),
-                    placeholder = {
-                        Text(
-                            "Password",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                color = GrayPrimary,
-                            )
-                        )
-                    },
                     trailingIcon = {
                         Icon(
                             if (!hasObsecurePassword) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                             contentDescription = "Visibility",
                             modifier = Modifier.clickable {
-                                authViewModel.toggleObsecure(ObsecurePasswordType.Password)
+                                authViewModel.toggleObsecure(
+                                    ObsecurePasswordType.Password
+                                )
                             }
                         )
                     }
                 )
                 10.VerticalSpacer()
                 AppElevatedButton(
-                    onClick = {},
-                    text = "Log In",
+                    onClick = {
+                        authViewModel.login()
+                    },
+                    enabled = loginState !is State.Loading,
+                    text = if (loginState is State.Loading) "Loading..." else "Log In",
                     modifier = Modifier.fillMaxWidth()
                 )
                 
@@ -215,7 +240,8 @@ fun LoginScreen(
                         )
                         5.HorizontalSpacer()
                         Text(
-                            "Log In With Google", style = MaterialTheme.typography.labelSmall.copy(
+                            "Log In With Google",
+                            style = MaterialTheme.typography.labelSmall.copy(
                                 color = BluePrimary,
                             )
                         )

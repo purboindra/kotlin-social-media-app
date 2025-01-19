@@ -21,8 +21,13 @@ class AuthViewModel @Inject constructor(
     private val authUseCase: AuthUseCase
 ) : ViewModel() {
     
-    private val _registerState: MutableStateFlow<State<Boolean>> = MutableStateFlow(State.Idle)
+    private val _registerState: MutableStateFlow<State<Boolean>> =
+        MutableStateFlow(State.Idle)
     val registerState = _registerState.asStateFlow()
+    
+    private val _loginState: MutableStateFlow<State<Boolean>> =
+        MutableStateFlow(State.Idle)
+    val loginState = _loginState.asStateFlow()
     
     private val _hasObsecurePassword = MutableStateFlow(true)
     val hasObsecurePassword = _hasObsecurePassword.asStateFlow()
@@ -62,8 +67,13 @@ class AuthViewModel @Inject constructor(
         if (type == ObsecurePasswordType.Password) {
             _hasObsecurePassword.value = !_hasObsecurePassword.value
         } else {
-            _hasObsecureConfirmPassword.value = !_hasObsecureConfirmPassword.value
+            _hasObsecureConfirmPassword.value =
+                !_hasObsecureConfirmPassword.value
         }
+    }
+    
+    fun validateRegisterInput(): Boolean {
+        return _emailText.value.isNotEmpty() && _passwordText.value.isNotEmpty() && _usernameText.value.isNotEmpty() && _confirmPasswordText.value == _passwordText.value
     }
     
     fun register() = viewModelScope.launch {
@@ -73,6 +83,15 @@ class AuthViewModel @Inject constructor(
             username = _usernameText.value,
         ).collectLatest { state ->
             _registerState.value = state
+        }
+    }
+    
+    fun login() = viewModelScope.launch {
+        authUseCase.login(
+            email = _emailText.value,
+            password = _passwordText.value,
+        ).collectLatest { state ->
+            _loginState.value = state
         }
     }
 }

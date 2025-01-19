@@ -15,7 +15,11 @@ private val TAG = "AuthDataSourceImpl"
 class AuthDataSourceImpl(
     private val supabase: SupabaseClient
 ) : AuthDatasource {
-    override suspend fun register(email: String, password: String, username: String): Boolean {
+    override suspend fun register(
+        email: String,
+        password: String,
+        username: String
+    ): Boolean {
         
         try {
             supabase.auth.signUpWith(Email) {
@@ -25,9 +29,13 @@ class AuthDataSourceImpl(
             
             val currentUser = supabase.auth.currentUserOrNull()
             
-            val userInfo = currentUser ?: throw Exception("Something went wrong. Please try again!")
+            val userInfo = currentUser
+                ?: throw Exception("Something went wrong. Please try again!")
             
-            Log.d(TAG, "Attempting to sign up with email: $email and password: $password")
+            Log.d(
+                TAG,
+                "Attempting to sign up with email: $email and password: $password"
+            )
             
             Log.d(TAG, "User sign up with email: $userInfo")
             
@@ -58,6 +66,22 @@ class AuthDataSourceImpl(
             
         } catch (e: Exception) {
             Log.e(TAG, "Error registering: ${e.message}")
+            throw e
+        }
+    }
+    
+    override suspend fun login(email: String, password: String): Boolean {
+        try {
+            
+            supabase.auth.signInWith(Email) {
+                this.email = email
+                this.password = password
+            }
+            
+            return true
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error login: ${e.message}")
             throw e
         }
     }

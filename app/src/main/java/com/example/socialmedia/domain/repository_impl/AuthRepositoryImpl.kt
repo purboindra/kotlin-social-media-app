@@ -7,7 +7,8 @@ import com.example.socialmedia.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class AuthRepositoryImpl(private val authDatasource: AuthDatasource) : AuthRepository {
+class AuthRepositoryImpl(private val authDatasource: AuthDatasource) :
+    AuthRepository {
     override suspend fun register(
         email: String,
         password: String,
@@ -16,6 +17,19 @@ class AuthRepositoryImpl(private val authDatasource: AuthDatasource) : AuthRepos
         emit(State.Loading)
         try {
             val response = authDatasource.register(email, password, username)
+            emit(State.Success(response))
+        } catch (e: Exception) {
+            emit(State.Failure(e))
+        }
+    }
+    
+    override suspend fun login(
+        email: String,
+        password: String
+    ): Flow<State<Boolean>> = flow {
+        emit(State.Loading)
+        try {
+            val response = authDatasource.login(email, password)
             emit(State.Success(response))
         } catch (e: Exception) {
             emit(State.Failure(e))

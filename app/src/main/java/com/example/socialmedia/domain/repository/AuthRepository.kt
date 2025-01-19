@@ -7,5 +7,11 @@ import kotlinx.coroutines.flow.Flow
 private val TAG = "AuthRepository"
 
 interface AuthRepository {
-    suspend fun register(email: String, password: String, username: String): Flow<State<Boolean>>
+    suspend fun register(
+        email: String,
+        password: String,
+        username: String
+    ): Flow<State<Boolean>>
+    
+    suspend fun login(email: String, password: String): Flow<State<Boolean>>
 }
