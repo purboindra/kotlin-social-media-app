@@ -13,13 +13,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.socialmedia.R
+import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.ui.components.SvgImage
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.splash.viewmodel.SplashViewModel
@@ -31,9 +36,17 @@ fun SplashScreen(
     navHostController: NavHostController
 ) {
     
+    val context = LocalContext.current
+    val appDataStore = remember { AppDataStore(context) }
+    val accessToken by appDataStore.accessToken.collectAsState(null)
+    
     LaunchedEffect(Unit) {
         delay(1000)
-        navHostController.navigate(Screens.Login.route)
+        if (accessToken == null) {
+            navHostController.navigate(Screens.Login.route)
+        } else {
+            navHostController.navigate(Screens.Main.route)
+        }
     }
     
     Scaffold { paddingValues ->
@@ -48,7 +61,8 @@ fun SplashScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "Instagram", style = MaterialTheme.typography.headlineLarge.copy(
+                    "Instagram",
+                    style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                     )
                 )
