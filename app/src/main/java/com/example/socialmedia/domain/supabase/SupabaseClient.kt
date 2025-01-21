@@ -9,7 +9,6 @@ import io.github.jan.supabase.storage.Storage
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.seconds
 
-
 object SupabaseClientModule {
     
     private const val SUPABASE_URL = BuildConfig.PROJECT_URL

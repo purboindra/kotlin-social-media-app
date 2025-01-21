@@ -112,19 +112,24 @@ class AuthDataSourceImpl(
         }
     }
     
-    override suspend fun login(email: String, password: String): Boolean {
+    override suspend fun login(
+        email: String,
+        password: String
+    ): Result<Boolean> {
         try {
             
             val checkUserExist = checkUserExist(email)
             
-            if (!checkUserExist) throw Exception("User does not exist, please register first...")
+            checkUserExist.onSuccess {
+                if (!it) throw Exception("User does not exist, please register first...")
+            }
             
             supabase.auth.signInWith(Email) {
                 this.email = email
                 this.password = password
             }
             
-            return true
+            return Result.success(true)
             
         } catch (e: AuthRestException) {
             Log.e(TAG, "AuthRestException login: ${e.message}")
@@ -200,8 +205,10 @@ class AuthDataSourceImpl(
             
             val checkUserExist = checkUserExist(userModel.email)
             
-            if (!checkUserExist) {
-                supabase.from("users").insert(userModel)
+            checkUserExist.onSuccess {
+                if (!it) {
+                    supabase.from("users").insert(userModel)
+                }
             }
             
             return Result.success(true)
@@ -220,16 +227,18 @@ class AuthDataSourceImpl(
                 if (e is GetCredentialException) {
                     Log.e(TAG, "Error Get Credential: ${e.message}")
                     return Result.failure(e)
+                } else {
+                    Log.e(TAG, "Error Get Credential Else: ${e.message}")
+                    return Result.failure(e)
                 }
             } else {
                 Log.e(TAG, "Error occurred: ${e.message}")
                 return Result.failure(e)
             }
-            return Result.failure(e)
         }
     }
     
-    override suspend fun checkUserExist(email: String): Boolean {
+    override suspend fun checkUserExist(email: String): Result<Boolean> {
         try {
             val fetchUserFromDb = supabase.from("users")
                 .select(
@@ -244,7 +253,7 @@ class AuthDataSourceImpl(
             
             val parseStringToList = Json.decodeFromString<List<User>>(user)
             
-            return parseStringToList.isNotEmpty()
+            return Result.success(parseStringToList.isNotEmpty())
         } catch (e: Exception) {
             Log.e(TAG, "Error checking user: ${e.message}")
             throw e

@@ -1,12 +1,10 @@
 package com.example.socialmedia.ui.login
 
 import android.os.Build
-import android.provider.CalendarContract.Colors
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,14 +20,10 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -44,41 +38,39 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.socialmedia.R
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.AppElevatedButton
 import com.example.socialmedia.ui.components.AppOutlinedTextField
-import com.example.socialmedia.ui.components.GoogleSignInButton
+import com.example.socialmedia.ui.components.AppSnackbar
 import com.example.socialmedia.ui.components.SvgImage
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.theme.BluePrimary
 import com.example.socialmedia.ui.theme.GrayDark
-import com.example.socialmedia.ui.theme.GrayPrimary
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
-import com.example.socialmedia.viewmodel.AuthViewModel
-import com.example.socialmedia.viewmodel.ObsecurePasswordType
+import com.example.socialmedia.ui.viewmodel.AuthViewModel
+import com.example.socialmedia.ui.viewmodel.ObsecurePasswordType
+import com.example.socialmedia.ui.viewmodel.SnackbarViewModel
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun LoginScreen(
     navHostController: NavHostController,
-    authViewModel: AuthViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    snackbarViewModel: SnackbarViewModel = hiltViewModel(),
 ) {
     
     val context = LocalContext.current
@@ -90,9 +82,8 @@ fun LoginScreen(
     val passwordText by authViewModel.passwordText.collectAsState()
     val hasObsecurePassword by authViewModel.hasObsecurePassword.collectAsState()
     
-    val textLayoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
-    
     val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarConfig by snackbarViewModel.snackbarState.collectAsState()
     
     val coroutineScope = rememberCoroutineScope()
     
@@ -114,9 +105,9 @@ fun LoginScreen(
         when (loginState) {
             is State.Success -> {
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "Successfully registered",
-                        duration = SnackbarDuration.Long,
+                    snackbarViewModel.showSnackbar(
+                        "Successfully logged in",
+                        isError = true
                     )
                 }
             }
@@ -126,10 +117,7 @@ fun LoginScreen(
                     (loginState as State.Failure).throwable.message
                         ?: "Something went wrong"
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = message,
-                        duration = SnackbarDuration.Long,
-                    )
+                    snackbarViewModel.showSnackbar(message, isError = false)
                 }
             }
             
@@ -142,9 +130,9 @@ fun LoginScreen(
         when (loginWithGoogleState) {
             is State.Success -> {
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "Successfully registered",
-                        duration = SnackbarDuration.Long,
+                    snackbarViewModel.showSnackbar(
+                        "Successfully logged in",
+                        isError = false
                     )
                 }
             }
@@ -154,20 +142,22 @@ fun LoginScreen(
                     (loginWithGoogleState as State.Failure).throwable.message
                         ?: "Something went wrong"
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = message,
-                        duration = SnackbarDuration.Long,
-                    )
+                    snackbarViewModel.showSnackbar(message, isError = true)
                 }
             }
             
             else -> {}
         }
     }
+    LaunchedEffect(snackbarConfig) {
+        snackbarConfig?.let {
+            snackbarHostState.showSnackbar(it.message, duration = it.duration)
+        }
+    }
     
     Scaffold(
         snackbarHost = {
-            SnackbarHost(snackbarHostState)
+            AppSnackbar(snackbarHostState, snackbarConfig)
         },
         modifier = Modifier
             .statusBarsPadding()
@@ -259,10 +249,6 @@ fun LoginScreen(
                 }
                 
                 5.VerticalSpacer()
-
-//                GoogleSignInButton()
-//
-//                5.VerticalSpacer()
                 
                 OutlinedButton(
                     modifier = Modifier.fillMaxWidth(),

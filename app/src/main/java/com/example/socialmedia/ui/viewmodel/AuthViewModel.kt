@@ -1,4 +1,4 @@
-package com.example.socialmedia.viewmodel
+package com.example.socialmedia.ui.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel

@@ -54,8 +54,8 @@ import com.example.socialmedia.ui.theme.BluePrimary
 import com.example.socialmedia.ui.theme.GrayDark
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
-import com.example.socialmedia.viewmodel.AuthViewModel
-import com.example.socialmedia.viewmodel.ObsecurePasswordType
+import com.example.socialmedia.ui.viewmodel.AuthViewModel
+import com.example.socialmedia.ui.viewmodel.ObsecurePasswordType
 import kotlinx.coroutines.launch
 
 @Composable

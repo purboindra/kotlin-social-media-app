@@ -31,7 +31,7 @@ class AuthRepositoryImpl(private val authDatasource: AuthDatasource) :
         emit(State.Loading)
         try {
             val response = authDatasource.login(email, password)
-            emit(State.Success(response))
+            emit(State.Success(response.isSuccess))
         } catch (e: Exception) {
             emit(State.Failure(e))
         }
@@ -42,10 +42,10 @@ class AuthRepositoryImpl(private val authDatasource: AuthDatasource) :
             emit(State.Loading)
             try {
                 val response = authDatasource.loginWithGoogle(context)
-                response.onFailure {
+                response.onSuccess {
+                    emit(State.Success(true))
+                }.onFailure {
                     emit(State.Failure(it))
-                }.onSuccess {
-                    emit(State.Success(it))
                 }
             } catch (e: Exception) {
                 emit(State.Failure(e))
