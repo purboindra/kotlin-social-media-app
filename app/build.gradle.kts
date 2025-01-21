@@ -132,4 +132,7 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.googleid)
     implementation(libs.play.service.auth)
+    
+    // DATASTORE
+    implementation(libs.datastore.preferences)
 }

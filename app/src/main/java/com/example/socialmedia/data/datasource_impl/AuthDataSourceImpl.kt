@@ -11,6 +11,7 @@ import androidx.credentials.GetCredentialRequest
 import com.auth0.jwt.JWT
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.example.socialmedia.data.datasource.AuthDatasource
+import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.UserModel
 import com.example.socialmedia.domain.supabase.SupabaseClientModule
 import com.example.socialmedia.domain.supabase.SupabaseClientModule.SUPABASE_SERVER_CLIENT_ID
@@ -54,7 +55,8 @@ private data class UserEmail(
 class AuthException(message: String) : Exception(message)
 
 class AuthDataSourceImpl(
-    private val supabase: SupabaseClient
+    private val supabase: SupabaseClient,
+    private val dataStore: AppDataStore,
 ) : AuthDatasource {
     override suspend fun register(
         email: String,
@@ -104,6 +106,12 @@ class AuthDataSourceImpl(
             
             supabase.from("users").insert(userModel)
             
+            dataStore.saveUserId(userId)
+            dataStore.saveUserName(username)
+            dataStore.saveUserEmail(email)
+            dataStore.saveAccessToken(accessToken)
+            dataStore.saveRefreshToken(refreshToken)
+            
             return true
             
         } catch (e: Exception) {
@@ -128,6 +136,41 @@ class AuthDataSourceImpl(
                 this.email = email
                 this.password = password
             }
+            
+            val currentUser = supabase.auth.currentUserOrNull()
+            
+            val userInfo = currentUser
+                ?: throw Exception("Something went wrong. Please try again!")
+            
+            val userDb = supabase.from("users").select(
+            ) {
+                filter {
+                    eq("email", email)
+                }
+            }
+            
+            val userData = userDb.data
+            
+            val parseStringToList = Json.decodeFromString<List<User>>(userData)
+            
+            val user = parseStringToList.first()
+            
+            val userJwt = User(
+                user.username,
+                email,
+                userInfo.id
+            )
+            
+            val accessToken =
+                TokenManager.createAccessToken(Json.encodeToString(userJwt))
+            val refreshToken =
+                TokenManager.createRefreshToken(Json.encodeToString(userJwt))
+            
+            dataStore.saveUserId(userInfo.id)
+            dataStore.saveUserName(user.username)
+            dataStore.saveUserEmail(email)
+            dataStore.saveAccessToken(accessToken)
+            dataStore.saveRefreshToken(refreshToken)
             
             return Result.success(true)
             
@@ -210,6 +253,12 @@ class AuthDataSourceImpl(
                     supabase.from("users").insert(userModel)
                 }
             }
+            
+            dataStore.saveUserId(userModel.id)
+            dataStore.saveUserName(userModel.username)
+            dataStore.saveUserEmail(userModel.email)
+            dataStore.saveAccessToken(userModel.accessToken)
+            dataStore.saveRefreshToken(userModel.refreshToken)
             
             return Result.success(true)
             

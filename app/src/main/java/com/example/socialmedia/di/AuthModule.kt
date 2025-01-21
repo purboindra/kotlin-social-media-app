@@ -1,5 +1,6 @@
 package com.example.socialmedia.di
 
+import android.content.Context
 import com.example.socialmedia.data.datasource.AuthDatasource
 import com.example.socialmedia.data.datasource_impl.AuthDataSourceImpl
 import com.example.socialmedia.domain.repository_impl.AuthRepositoryImpl
@@ -7,6 +8,7 @@ import com.example.socialmedia.domain.usecases.AuthUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -15,19 +17,22 @@ import javax.inject.Singleton
 object AuthModule {
     @Provides
     @Singleton
-    fun provideAuthDatasourceImpl(): AuthDataSourceImpl {
-        return AuthDataSourceImpl(SupabaseModule.provideSupabaseClient())
+    fun provideAuthDatasourceImpl(@ApplicationContext context: Context): AuthDataSourceImpl {
+        return AuthDataSourceImpl(
+            SupabaseModule.provideSupabaseClient(),
+            DataStoreModule.provideDataStore(context)
+        )
     }
     
     @Provides
     @Singleton
-    fun provideAuthRepositoryImpl(): AuthRepositoryImpl {
-        return AuthRepositoryImpl(provideAuthDatasourceImpl())
+    fun provideAuthRepositoryImpl(@ApplicationContext context: Context): AuthRepositoryImpl {
+        return AuthRepositoryImpl(provideAuthDatasourceImpl(context))
     }
     
     @Provides
     @Singleton
-    fun provideAuthUseCase(): AuthUseCase {
-        return AuthUseCase(provideAuthRepositoryImpl())
+    fun provideAuthUseCase(@ApplicationContext context: Context): AuthUseCase {
+        return AuthUseCase(provideAuthRepositoryImpl(context))
     }
 }
