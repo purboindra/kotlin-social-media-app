@@ -48,6 +48,7 @@ import com.example.socialmedia.R
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.AppElevatedButton
 import com.example.socialmedia.ui.components.AppOutlinedTextField
+import com.example.socialmedia.ui.components.AppSnackbar
 import com.example.socialmedia.ui.components.SvgImage
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.theme.BluePrimary
@@ -56,17 +57,20 @@ import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
 import com.example.socialmedia.ui.viewmodel.AuthViewModel
 import com.example.socialmedia.ui.viewmodel.ObsecurePasswordType
+import com.example.socialmedia.ui.viewmodel.SnackbarViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(
     navHostController: NavHostController,
-    authViewModel: AuthViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    snackbarViewModel: SnackbarViewModel = hiltViewModel()
 ) {
     
     val coroutineScope = rememberCoroutineScope()
     
     val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarConfig by snackbarViewModel.snackbarState.collectAsState()
     
     val registerState by authViewModel.registerState.collectAsState()
     
@@ -96,9 +100,9 @@ fun RegisterScreen(
         when (registerState) {
             is State.Success -> {
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "Successfully registered",
-                        duration = SnackbarDuration.Long,
+                    snackbarViewModel.showSnackbar(
+                        "Successfully logged in",
+                        isError = true
                     )
                 }
             }
@@ -108,10 +112,7 @@ fun RegisterScreen(
                     (registerState as State.Failure).throwable.message
                         ?: "Something went wrong"
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = message,
-                        duration = SnackbarDuration.Long,
-                    )
+                    snackbarViewModel.showSnackbar(message, isError = false)
                 }
             }
             
@@ -119,8 +120,14 @@ fun RegisterScreen(
         }
     }
     
+    LaunchedEffect(snackbarConfig) {
+        snackbarConfig?.let {
+            snackbarHostState.showSnackbar(it.message, duration = it.duration)
+        }
+    }
+    
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { AppSnackbar(snackbarHostState, snackbarConfig) },
         modifier = Modifier
             .statusBarsPadding()
             .safeContentPadding()
