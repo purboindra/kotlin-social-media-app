@@ -135,6 +135,7 @@ fun LoginScreen(
                         isError = false
                     )
                 }
+                navHostController.navigate(Screens.Main.route)
             }
             
             is State.Failure -> {

@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
 import com.example.socialmedia.ui.login.LoginScreen
+import com.example.socialmedia.ui.main.MainScreen
 import com.example.socialmedia.ui.register.RegisterScreen
 import com.example.socialmedia.ui.splash.SplashScreen
 
@@ -28,6 +29,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Screens.Register.route) {
                 RegisterScreen(navHostController = navController)
+            }
+            composable(Screens.Main.route) {
+                MainScreen(navHostController = navController)
             }
         }
     }
