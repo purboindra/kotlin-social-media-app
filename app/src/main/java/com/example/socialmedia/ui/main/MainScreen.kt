@@ -99,7 +99,7 @@ fun MainScreen(
     ) { paddingValues ->
         Box(
             modifier = Modifier
-                .padding(paddingValues).safeContentPadding().statusBarsPadding()
+                .padding(paddingValues)
         ) {
             bodies[bottomNavbarIndex]()
         }

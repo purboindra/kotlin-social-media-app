@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.socialmedia.ui.theme.BlueLight
 import com.example.socialmedia.ui.theme.GrayPrimary
 import com.example.socialmedia.utils.VerticalSpacer
@@ -39,7 +41,7 @@ fun InstaStoryComponent() {
         modifier = Modifier
             .fillMaxWidth()
             .height(92.dp)
-            .padding(horizontal = 3.dp)
+            .padding(horizontal = 8.dp)
     ) {
         items(25) {
             Column(
@@ -77,7 +79,6 @@ fun InstaStoryComponent() {
                             .background(GrayPrimary)
                             .align(Alignment.Center)
                     )
-                    
                     Box(
                         modifier = Modifier
                             .size(32.dp)
@@ -106,7 +107,9 @@ fun InstaStoryComponent() {
                 }
                 
                 5.VerticalSpacer()
-                Text("Purboyndrasasasasa")
+                Text("Purboyndrasasasasa", style = MaterialTheme.typography.titleSmall.copy(
+                    fontSize = 13.sp,
+                ))
             }
         }
     }
