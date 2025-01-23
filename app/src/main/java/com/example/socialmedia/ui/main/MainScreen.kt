@@ -96,9 +96,6 @@ fun MainScreen(
                 onSelectedItem = { mainViewModel.onSelectedBottomNavbar(it) }
             )
         },
-        modifier = Modifier
-            .safeContentPadding()
-            .statusBarsPadding()
     ) { paddingValues ->
         Box(
             modifier = Modifier
