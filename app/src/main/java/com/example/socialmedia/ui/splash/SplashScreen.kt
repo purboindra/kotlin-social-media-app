@@ -43,7 +43,7 @@ fun SplashScreen(
     LaunchedEffect(Unit) {
         delay(1000)
         if (accessToken == null) {
-            navHostController.navigate(Screens.Login.route)
+            navHostController.navigate(Screens.Main.route)
         } else {
             navHostController.navigate(Screens.Main.route)
         }

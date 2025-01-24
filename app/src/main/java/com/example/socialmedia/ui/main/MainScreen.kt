@@ -96,12 +96,7 @@ fun MainScreen(
                 onSelectedItem = { mainViewModel.onSelectedBottomNavbar(it) }
             )
         },
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .padding(paddingValues)
-        ) {
-            bodies[bottomNavbarIndex]()
-        }
+    ) { _ ->
+        bodies[bottomNavbarIndex]()
     }
 }

@@ -29,7 +29,7 @@ import com.example.socialmedia.ui.theme.GrayPrimary
 import com.example.socialmedia.utils.VerticalSpacer
 
 @Composable
-fun InstaStoryComponent() {
+fun InstaStoryCompose() {
     
     val colorStops = arrayOf(
         0.0f to Color.Yellow,
