@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.socialmedia.ui.components.ExpandableCaptionCompose
 import com.example.socialmedia.ui.components.HomeScreenHeader
 import com.example.socialmedia.ui.components.InstaStoryCompose
 import com.example.socialmedia.ui.components.LikedByTextCompose
@@ -40,9 +41,9 @@ import com.example.socialmedia.utils.VerticalSpacer
 
 @Composable
 fun HomeScreen() {
-
+    
     val horizontalPadding = 8.dp
-
+    
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -59,7 +60,10 @@ fun HomeScreen() {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = horizontalPadding, vertical = 5.dp),
+                            .padding(
+                                horizontal = horizontalPadding,
+                                vertical = 5.dp
+                            ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -73,7 +77,8 @@ fun HomeScreen() {
                             )
                             5.HorizontalSpacer()
                             Text(
-                                "Purboyndra", style = MaterialTheme.typography.titleMedium.copy(
+                                "Purboyndra",
+                                style = MaterialTheme.typography.titleMedium.copy(
                                     fontSize = 16.sp
                                 )
                             )
@@ -84,18 +89,18 @@ fun HomeScreen() {
                             modifier = Modifier.size(18.dp)
                         )
                     }
-
+                    
                     4.VerticalSpacer()
-
+                    
                     Box(
                         modifier = Modifier
                             .height(375.dp)
                             .fillMaxWidth()
                             .background(GrayDark)
                     )
-
+                    
                     8.VerticalSpacer()
-
+                    
                     Column(
                         modifier = Modifier.padding(
                             horizontal = horizontalPadding
@@ -105,7 +110,7 @@ fun HomeScreen() {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-
+                            
                             Row {
                                 Icon(
                                     Icons.Outlined.FavoriteBorder,
@@ -133,6 +138,10 @@ fun HomeScreen() {
                         }
                         5.VerticalSpacer()
                         LikedByTextCompose()
+                        5.VerticalSpacer()
+                        ExpandableCaptionCompose(
+                            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+                        )
                     }
                 }
                 18.VerticalSpacer()
