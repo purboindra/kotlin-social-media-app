@@ -5,4 +5,6 @@ sealed class Screens(val route: String) {
     data object Login : Screens("/login")
     data object Register : Screens("/register")
     data object Main : Screens("/main")
+    data object AddPost : Screens("/add-post")
+    data object CreateCaption : Screens("/create-caption")
 }

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MovieCreation
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MovieCreation
 import androidx.compose.material.icons.outlined.Person
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.socialmedia.data.db.local.AppDataStore
+import com.example.socialmedia.ui.add_post.AddPostScreen
 import com.example.socialmedia.ui.components.AppBottomNavigationBar
 import com.example.socialmedia.ui.components.BottomNavigationItem
 import com.example.socialmedia.ui.home.HomeScreen
@@ -51,7 +53,8 @@ fun MainScreen(
     val bodies = listOf<@Composable () -> Unit>(
         { HomeScreen() },
         { Text(text = "Search") },
-        { Text(text = "Reels") },
+        { AddPostScreen(navHostController = navHostController) },
+        { Text(text = "Add Post") },
         { Text(text = "Profile") }
     )
     
@@ -68,10 +71,17 @@ fun MainScreen(
             unSelectedItem = Icons.Outlined.Home,
             hasNews = false
         ),
+        
         BottomNavigationItem(
             title = "Search",
             selectedItem = Icons.Filled.Search,
             unSelectedItem = Icons.Outlined.Search,
+            hasNews = false
+        ),
+        BottomNavigationItem(
+            title = "Add Post",
+            selectedItem = Icons.Outlined.AddBox,
+            unSelectedItem = Icons.Outlined.AddBox,
             hasNews = false
         ),
         BottomNavigationItem(
