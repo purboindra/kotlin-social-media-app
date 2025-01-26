@@ -106,6 +106,11 @@ fun LoginScreen(
                         isError = true
                     )
                 }
+                navHostController.navigate(Screens.Main.route){
+                    popUpTo(navHostController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                }
             }
             
             is State.Failure -> {
@@ -131,7 +136,11 @@ fun LoginScreen(
                         isError = false
                     )
                 }
-                navHostController.navigate(Screens.Main.route)
+                navHostController.navigate(Screens.Main.route){
+                    popUpTo(navHostController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                }
             }
             
             is State.Failure -> {

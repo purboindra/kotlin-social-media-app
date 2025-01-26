@@ -43,9 +43,17 @@ fun SplashScreen(
     LaunchedEffect(Unit) {
         delay(1000)
         if (accessToken == null) {
-            navHostController.navigate(Screens.Login.route)
+            navHostController.navigate(Screens.Login.route) {
+                popUpTo(navHostController.graph.startDestinationId) {
+                    inclusive = true
+                }
+            }
         } else {
-            navHostController.navigate(Screens.Main.route)
+            navHostController.navigate(Screens.Main.route) {
+                popUpTo(navHostController.graph.startDestinationId) {
+                    inclusive = true
+                }
+            }
         }
     }
     
