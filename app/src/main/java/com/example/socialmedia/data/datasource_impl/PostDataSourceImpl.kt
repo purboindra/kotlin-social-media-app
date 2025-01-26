@@ -5,9 +5,11 @@ import com.example.socialmedia.data.datasource.FileDatasource
 import com.example.socialmedia.data.datasource.PostDatasource
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CreatePostModel
+import com.example.socialmedia.data.model.PostModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.Json
 import java.util.UUID
 
 class PostDataSourceImpl(
@@ -40,6 +42,18 @@ class PostDataSourceImpl(
             
             return Result.success(true)
             
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+    
+    override suspend fun fetchAllPosts(): Result<List<PostModel>> {
+        Log.d("PostDataSourceImpl", "Fetching all posts")
+        try {
+            val rawPost = supabase.from("posts").select()
+            val posts = rawPost.data
+            val decodePost = Json.decodeFromString<List<PostModel>>(posts)
+            return Result.success(decodePost)
         } catch (e: Exception) {
             throw e
         }

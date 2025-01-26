@@ -27,17 +27,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.socialmedia.ui.components.GalleryPickerCompose
-import com.example.socialmedia.ui.navigation.Screens
-import com.example.socialmedia.ui.viewmodel.AddPostViewModel
+import com.example.socialmedia.ui.viewmodel.PostViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPostScreen(
-    addPostViewModel: AddPostViewModel = hiltViewModel(),
+    postViewModel: PostViewModel = hiltViewModel(),
     navHostController: NavHostController,
 ) {
     
-    val image by addPostViewModel.image.collectAsState()
+    val image by postViewModel.image.collectAsState()
     
     Scaffold(
         topBar = {
@@ -82,7 +81,7 @@ fun AddPostScreen(
                     Text("Choose photo first")
                 }
             }
-            GalleryPickerCompose(addPostViewModel)
+            GalleryPickerCompose(postViewModel)
         }
     }
 }

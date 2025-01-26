@@ -47,7 +47,7 @@ import com.example.socialmedia.ui.components.IconWithTextHorizontal
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.theme.BluePrimary
 import com.example.socialmedia.ui.theme.GrayDark
-import com.example.socialmedia.ui.viewmodel.AddPostViewModel
+import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.ui.viewmodel.SnackbarViewModel
 import com.example.socialmedia.utils.VerticalSpacer
 import kotlinx.coroutines.launch
@@ -56,7 +56,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CreateCaptionScreen(
     navHostController: NavHostController,
-    addPostViewModel: AddPostViewModel = hiltViewModel(),
+    postViewModel: PostViewModel = hiltViewModel(),
     snackbarViewModel: SnackbarViewModel = hiltViewModel(),
 ) {
     
@@ -65,8 +65,8 @@ fun CreateCaptionScreen(
     
     val imageUri =
         navHostController.currentBackStackEntry?.arguments?.getString("imageUri")
-    val caption by addPostViewModel.caption.collectAsState()
-    val createPostState by addPostViewModel.createPostState.collectAsState()
+    val caption by postViewModel.caption.collectAsState()
+    val createPostState by postViewModel.createPostState.collectAsState()
     
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarConfig by snackbarViewModel.snackbarState.collectAsState()
@@ -126,7 +126,7 @@ fun CreateCaptionScreen(
         bottomBar = {
             AppElevatedButton(
                 onClick = {
-                    addPostViewModel.createPost(
+                    postViewModel.createPost(
                         context,
                         Uri.parse(imageUri)
                     )
@@ -160,7 +160,7 @@ fun CreateCaptionScreen(
                 }
                 TextField(
                     value = caption,
-                    onValueChange = { addPostViewModel.onChangeCaption(it) },
+                    onValueChange = { postViewModel.onChangeCaption(it) },
                     modifier = Modifier
                         .fillMaxWidth(),
                     maxLines = 10,

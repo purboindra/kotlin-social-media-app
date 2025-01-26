@@ -5,27 +5,31 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.domain.usecases.FileUseCase
 import com.example.socialmedia.domain.usecases.PostUseCase
 import com.example.socialmedia.utils.FileHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.jan.supabase.storage.FileObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AddPostViewModel @Inject constructor(
+class PostViewModel @Inject constructor(
     private val fileUseCase: FileUseCase,
     private val postUseCase: PostUseCase,
 ) : ViewModel() {
     
     private val _createPostState = MutableStateFlow<State<Boolean>>(State.Idle)
     val createPostState = _createPostState.asStateFlow()
+    
+    private val _postsState =
+        MutableStateFlow<State<List<PostModel>>>(State.Idle)
+    val postState = _postsState.asStateFlow()
     
     private val _image = MutableStateFlow<Uri?>(null)
     val image = _image.asStateFlow()
@@ -41,9 +45,15 @@ class AddPostViewModel @Inject constructor(
         _caption.value = caption
     }
     
-    fun createPost(context: Context,imageUri:Uri) = viewModelScope.launch {
+    fun fetchAllPosts() = viewModelScope.launch {
+        postUseCase.fetchAllPosts().collectLatest { state ->
+            _postsState.value = state
+        }
+    }
+    
+    fun createPost(context: Context, imageUri: Uri) = viewModelScope.launch {
         
-       _createPostState.emit(State.Loading)
+        _createPostState.emit(State.Loading)
         
         val imageBytes =
             FileHelper.uriToByteArray(context.contentResolver, imageUri)
@@ -85,6 +95,4 @@ class AddPostViewModel @Inject constructor(
             else -> {}
         }
     }
-    
-    
 }

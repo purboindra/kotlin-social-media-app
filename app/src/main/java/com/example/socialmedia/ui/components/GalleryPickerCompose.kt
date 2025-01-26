@@ -46,19 +46,19 @@ import coil3.compose.rememberAsyncImagePainter
 import com.example.socialmedia.ui.theme.BlueLight
 import com.example.socialmedia.ui.theme.BluePrimary
 import com.example.socialmedia.ui.theme.GrayPrimary
-import com.example.socialmedia.ui.viewmodel.AddPostViewModel
+import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.PermissionHelper
 import com.example.socialmedia.utils.PostHelper
 
 @Composable
 fun GalleryPickerCompose(
-    addPostViewModel: AddPostViewModel
+    postViewModel: PostViewModel
 ) {
     val context = LocalContext.current
     val images = remember { mutableStateListOf<Uri>() }
     val permissionGranted = remember { mutableStateOf(false) }
     var loadingPermission by remember { mutableStateOf(false) }
-    val selectedImage by addPostViewModel.image.collectAsState()
+    val selectedImage by postViewModel.image.collectAsState()
     
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -127,7 +127,7 @@ fun GalleryPickerCompose(
                             .aspectRatio(1f)
                             .padding(3.dp)
                             .clickable {
-                                addPostViewModel.selectImage(imageUri)
+                                postViewModel.selectImage(imageUri)
                             },
                         contentScale = ContentScale.Crop
                     )

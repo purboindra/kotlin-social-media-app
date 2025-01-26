@@ -1,6 +1,7 @@
 package com.example.socialmedia.ui.navigation
 
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -19,13 +20,10 @@ import com.example.socialmedia.ui.login.LoginScreen
 import com.example.socialmedia.ui.main.MainScreen
 import com.example.socialmedia.ui.register.RegisterScreen
 import com.example.socialmedia.ui.splash.SplashScreen
-import com.example.socialmedia.ui.viewmodel.AddPostViewModel
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
-    
-    val addPostViewModel: AddPostViewModel = hiltViewModel()
     
     val navGraph = remember(navController) {
         navController.createGraph(
@@ -50,6 +48,8 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     }
                 )
             ) {
+                BackHandler(true) {
+                }
                 CreateCaptionScreen(navController)
             }
         }

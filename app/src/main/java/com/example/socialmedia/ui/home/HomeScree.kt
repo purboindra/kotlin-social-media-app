@@ -20,29 +20,47 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Message
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.ExpandableCaptionCompose
 import com.example.socialmedia.ui.components.HomeScreenHeader
 import com.example.socialmedia.ui.components.InstaStoryCompose
 import com.example.socialmedia.ui.components.LikedByTextCompose
+import com.example.socialmedia.ui.components.PostCardCompose
 import com.example.socialmedia.ui.theme.BlueLight
 import com.example.socialmedia.ui.theme.GrayDark
+import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    navController: NavHostController,
+    postViewModel: PostViewModel = hiltViewModel()
+) {
     
     val horizontalPadding = 8.dp
+    
+    val postState by postViewModel.postState.collectAsState()
+    
+    LaunchedEffect(Unit) {
+        postViewModel.fetchAllPosts()
+    }
     
     Column(
         modifier = Modifier.fillMaxSize()
@@ -54,97 +72,37 @@ fun HomeScreen() {
                 InstaStoryCompose()
                 10.VerticalSpacer()
             }
-            items(5) {
-                Column {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                horizontal = horizontalPadding,
-                                vertical = 5.dp
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(RoundedCornerShape(100))
-                                    .background(
-                                        BlueLight
-                                    )
-                            )
-                            5.HorizontalSpacer()
-                            Text(
-                                "Purboyndra",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontSize = 16.sp
-                                )
-                            )
-                        }
-                        Icon(
-                            Icons.Filled.MoreVert,
-                            contentDescription = "More",
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    
-                    4.VerticalSpacer()
-                    
-                    Box(
-                        modifier = Modifier
-                            .height(375.dp)
-                            .fillMaxWidth()
-                            .background(GrayDark)
-                    )
-                    
-                    8.VerticalSpacer()
-                    
-                    Column(
-                        modifier = Modifier.padding(
-                            horizontal = horizontalPadding
-                        )
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            
-                            Row {
-                                Icon(
-                                    Icons.Outlined.FavoriteBorder,
-                                    contentDescription = "Like",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                5.HorizontalSpacer()
-                                Icon(
-                                    Icons.AutoMirrored.Outlined.Message,
-                                    contentDescription = "Message",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                5.HorizontalSpacer()
-                                Icon(
-                                    Icons.Outlined.Share,
-                                    contentDescription = "Shared",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            Icon(
-                                Icons.Outlined.Save,
-                                contentDescription = "Save",
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                        5.VerticalSpacer()
-                        LikedByTextCompose()
-                        5.VerticalSpacer()
-                        ExpandableCaptionCompose(
-                            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-                        )
+            when (postState) {
+                is State.Success -> {
+                    items(5) {
+                        PostCardCompose(horizontalPadding)
+                        18.VerticalSpacer()
                     }
                 }
-                18.VerticalSpacer()
+                
+                is State.Loading -> {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+                
+                is State.Failure -> {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "Error: ${(postState as State.Failure).throwable.message}")
+                        }
+                    }
+                }
+                
+                else -> {}
             }
         }
     }

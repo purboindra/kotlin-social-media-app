@@ -51,7 +51,7 @@ fun MainScreen(
 ) {
     
     val bodies = listOf<@Composable () -> Unit>(
-        { HomeScreen() },
+        { HomeScreen(navHostController) },
         { Text(text = "Search") },
         { AddPostScreen(navHostController = navHostController) },
         { Text(text = "Add Post") },
