@@ -11,6 +11,9 @@ import kotlin.time.Duration.Companion.seconds
 
 object SupabaseClientModule {
     
+    // S3 ACCESS KEY 5b8a198d6e74c008e71db7394a0e243f
+    // S3 SECRET KEY a7b7c4b129b20af8727d2d22e9591b6aebc273db78dc23d1540c14564155f60d
+    
     private const val SUPABASE_URL = BuildConfig.PROJECT_URL
     private const val SUPABASE_KEY = BuildConfig.PROJECT_API_KEY
     const val SUPABASE_SERVER_CLIENT_ID = BuildConfig.SERVER_CLIENT_ID
