@@ -1,10 +1,12 @@
 package com.example.socialmedia.ui.components
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,17 +25,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.ui.theme.BlueLight
 import com.example.socialmedia.ui.theme.GrayDark
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
+import com.example.socialmedia.utils.imageLoader
 
 @Composable
-fun PostCardCompose(horizontalPadding: Dp,postModel: PostModel) {
+fun PostCardCompose(
+    horizontalPadding: Dp,
+    postModel: PostModel,
+    context: Context
+) {
     Column {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -56,7 +65,7 @@ fun PostCardCompose(horizontalPadding: Dp,postModel: PostModel) {
                 )
                 5.HorizontalSpacer()
                 Text(
-                    postModel.user.fullName?:"",
+                    postModel.user.fullName ?: "",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontSize = 16.sp
                     )
@@ -76,7 +85,15 @@ fun PostCardCompose(horizontalPadding: Dp,postModel: PostModel) {
                 .height(375.dp)
                 .fillMaxWidth()
                 .background(GrayDark)
-        )
+        ) {
+            AsyncImage(
+                model = postModel.imageUrl,
+                contentDescription = postModel.caption,
+                imageLoader = imageLoader(context),
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
         
         8.VerticalSpacer()
         
@@ -119,7 +136,7 @@ fun PostCardCompose(horizontalPadding: Dp,postModel: PostModel) {
             LikedByTextCompose()
             5.VerticalSpacer()
             ExpandableCaptionCompose(
-                text =postModel.caption,
+                text = postModel.caption,
             )
         }
     }

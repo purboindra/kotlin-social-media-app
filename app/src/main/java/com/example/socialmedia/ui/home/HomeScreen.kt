@@ -14,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -31,6 +32,8 @@ fun HomeScreen(
 ) {
     
     val horizontalPadding = 8.dp
+    
+    val context = LocalContext.current
     
     val postState by postViewModel.postState.collectAsState()
     
@@ -53,7 +56,11 @@ fun HomeScreen(
                     val items = (postState as State.Success).data
                     if (items.isNotEmpty()) {
                         items(items) { item ->
-                            PostCardCompose(horizontalPadding, item)
+                            PostCardCompose(
+                                horizontalPadding,
+                                item,
+                                context = context
+                            )
                             18.VerticalSpacer()
                         }
                     } else {
