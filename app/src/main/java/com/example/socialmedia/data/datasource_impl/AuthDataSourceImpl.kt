@@ -246,7 +246,9 @@ class AuthDataSourceImpl(
                     .trim('\"'),
             )
             
-            val checkUserExist = checkUserExist(userModel.email)
+            if(userModel.email.isNullOrEmpty()) throw AuthException("User email is null or empty.")
+            
+            val checkUserExist = checkUserExist(userModel.email!!)
             
             checkUserExist.onSuccess {
                 if (!it) {
@@ -254,11 +256,11 @@ class AuthDataSourceImpl(
                 }
             }
             
-            dataStore.saveUserId(userModel.id)
-            dataStore.saveUserName(userModel.username)
+            dataStore.saveUserId(userModel.id!!)
+            dataStore.saveUserName(userModel.username!!)
             dataStore.saveUserEmail(userModel.email)
-            dataStore.saveAccessToken(userModel.accessToken)
-            dataStore.saveRefreshToken(userModel.refreshToken)
+            dataStore.saveAccessToken(userModel.accessToken!!)
+            dataStore.saveRefreshToken(userModel.refreshToken!!)
             
             return Result.success(true)
             

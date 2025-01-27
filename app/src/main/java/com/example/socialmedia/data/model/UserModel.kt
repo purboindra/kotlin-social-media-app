@@ -9,21 +9,21 @@ data class UserModel(
     @SerialName("id")
     val id: String,
     @SerialName("created_at")
-    val createdAt: Instant,
+    val createdAt: Instant?=null,
     @SerialName("access_token")
-    val accessToken: String,
+    val accessToken: String?=null,
     @SerialName("refresh_token")
-    val refreshToken: String,
+    val refreshToken: String?=null,
     @SerialName("username")
-    val username: String,
+    val username: String?=null,
     @SerialName("full_name")
-    val fullName: String,
+    val fullName: String?=null,
     @SerialName("password")
-    val password: String,
+    val password: String?=null,
     @SerialName("profile_picture")
-    val profilePicture: String,
+    val profilePicture: String?=null,
     @SerialName("email")
-    val email: String,
+    val email: String?=null,
     @SerialName("birth_date")
     val birthDate: Instant? = null
     // TODO POSTS

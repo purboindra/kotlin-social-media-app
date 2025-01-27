@@ -26,13 +26,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.ui.theme.BlueLight
 import com.example.socialmedia.ui.theme.GrayDark
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
 
 @Composable
-fun PostCardCompose(horizontalPadding: Dp) {
+fun PostCardCompose(horizontalPadding: Dp,postModel: PostModel) {
     Column {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -55,7 +56,7 @@ fun PostCardCompose(horizontalPadding: Dp) {
                 )
                 5.HorizontalSpacer()
                 Text(
-                    "Purboyndra",
+                    postModel.user.fullName?:"",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontSize = 16.sp
                     )
@@ -118,7 +119,7 @@ fun PostCardCompose(horizontalPadding: Dp) {
             LikedByTextCompose()
             5.VerticalSpacer()
             ExpandableCaptionCompose(
-                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+                text =postModel.caption,
             )
         }
     }

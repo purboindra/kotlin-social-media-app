@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.State
+import com.example.socialmedia.data.model.UploadImageModel
 import com.example.socialmedia.domain.usecases.FileUseCase
 import com.example.socialmedia.domain.usecases.PostUseCase
 import com.example.socialmedia.utils.FileHelper
@@ -68,13 +69,19 @@ class PostViewModel @Inject constructor(
         }
     }
     
-    private suspend fun handleFileUploadState(state: State<String?>) {
+    private suspend fun handleFileUploadState(state: State<UploadImageModel?>) {
         when (state) {
             is State.Success -> {
-                val imageKey = state.data
-                if (!imageKey.isNullOrEmpty()) {
+                val image = state.data
+                image?.let {
+                    val uploadImageModel = UploadImageModel(
+                        id = it.id,
+                        key = it.key,
+                        path = it.path,
+                    )
+                    
                     postUseCase.createPost(
-                        imageKey = imageKey,
+                        image = uploadImageModel,
                         caption = _caption.value,
                         taggedUsers = null,
                         taggedLocation = ""

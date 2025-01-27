@@ -9,6 +9,8 @@ data class CreatePostModel(
     val id: String,
     @SerialName("image_key")
     val imageKey: String,
+    @SerialName("image_path")
+    val imagePath: String,
     @SerialName("caption")
     val caption: String,
     @SerialName("tagged_users")
