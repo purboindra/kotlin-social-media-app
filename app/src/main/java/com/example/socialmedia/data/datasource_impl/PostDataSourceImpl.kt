@@ -122,12 +122,20 @@ class PostDataSourceImpl(
                 
                 post.copy(imageUrl = url)
             }
-
-//            val likes = fetchAllLikes()
-//
-//            likes.onSuccess {
-//               Log.d("PostDataSourceImpl", "Likes: $it")
-//            }
+            
+            val likes = fetchAllLikes()
+            
+            likes.onSuccess {
+                val modifiedPosts = updatedPost.map { post ->
+                    post.copy(
+                        hasLike = it.any { like ->
+                            like.postId == post.id
+                            
+                        }
+                    )
+                }
+                return Result.success(modifiedPosts)
+            }
             
             return Result.success(updatedPost)
         } catch (e: Exception) {
@@ -188,11 +196,7 @@ class PostDataSourceImpl(
             val rawLikes =
                 supabase.from("likes").select(columns = Columns.raw("*"))
             
-            Log.d("PostDataSourceImpl", "Raw likes: ${rawLikes.data}")
-            
             val likes = Json.decodeFromString<List<LikeModel>>(rawLikes.data)
-            
-            Log.d("PostDataSourceImpl", "Likes: $likes")
             
             return Result.success(likes)
             

@@ -23,6 +23,7 @@ import androidx.navigation.NavHostController
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.HomeScreenHeader
 import com.example.socialmedia.ui.components.InstaStoryCompose
+import com.example.socialmedia.ui.components.LoadingPostCard
 import com.example.socialmedia.ui.components.PostCardCompose
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.VerticalSpacer
@@ -69,7 +70,6 @@ fun HomeScreen(
                             context = context,
                             postViewModel = postViewModel
                         )
-                        18.VerticalSpacer()
                     }
                 } else {
                     item {
@@ -86,15 +86,8 @@ fun HomeScreen(
             }
             
             is State.Loading -> {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+                items(4) {
+                    LoadingPostCard()
                 }
             }
             

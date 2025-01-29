@@ -36,6 +36,7 @@ class PostRepositoryImpl(
     }
     
     override suspend fun fetchAllPosts(): Flow<State<List<PostModel>>> = flow {
+        emit(State.Loading)
         try {
             val result = postDataSource.fetchAllPosts()
             result.onSuccess {

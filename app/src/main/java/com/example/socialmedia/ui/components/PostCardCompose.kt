@@ -36,6 +36,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.example.socialmedia.R
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.ui.theme.BlueLight
 import com.example.socialmedia.ui.theme.GrayDark
@@ -72,7 +75,7 @@ fun PostCardCompose(
                         .size(48.dp)
                         .clip(RoundedCornerShape(100))
                         .background(
-                            GrayPrimary
+                            Color.LightGray
                         )
                 ) {
                     AsyncImage(
@@ -104,10 +107,13 @@ fun PostCardCompose(
             modifier = Modifier
                 .height(375.dp)
                 .fillMaxWidth()
-                .background(GrayDark)
+                .background(Color.LightGray)
         ) {
             AsyncImage(
-                model = postModel.imageUrl,
+                model = ImageRequest.Builder(context)
+                    .data(postModel.imageUrl)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = postModel.caption,
                 imageLoader = imageLoader(context),
                 modifier = Modifier.fillMaxSize(),

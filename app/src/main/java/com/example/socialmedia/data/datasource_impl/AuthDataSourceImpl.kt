@@ -279,7 +279,7 @@ class AuthDataSourceImpl(
                     Log.e(TAG, "Error Get Credential: ${e.message}")
                     return Result.failure(e)
                 } else {
-                    Log.e(TAG, "Error Get Credential Else: ${e.message}")
+                    Log.e(TAG, "Error Get Credential Else: ${e.message} == ${e.javaClass}")
                     return Result.failure(e)
                 }
             } else {
