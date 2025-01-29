@@ -16,9 +16,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
 import androidx.navigation.navArgument
 import com.example.socialmedia.ui.add_post.CreateCaptionScreen
+import com.example.socialmedia.ui.home.HomeScreen
 import com.example.socialmedia.ui.login.LoginScreen
 import com.example.socialmedia.ui.main.MainScreen
+import com.example.socialmedia.ui.profile.ProfileScreen
+import com.example.socialmedia.ui.reels.ReelsScreen
 import com.example.socialmedia.ui.register.RegisterScreen
+import com.example.socialmedia.ui.search.SearchScreen
 import com.example.socialmedia.ui.splash.SplashScreen
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -40,6 +44,18 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Screens.Main.route) {
                 MainScreen(navHostController = navController)
+            }
+            composable(Screens.Home.route) {
+                HomeScreen(navController)
+            }
+            composable(Screens.Search.route) {
+                SearchScreen(navController)
+            }
+            composable(Screens.Reels.route) {
+                ReelsScreen(navController)
+            }
+            composable(Screens.Profile.route) {
+                ProfileScreen(navController)
             }
             composable("create_caption?imageUri={imageUri}",
                 arguments = listOf(

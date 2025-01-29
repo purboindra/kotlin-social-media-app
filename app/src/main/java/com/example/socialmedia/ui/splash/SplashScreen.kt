@@ -1,5 +1,6 @@
 package com.example.socialmedia.ui.splash
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,20 +43,21 @@ fun SplashScreen(
     
     LaunchedEffect(Unit) {
         delay(1000)
+        Log.d("SplashScreen", "NavController: $navHostController")
+        
         if (accessToken == null) {
+            Log.d("SplashScreen", "Navigating to Login")
             navHostController.navigate(Screens.Login.route) {
-                popUpTo(navHostController.graph.startDestinationId) {
-                    inclusive = true
-                }
+                popUpTo(Screens.Splash.route) { inclusive = true }
             }
         } else {
+            Log.d("SplashScreen", "Navigating to Main")
             navHostController.navigate(Screens.Main.route) {
-                popUpTo(navHostController.graph.startDestinationId) {
-                    inclusive = true
-                }
+                popUpTo(Screens.Splash.route) { inclusive = true }
             }
         }
     }
+    
     
     Scaffold { paddingValues ->
         Box(

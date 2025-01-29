@@ -95,6 +95,9 @@ fun GalleryPickerCompose(
         } else {
             permissionGranted.value = true
             val galleryImages = PostHelper.getGalleryImages(context)
+            galleryImages.forEach {
+                PostHelper.scanMediaFile(context, it)
+            }
             images.addAll(galleryImages)
         }
         loadingPermission = false
@@ -106,7 +109,13 @@ fun GalleryPickerCompose(
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
     ) {
-        LazyVerticalGrid(
+        
+        if (images.isEmpty()) Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No images found")
+        } else LazyVerticalGrid(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 1500.dp)
@@ -149,7 +158,6 @@ fun GalleryPickerCompose(
                 }
             }
         }
+        
     }
-    
-    
 }

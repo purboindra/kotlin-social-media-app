@@ -19,6 +19,7 @@ data class BottomNavigationItem(
     val unSelectedItem: ImageVector,
     val hasNews: Boolean,
     val badgeCount: Int? = null,
+    val route: String,
 )
 
 @Composable
@@ -27,7 +28,7 @@ fun AppBottomNavigationBar(
     selectedItem: Int,
     onSelectedItem: (Int) -> Unit
 ) {
-    NavigationBar (
+    NavigationBar(
         contentColor = Color.White,
         containerColor = Color.White,
         tonalElevation = 0.dp,

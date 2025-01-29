@@ -1,6 +1,6 @@
 package com.example.socialmedia.ui.main
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -14,7 +14,6 @@ import androidx.compose.material.icons.outlined.MovieCreation
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -23,27 +22,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.ui.add_post.AddPostScreen
 import com.example.socialmedia.ui.components.AppBottomNavigationBar
 import com.example.socialmedia.ui.components.BottomNavigationItem
 import com.example.socialmedia.ui.home.HomeScreen
+import com.example.socialmedia.ui.navigation.Screens
+import com.example.socialmedia.ui.profile.ProfileScreen
+import com.example.socialmedia.ui.reels.ReelsScreen
+import com.example.socialmedia.ui.search.SearchScreen
 import com.example.socialmedia.ui.viewmodel.MainViewModel
 
 
 @Composable
 fun MainScreen(
-    navHostController: NavHostController,
-    mainViewModel: MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel(),
+    navHostController: NavHostController
 ) {
-    
-    val bodies = listOf<@Composable () -> Unit>(
-        { HomeScreen(navHostController) },
-        { Text(text = "Search") },
-        { AddPostScreen(navHostController = navHostController) },
-        { Text(text = "Add Post") },
-        { Text(text = "Profile") }
-    )
     
     val context = LocalContext.current
     
@@ -56,32 +53,37 @@ fun MainScreen(
             title = "Home",
             selectedItem = Icons.Filled.Home,
             unSelectedItem = Icons.Outlined.Home,
-            hasNews = false
+            hasNews = false,
+            route = Screens.Home.route
         ),
         
         BottomNavigationItem(
             title = "Search",
             selectedItem = Icons.Filled.Search,
             unSelectedItem = Icons.Outlined.Search,
-            hasNews = false
+            hasNews = false,
+            route = Screens.Search.route
         ),
         BottomNavigationItem(
             title = "Add Post",
             selectedItem = Icons.Outlined.AddBox,
             unSelectedItem = Icons.Outlined.AddBox,
-            hasNews = false
+            hasNews = false,
+            route = Screens.AddPost.route
         ),
         BottomNavigationItem(
             title = "Reels",
             selectedItem = Icons.Filled.MovieCreation,
             unSelectedItem = Icons.Outlined.MovieCreation,
-            hasNews = false
+            hasNews = false,
+            route = Screens.Reels.route
         ),
         BottomNavigationItem(
             title = "Profile",
             selectedItem = Icons.Filled.Person,
             unSelectedItem = Icons.Outlined.Person,
-            hasNews = false
+            hasNews = false,
+            route = Screens.Profile.route
         ),
     )
     
@@ -90,15 +92,28 @@ fun MainScreen(
             AppBottomNavigationBar(
                 items = items,
                 selectedItem = bottomNavbarIndex,
-                onSelectedItem = { mainViewModel.onSelectedBottomNavbar(it) }
+                onSelectedItem = { index ->
+                    mainViewModel.onSelectedBottomNavbar(index)
+                    navHostController.navigate(
+                        items[index].route
+                    ) {
+                        popUpTo(Screens.Home.route) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         },
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
-        Column (
-            modifier = Modifier.fillMaxSize().padding(paddingValues )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            bodies[bottomNavbarIndex]()
+            MainNavHost(navController = navHostController)
         }
     }
 }

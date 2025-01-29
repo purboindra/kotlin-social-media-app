@@ -3,10 +3,26 @@ package com.example.socialmedia.utils
 import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 
 object PostHelper {
+    
+    fun scanMediaFile(context: Context, uri: Uri) {
+        MediaScannerConnection.scanFile(
+            context,
+            arrayOf(uri.path),
+            arrayOf("image/*"),
+        ) { path, uriItem ->
+            Log.d(
+                "scanMediaFile",
+                "Scanned path: $path, uriItem:$uriItem, uri: $uri"
+            )
+        }
+    }
+    
     @SuppressLint("Recycle")
     fun getGalleryImages(context: Context): List<Uri> {
         val imageUris = mutableListOf<Uri>()
