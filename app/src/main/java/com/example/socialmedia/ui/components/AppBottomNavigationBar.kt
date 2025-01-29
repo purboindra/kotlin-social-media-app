@@ -28,7 +28,6 @@ fun AppBottomNavigationBar(
     onSelectedItem: (Int) -> Unit
 ) {
     NavigationBar (
-        modifier = Modifier.statusBarsPadding(),
         contentColor = Color.White,
         containerColor = Color.White,
         tonalElevation = 0.dp,

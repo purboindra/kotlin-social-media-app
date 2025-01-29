@@ -1,7 +1,9 @@
 package com.example.socialmedia.ui.components
 
 import android.content.Context
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,17 +16,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Message
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -33,6 +39,8 @@ import coil3.compose.AsyncImage
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.ui.theme.BlueLight
 import com.example.socialmedia.ui.theme.GrayDark
+import com.example.socialmedia.ui.theme.GrayPrimary
+import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
 import com.example.socialmedia.utils.imageLoader
@@ -41,9 +49,13 @@ import com.example.socialmedia.utils.imageLoader
 fun PostCardCompose(
     horizontalPadding: Dp,
     postModel: PostModel,
+    postViewModel: PostViewModel,
     context: Context
 ) {
-    Column {
+    
+    Column(
+        modifier = Modifier.animateContentSize()
+    ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
@@ -60,9 +72,17 @@ fun PostCardCompose(
                         .size(48.dp)
                         .clip(RoundedCornerShape(100))
                         .background(
-                            BlueLight
+                            GrayPrimary
                         )
-                )
+                ) {
+                    AsyncImage(
+                        model = postModel.user.profilePicture,
+                        contentDescription = postModel.user.username,
+                        imageLoader = imageLoader(context),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 5.HorizontalSpacer()
                 Text(
                     postModel.user.fullName ?: "",
@@ -107,29 +127,40 @@ fun PostCardCompose(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 
-                Row {
-                    Icon(
-                        Icons.Outlined.FavoriteBorder,
-                        contentDescription = "Like",
-                        modifier = Modifier.size(18.dp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (postModel.hasLike != null) LikeButton(
+                        isLiked = postModel.hasLike,
+                        onClick = {
+                            postViewModel.invokeLike(postModel.id)
+                        }
                     )
                     5.HorizontalSpacer()
-                    Icon(
-                        Icons.AutoMirrored.Outlined.Message,
-                        contentDescription = "Message",
-                        modifier = Modifier.size(18.dp)
-                    )
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier.size(24.dp)
+                    
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Outlined.Message,
+                            contentDescription = "Message",
+                        )
+                    }
                     5.HorizontalSpacer()
-                    Icon(
-                        Icons.Outlined.Share,
-                        contentDescription = "Shared",
-                        modifier = Modifier.size(18.dp)
-                    )
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier.size(24.dp)
+                    
+                    ) {
+                        Icon(
+                            Icons.Outlined.Share,
+                            contentDescription = "Shared",
+                        )
+                    }
                 }
                 Icon(
                     Icons.Outlined.Save,
                     contentDescription = "Save",
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
             5.VerticalSpacer()

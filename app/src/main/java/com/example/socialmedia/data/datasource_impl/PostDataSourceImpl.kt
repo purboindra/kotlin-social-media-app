@@ -5,6 +5,7 @@ import com.example.socialmedia.data.datasource.FileDatasource
 import com.example.socialmedia.data.datasource.PostDatasource
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CreatePostModel
+import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.UploadImageModel
 import io.github.jan.supabase.SupabaseClient
@@ -67,7 +68,6 @@ class PostDataSourceImpl(
       full_name,
       profile_picture
     ),
-    likes,
     image_key,
     image_path,
     tagged_location,
@@ -122,10 +122,82 @@ class PostDataSourceImpl(
                 
                 post.copy(imageUrl = url)
             }
+
+//            val likes = fetchAllLikes()
+//
+//            likes.onSuccess {
+//               Log.d("PostDataSourceImpl", "Likes: $it")
+//            }
             
             return Result.success(updatedPost)
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error fetching all posts", e)
+            throw e
+        }
+    }
+    
+    override suspend fun createLike(id: String): Result<Boolean> {
+        try {
+            val userId =
+                datastore.userId.first() ?: throw Exception("User ID not found")
+            
+            Log.d(
+                "PostDataSourceImpl",
+                "Creating like for user $userId == $id"
+            )
+            
+            val like = LikeModel(
+                userId = userId,
+                postId = id,
+            )
+            
+            supabase.from("likes").insert(like)
+            
+            return Result.success(true)
+            
+        } catch (e: Exception) {
+            Log.e("PostDataSourceImpl", "Error create like", e)
+            throw e
+        }
+    }
+    
+    override suspend fun deleteLike(id: String): Result<Boolean> {
+        try {
+            
+            datastore.userId.first() ?: throw Exception("User ID not found")
+            
+            supabase.from("likes").delete {
+                filter {
+                    eq("post_id", id)
+                }
+            }
+            
+            return Result.success(true)
+            
+        } catch (e: Exception) {
+            Log.e("PostDataSourceImpl", "Error delete like", e)
+            throw e
+        }
+    }
+    
+    override suspend fun fetchAllLikes(): Result<List<LikeModel>> {
+        try {
+            
+            datastore.userId.first() ?: throw Exception("User ID not found")
+            
+            val rawLikes =
+                supabase.from("likes").select(columns = Columns.raw("*"))
+            
+            Log.d("PostDataSourceImpl", "Raw likes: ${rawLikes.data}")
+            
+            val likes = Json.decodeFromString<List<LikeModel>>(rawLikes.data)
+            
+            Log.d("PostDataSourceImpl", "Likes: $likes")
+            
+            return Result.success(likes)
+            
+        } catch (e: Exception) {
+            Log.e("PostDataSourceImpl", "Error fetch all likes", e)
             throw e
         }
     }

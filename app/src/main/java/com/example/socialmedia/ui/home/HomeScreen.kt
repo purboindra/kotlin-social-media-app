@@ -14,7 +14,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -41,43 +43,35 @@ fun HomeScreen(
         postViewModel.fetchAllPosts()
     }
     
-    Column(
-        modifier = Modifier.fillMaxSize()
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(rememberNestedScrollInteropConnection())
     ) {
-        HomeScreenHeader()
-        10.VerticalSpacer()
-        LazyColumn {
-            item {
-                InstaStoryCompose()
-                10.VerticalSpacer()
-            }
-            when (postState) {
-                is State.Success -> {
-                    val items = (postState as State.Success).data
-                    if (items.isNotEmpty()) {
-                        items(items) { item ->
-                            PostCardCompose(
-                                horizontalPadding,
-                                item,
-                                context = context
-                            )
-                            18.VerticalSpacer()
-                        }
-                    } else {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(vertical = 12.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(text = "No posts found")
-                            }
-                        }
+        item {
+            HomeScreenHeader()
+            10.VerticalSpacer()
+        }
+        item {
+            InstaStoryCompose()
+            10.VerticalSpacer()
+        }
+        when (postState) {
+            is State.Success -> {
+                val items = (postState as State.Success).data
+                if (items.isNotEmpty()) {
+                    items(items, key = {
+                        it.id
+                    }) { item ->
+                        PostCardCompose(
+                            horizontalPadding,
+                            item,
+                            context = context,
+                            postViewModel = postViewModel
+                        )
+                        18.VerticalSpacer()
                     }
-                }
-                
-                is State.Loading -> {
+                } else {
                     item {
                         Box(
                             modifier = Modifier
@@ -85,24 +79,37 @@ fun HomeScreen(
                                 .padding(vertical = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator()
+                            Text(text = "No posts found")
                         }
                     }
                 }
-                
-                is State.Failure -> {
-                    item {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "Error: ${(postState as State.Failure).throwable.message}")
-                        }
-                    }
-                }
-                
-                else -> {}
             }
+            
+            is State.Loading -> {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+            
+            is State.Failure -> {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Error: ${(postState as State.Failure).throwable.message}")
+                    }
+                }
+            }
+            
+            else -> {}
         }
     }
 }

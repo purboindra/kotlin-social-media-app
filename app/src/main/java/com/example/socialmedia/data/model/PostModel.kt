@@ -24,6 +24,5 @@ data class PostModel(
     val taggedLocation: String? = null,
     @SerialName("created_at")
     val createdAt: Instant,
-    @SerialName("likes")
-    val likes: List<String>? = null
+    val hasLike:Boolean?=false,
 )
