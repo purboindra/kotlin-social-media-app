@@ -25,7 +25,6 @@ import com.example.socialmedia.ui.register.RegisterScreen
 import com.example.socialmedia.ui.search.SearchScreen
 import com.example.socialmedia.ui.splash.SplashScreen
 
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     

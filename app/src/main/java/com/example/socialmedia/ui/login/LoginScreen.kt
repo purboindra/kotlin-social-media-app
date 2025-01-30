@@ -61,7 +61,6 @@ import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
 import kotlinx.coroutines.launch
 
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun LoginScreen(
     navHostController: NavHostController,

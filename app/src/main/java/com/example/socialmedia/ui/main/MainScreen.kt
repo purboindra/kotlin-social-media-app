@@ -94,15 +94,15 @@ fun MainScreen(
                 selectedItem = bottomNavbarIndex,
                 onSelectedItem = { index ->
                     mainViewModel.onSelectedBottomNavbar(index)
-                    navHostController.navigate(
-                        items[index].route
-                    ) {
-                        popUpTo(Screens.Home.route) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+//                    navHostController.navigate(
+//                        items[index].route
+//                    ) {
+//                        popUpTo(Screens.Home.route) {
+//                            saveState = true
+//                        }
+//                        launchSingleTop = true
+//                        restoreState = true
+//                    }
                 }
             )
         },
@@ -113,7 +113,13 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            MainNavHost(navController = navHostController)
+            when (bottomNavbarIndex) {
+                0 -> HomeScreen(navController = navHostController)
+                1 -> SearchScreen(navHostController)
+                2 -> AddPostScreen(navHostController = navHostController)
+                3 -> ReelsScreen(navHostController)
+                4 -> ProfileScreen(navHostController)
+            }
         }
     }
 }
