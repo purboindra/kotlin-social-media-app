@@ -67,6 +67,8 @@ androidx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx
 ktor-client = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+
 
 # COIL
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
