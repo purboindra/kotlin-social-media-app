@@ -13,6 +13,7 @@ import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.storage.storage
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.coroutines.flow.first
@@ -77,7 +78,9 @@ class PostDataSourceImpl(
             
             val rawPost = supabase.from("posts").select(
                 columns
-            )
+            ) {
+                order("created_at", Order.DESCENDING)
+            }
             val posts = rawPost.data
             val decodePost = Json.decodeFromString<List<PostModel>>(posts)
             
