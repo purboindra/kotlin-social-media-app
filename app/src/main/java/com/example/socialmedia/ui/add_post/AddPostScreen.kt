@@ -2,6 +2,7 @@ package com.example.socialmedia.ui.add_post
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.socialmedia.ui.components.GalleryPickerCompose
+import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,7 +80,9 @@ fun AddPostScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Choose photo first")
+                    Text("Choose photo first", modifier = Modifier.clickable {
+                        navHostController.navigate(Screens.CameraPreview.route)
+                    })
                 }
             }
             GalleryPickerCompose(postViewModel)

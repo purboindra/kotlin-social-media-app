@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
 import androidx.navigation.navArgument
 import com.example.socialmedia.ui.add_post.CreateCaptionScreen
+import com.example.socialmedia.ui.camera.CameraPreviewScreen
 import com.example.socialmedia.ui.home.HomeScreen
 import com.example.socialmedia.ui.login.LoginScreen
 import com.example.socialmedia.ui.main.MainScreen
@@ -55,6 +56,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Screens.Profile.route) {
                 ProfileScreen(navController)
+            }
+            composable(Screens.CameraPreview.route) {
+                CameraPreviewScreen(navController)
             }
             composable("create_caption?imageUri={imageUri}",
                 arguments = listOf(
