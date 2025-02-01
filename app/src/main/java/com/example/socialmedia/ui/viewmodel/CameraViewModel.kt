@@ -70,6 +70,18 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         val processCameraProvider =
             ProcessCameraProvider.awaitInstance(appContext)
         
+        cameraSelector =
+            if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                CameraSelector.DEFAULT_FRONT_CAMERA
+            } else {
+                CameraSelector.DEFAULT_BACK_CAMERA
+            }
+        processCameraProvider.unbindAll()
+        processCameraProvider.bindToLifecycle(
+            lifecycleOwner,
+            cameraSelector,
+            cameraPreviewUseCase
+        )
         
     }
     

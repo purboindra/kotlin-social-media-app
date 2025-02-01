@@ -33,6 +33,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +56,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -110,6 +112,7 @@ private fun CameraPreviewContent(
     LaunchedEffect(lifecycleOwner) {
         cameraViewModel.bindToCamera(context, lifecycleOwner)
     }
+    val coroutineScope = rememberCoroutineScope()
     
     var autoFocusRequest by remember { mutableStateOf(UUID.randomUUID() to Offset.Unspecified) }
     val autoFocustRequestId = autoFocusRequest.first
@@ -145,10 +148,18 @@ private fun CameraPreviewContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(18.dp).safeContentPadding()
+                .padding(18.dp)
+                .safeContentPadding()
         ) {
             IconButton(
-                onClick = {},
+                onClick = {
+                    coroutineScope.launch {
+                        cameraViewModel.switchCamera(
+                            context,
+                            lifecycleOwner
+                        )
+                    }
+                },
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
                 Icon(
