@@ -22,7 +22,9 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AppElevatedButton(
-            onClick = {},
+            onClick = {
+            
+            },
             text = "Logout"
         )
     }

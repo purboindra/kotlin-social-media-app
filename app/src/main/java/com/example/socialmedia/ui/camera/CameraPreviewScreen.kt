@@ -1,5 +1,7 @@
 package com.example.socialmedia.ui.camera
 
+import android.net.Uri
+import android.util.Log
 import androidx.camera.compose.CameraXViewfinder
 import androidx.camera.viewfinder.compose.MutableCoordinateTransformer
 import androidx.compose.animation.AnimatedVisibility
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Cameraswitch
 import androidx.compose.material3.Button
@@ -51,6 +54,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
 import com.example.socialmedia.ui.viewmodel.CameraViewModel
+import com.example.socialmedia.ui.viewmodel.PostViewModel
+import com.example.socialmedia.utils.FileHelper
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -58,15 +63,22 @@ import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
+import java.util.concurrent.Executors
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun CameraPreviewScreen(navController: NavHostController) {
+fun CameraPreviewScreen(
+    navController: NavHostController,
+    postViewModel: PostViewModel = hiltViewModel()
+) {
     val cameraPermissionState = rememberPermissionState(
         android.Manifest.permission.CAMERA
     )
     if (cameraPermissionState.status.isGranted) {
-        CameraPreviewContent()
+        CameraPreviewContent(
+            postViewModel = postViewModel,
+            navController = navController
+        )
     } else {
         Scaffold { paddingValues ->
             Column(
@@ -105,10 +117,13 @@ fun CameraPreviewScreen(navController: NavHostController) {
 @Composable
 private fun CameraPreviewContent(
     cameraViewModel: CameraViewModel = hiltViewModel(),
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    postViewModel: PostViewModel,
+    navController: NavHostController,
 ) {
     val surfaceRequest by cameraViewModel.surfaceRequest.collectAsState()
     val context = LocalContext.current
+    
     LaunchedEffect(lifecycleOwner) {
         cameraViewModel.bindToCamera(context, lifecycleOwner)
     }
@@ -121,10 +136,25 @@ private fun CameraPreviewContent(
         autoFocusRequest.second
     }
     
+    val executed = remember {
+        Executors.newSingleThreadExecutor()
+    }
+    
+    var capturedImageUrl by remember {
+        mutableStateOf<Uri?>(null)
+    }
+    
     if (showAutoFocusIndicator) {
         LaunchedEffect(autoFocustRequestId) {
             delay(1000)
             autoFocusRequest = autoFocustRequestId to Offset.Unspecified
+        }
+    }
+    
+    LaunchedEffect(capturedImageUrl) {
+       
+        if (capturedImageUrl != null) {
+            navController.navigate("create_caption?imageUri=${capturedImageUrl.toString()}")
         }
     }
     
@@ -160,12 +190,49 @@ private fun CameraPreviewContent(
                         )
                     }
                 },
-                modifier = Modifier.align(Alignment.BottomCenter)
+                modifier = Modifier.align(Alignment.BottomEnd)
             ) {
                 Icon(
                     Icons.Outlined.Cameraswitch,
                     contentDescription = "Camera Switch",
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp),
+                    tint = Color.White,
+                )
+            }
+        }
+        
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(18.dp)
+                .safeContentPadding()
+        ) {
+            IconButton(
+                onClick = {
+                    cameraViewModel.imageCapture?.let { imgCapture ->
+                        FileHelper.takePicture(
+                            imageCapture = imgCapture,
+                            context = context,
+                            onSave = {
+                                capturedImageUrl = it
+                                postViewModel.selectImage(it)
+                            },
+                            onError = {
+                                Log.e(
+                                    "takePicture",
+                                    "Image capture failed: ${it.message}"
+                                )
+                            }
+                        )
+                    }
+                },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+                Icon(
+                    Icons.Outlined.Camera,
+                    contentDescription = "Take Picture",
+                    modifier = Modifier.size(48.dp),
+                    tint = Color.White,
                 )
             }
         }
