@@ -2,15 +2,21 @@ package com.example.socialmedia.ui.camera
 
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.camera.compose.CameraXViewfinder
 import androidx.camera.viewfinder.compose.MutableCoordinateTransformer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -25,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Cameraswitch
+import androidx.compose.material.icons.outlined.Videocam
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,6 +53,7 @@ import androidx.compose.ui.geometry.takeOrElse
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
@@ -56,11 +64,13 @@ import androidx.navigation.NavHostController
 import com.example.socialmedia.ui.viewmodel.CameraViewModel
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.FileHelper
+import com.example.socialmedia.utils.HorizontalSpacer
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -124,9 +134,6 @@ private fun CameraPreviewContent(
     val surfaceRequest by cameraViewModel.surfaceRequest.collectAsState()
     val context = LocalContext.current
     
-    LaunchedEffect(lifecycleOwner) {
-        cameraViewModel.bindToCamera(context, lifecycleOwner)
-    }
     val coroutineScope = rememberCoroutineScope()
     
     var autoFocusRequest by remember { mutableStateOf(UUID.randomUUID() to Offset.Unspecified) }
@@ -136,6 +143,13 @@ private fun CameraPreviewContent(
         autoFocusRequest.second
     }
     
+    var isRecording by remember {
+        mutableStateOf(false)
+    }
+    
+    val recordedVideoUri by cameraViewModel.recordedVideoUri.collectAsState()
+    val videoDuration by cameraViewModel.videoDuration.collectAsState()
+    
     val executed = remember {
         Executors.newSingleThreadExecutor()
     }
@@ -144,6 +158,10 @@ private fun CameraPreviewContent(
         mutableStateOf<Uri?>(null)
     }
     
+    val interactionSource = remember { MutableInteractionSource() }
+    
+    val viewConfiguration = LocalViewConfiguration.current
+    
     if (showAutoFocusIndicator) {
         LaunchedEffect(autoFocustRequestId) {
             delay(1000)
@@ -151,12 +169,41 @@ private fun CameraPreviewContent(
         }
     }
     
+    LaunchedEffect(lifecycleOwner) {
+        cameraViewModel.bindToCamera(context, lifecycleOwner)
+    }
+    
     LaunchedEffect(capturedImageUrl) {
-       
+        
         if (capturedImageUrl != null) {
             navController.navigate("create_caption?imageUri=${capturedImageUrl.toString()}")
         }
     }
+    
+    LaunchedEffect(interactionSource) {
+        var isLongClick = false
+        
+        interactionSource.interactions.collectLatest { interaction ->
+            when (interaction) {
+                is PressInteraction.Press -> {
+                    isLongClick = true
+                    Toast.makeText(context, "Long click", Toast.LENGTH_SHORT)
+                        .show()
+                    cameraViewModel.captureVideo(context)
+                    isRecording = true
+                }
+                
+                is PressInteraction.Release -> {
+                    isLongClick = false
+                    isRecording = false
+                    Toast.makeText(context, "click", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                
+            }
+        }
+    }
+    
     
     surfaceRequest?.let { request ->
         val coordinateTransformer = remember {
@@ -201,39 +248,71 @@ private fun CameraPreviewContent(
             }
         }
         
+        recordedVideoUri?.let {
+            Text("Video saved at: $it", color = Color.White)
+        }
+        
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp)
+                .safeContentPadding()
+        ) {
+            Text(if (isRecording) "🛑 Stop Recording: $videoDuration" else "🎥 Start Recording")
+            
+        }
+        
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(18.dp)
                 .safeContentPadding()
         ) {
-            IconButton(
-                onClick = {
-                    cameraViewModel.imageCapture?.let { imgCapture ->
-                        FileHelper.takePicture(
-                            imageCapture = imgCapture,
-                            context = context,
-                            onSave = {
-                                capturedImageUrl = it
-                                postViewModel.selectImage(it)
-                            },
-                            onError = {
-                                Log.e(
-                                    "takePicture",
-                                    "Image capture failed: ${it.message}"
-                                )
-                            }
-                        )
-                    }
-                },
+            Row(
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                Icon(
-                    Icons.Outlined.Camera,
-                    contentDescription = "Take Picture",
-                    modifier = Modifier.size(48.dp),
-                    tint = Color.White,
-                )
+                IconButton(
+                    onClick = {
+                        cameraViewModel.imageCapture?.let { imgCapture ->
+                            FileHelper.takePicture(
+                                imageCapture = imgCapture,
+                                context = context,
+                                onSave = {
+                                    capturedImageUrl = it
+                                    postViewModel.selectImage(it)
+                                },
+                                onError = {
+                                    Log.e(
+                                        "takePicture",
+                                        "Image capture failed: ${it.message}"
+                                    )
+                                }
+                            )
+                        }
+                    },
+                ) {
+                    Icon(
+                        Icons.Outlined.Camera,
+                        contentDescription = "Take Picture",
+                        modifier = Modifier.size(48.dp),
+                        tint = Color.White,
+                    )
+                }
+                10.HorizontalSpacer()
+                
+                Button(
+                    onClick = {},
+                    interactionSource = interactionSource
+                ) {
+                    Icon(
+                        Icons.Outlined.Videocam,
+                        contentDescription = "Take Video",
+                        modifier = Modifier
+                            .size(48.dp),
+                        tint = Color.White,
+                    )
+                }
+                
             }
         }
         
