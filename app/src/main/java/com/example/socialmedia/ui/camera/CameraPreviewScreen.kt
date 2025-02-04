@@ -174,7 +174,6 @@ private fun CameraPreviewContent(
     }
     
     LaunchedEffect(capturedImageUrl) {
-        
         if (capturedImageUrl != null) {
             navController.navigate("create_caption?imageUri=${capturedImageUrl.toString()}")
         }
