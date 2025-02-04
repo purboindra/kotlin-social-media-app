@@ -7,6 +7,8 @@ import android.content.Context
 import android.graphics.Camera
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
@@ -48,20 +50,13 @@ object FileHelper {
         onDurationUpdate: (Long) -> Unit,
         context: Context,
         videoCapture: VideoCapture<Recorder>?,
-        recording: Recording?,
+        recording: Recording?
     ): Recording? {
-        
-        Log.d(
-            "VideoCapture",
-            "Capturing video: ${videoCapture == null} ${recording == null}"
-        )
-        
         if (videoCapture == null) return null
         
-        if (recording != null) {
-            recording.stop()
-            return null
-        }
+        // If a recording is in progress, stop it and return null
+        recording?.stop()
+        if (recording != null) return null
         
         val name = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
             .format(System.currentTimeMillis())
@@ -78,68 +73,64 @@ object FileHelper {
         }
         
         val mediaStoreOutputOptions = MediaStoreOutputOptions.Builder(
-            context.contentResolver, MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-        ).setContentValues(contentValues).build()
+            context.contentResolver,
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        ).setContentValues(contentValues).setDurationLimitMillis(15000).build()
         
         val startTime = System.currentTimeMillis()
         
-        val newRecording = videoCapture.output.prepareRecording(
-            context,
-            mediaStoreOutputOptions
-        ).apply {
-            if (PermissionChecker.checkSelfPermission(
-                    context,
-                    Manifest.permission.RECORD_AUDIO
-                ) == PermissionChecker.PERMISSION_GRANTED
-            ) {
-                withAudioEnabled()
-            }
-        }.start(
-            ContextCompat.getMainExecutor(context)
-        ) { recordEvent ->
-            Log.d("VideoCapture", "Video capture output event: $recordEvent")
-            when (recordEvent) {
-                is VideoRecordEvent.Start -> {
-                    Toast.makeText(
+        // Start the recording and handle events
+        val newRecording = videoCapture.output
+            .prepareRecording(context, mediaStoreOutputOptions)
+            .apply {
+                if (PermissionChecker.checkSelfPermission(
                         context,
-                        "Recording Started",
-                        Toast.LENGTH_LONG
-                    ).show()
+                        Manifest.permission.RECORD_AUDIO
+                    ) == PermissionChecker.PERMISSION_GRANTED
+                ) {
+                    withAudioEnabled()
                 }
-                
-                is VideoRecordEvent.Status -> {
-                    val durationMills = System.currentTimeMillis() - startTime
-                    onDurationUpdate(durationMills / 1000)
-                }
-                
-                is VideoRecordEvent.Finalize -> {
-                    if (!recordEvent.hasError()) {
-                        val savedUri =
-                            recordEvent.outputResults.outputUri
-                        onVideoSaved(savedUri)
+            }
+            .start(ContextCompat.getMainExecutor(context)) { recordEvent ->
+                when (recordEvent) {
+                    is VideoRecordEvent.Start -> {
                         Toast.makeText(
                             context,
-                            "Video saved to $savedUri",
+                            "Recording Started",
                             Toast.LENGTH_LONG
                         ).show()
-                    } else {
-                        Toast.makeText(
-                            context,
-                            "Video capture failed: ${recordEvent.error}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        Log.e(
-                            "VideoCapture",
-                            "Video capture failed: ${recordEvent.error}"
-                        )
+                    }
+                    
+                    is VideoRecordEvent.Status -> {
+                        val durationMillis =
+                            System.currentTimeMillis() - startTime
+                        val seconds = (durationMillis / 1000).toInt()
+                        onDurationUpdate(seconds.toLong())
+                    }
+                    
+                    is VideoRecordEvent.Finalize -> {
+                        if (!recordEvent.hasError()) {
+                            val savedUri = recordEvent.outputResults.outputUri
+                            onVideoSaved(savedUri)
+                            Toast.makeText(
+                                context,
+                                "Video saved to $savedUri",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Video capture failed: ${recordEvent.error}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             }
-        }
         
         return newRecording
-        
     }
+    
     
     fun takePicture(
         imageCapture: ImageCapture,
