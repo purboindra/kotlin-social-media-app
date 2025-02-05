@@ -138,11 +138,9 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         cameraControl = camera.cameraControl
     }
     
-    fun captureVideo(context: Context) {
+    fun captureVideo(context: Context, onVideoSaved: (Uri) -> Unit) {
         recording = FileHelper.captureVideo(
-            onVideoSaved = { uri ->
-                _recordedVideoUri.update { uri }
-            },
+            onVideoSaved = onVideoSaved,
             onDurationUpdate = { duration ->
                 _videoDuration.value = duration
             },

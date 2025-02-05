@@ -1,6 +1,7 @@
 package com.example.socialmedia.ui.add_post
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,6 +49,7 @@ import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.theme.BluePrimary
 import com.example.socialmedia.ui.theme.GrayDark
 import com.example.socialmedia.ui.viewmodel.PostViewModel
+import com.example.socialmedia.ui.viewmodel.SharedFileViewModel
 import com.example.socialmedia.ui.viewmodel.SnackbarViewModel
 import com.example.socialmedia.utils.VerticalSpacer
 import kotlinx.coroutines.launch
@@ -56,12 +58,15 @@ import kotlinx.coroutines.launch
 @Composable
 fun CreateCaptionScreen(
     navHostController: NavHostController,
+    sharedFileViewModel: SharedFileViewModel,
     postViewModel: PostViewModel = hiltViewModel(),
     snackbarViewModel: SnackbarViewModel = hiltViewModel(),
 ) {
     
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    
+    val videoUri by sharedFileViewModel.videoUri.collectAsState()
     
     val imageUri =
         navHostController.currentBackStackEntry?.arguments?.getString("imageUri")
@@ -70,6 +75,8 @@ fun CreateCaptionScreen(
     
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarConfig by snackbarViewModel.snackbarState.collectAsState()
+    
+    Log.d("Create Caption Screen","Video available: ${videoUri?.path}")
     
     LaunchedEffect(createPostState) {
         when (createPostState) {

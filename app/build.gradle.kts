@@ -96,6 +96,11 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.material.icons.extended)
     
+    // MEDIA
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer.dash)
+    
     // CAMERA
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.compose)

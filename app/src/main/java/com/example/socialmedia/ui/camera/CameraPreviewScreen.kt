@@ -63,6 +63,7 @@ import androidx.navigation.NavHostController
 import com.example.socialmedia.ui.theme.GrayPrimary
 import com.example.socialmedia.ui.viewmodel.CameraViewModel
 import com.example.socialmedia.ui.viewmodel.PostViewModel
+import com.example.socialmedia.ui.viewmodel.SharedFileViewModel
 import com.example.socialmedia.utils.FileHelper
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -79,6 +80,8 @@ import java.util.concurrent.Executors
 @Composable
 fun CameraPreviewScreen(
     navController: NavHostController,
+    cameraViewModel: CameraViewModel = hiltViewModel(),
+    sharedFileViewModel: SharedFileViewModel,
     postViewModel: PostViewModel = hiltViewModel()
 ) {
     val cameraPermissionState = rememberPermissionState(
@@ -87,7 +90,9 @@ fun CameraPreviewScreen(
     if (cameraPermissionState.status.isGranted) {
         CameraPreviewContent(
             postViewModel = postViewModel,
-            navController = navController
+            navController = navController,
+            cameraViewModel = cameraViewModel,
+            sharedFileViewModel = sharedFileViewModel,
         )
     } else {
         Scaffold { paddingValues ->
@@ -126,7 +131,8 @@ fun CameraPreviewScreen(
 
 @Composable
 private fun CameraPreviewContent(
-    cameraViewModel: CameraViewModel = hiltViewModel(),
+    cameraViewModel: CameraViewModel,
+    sharedFileViewModel: SharedFileViewModel,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     postViewModel: PostViewModel,
     navController: NavHostController,
@@ -188,7 +194,9 @@ private fun CameraPreviewContent(
                     isLongClick = true
                     Toast.makeText(context, "Long click", Toast.LENGTH_SHORT)
                         .show()
-                    cameraViewModel.captureVideo(context)
+                    cameraViewModel.captureVideo(context) { video ->
+                        sharedFileViewModel.setVideouri(video)
+                    }
                     isRecording = true
                 }
                 

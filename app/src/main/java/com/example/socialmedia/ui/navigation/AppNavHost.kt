@@ -25,9 +25,11 @@ import com.example.socialmedia.ui.reels.ReelsScreen
 import com.example.socialmedia.ui.register.RegisterScreen
 import com.example.socialmedia.ui.search.SearchScreen
 import com.example.socialmedia.ui.splash.SplashScreen
+import com.example.socialmedia.ui.viewmodel.SharedFileViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
+    
     
     val navGraph = remember(navController) {
         navController.createGraph(
@@ -58,7 +60,11 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 ProfileScreen(navController)
             }
             composable(Screens.CameraPreview.route) {
-                CameraPreviewScreen(navController)
+                val sharedFileViewModel: SharedFileViewModel = hiltViewModel()
+                CameraPreviewScreen(
+                    navController,
+                    sharedFileViewModel = sharedFileViewModel
+                )
             }
             composable("create_caption?imageUri={imageUri}",
                 arguments = listOf(
@@ -67,9 +73,10 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     }
                 )
             ) {
+                val sharedFileViewModel: SharedFileViewModel = hiltViewModel()
                 BackHandler(true) {
                 }
-                CreateCaptionScreen(navController)
+                CreateCaptionScreen(navController, sharedFileViewModel)
             }
         }
     }
