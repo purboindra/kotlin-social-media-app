@@ -200,9 +200,10 @@ private fun CameraPreviewContent(
                     isRecording = true
                 }
                 
-                is PressInteraction.Release -> {
+                is PressInteraction.Release, is PressInteraction.Cancel -> {
                     isLongClick = false
                     isRecording = false
+                    cameraViewModel.stopRecording()
                     Toast.makeText(context, "click", Toast.LENGTH_SHORT)
                         .show()
                 }
