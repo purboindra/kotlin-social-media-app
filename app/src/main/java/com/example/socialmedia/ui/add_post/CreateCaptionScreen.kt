@@ -32,12 +32,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+
 import androidx.navigation.NavHostController
 import coil3.compose.rememberAsyncImagePainter
 import com.example.socialmedia.data.model.State
@@ -54,6 +56,13 @@ import com.example.socialmedia.ui.viewmodel.SnackbarViewModel
 import com.example.socialmedia.utils.VerticalSpacer
 import kotlinx.coroutines.launch
 
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import com.example.socialmedia.ui.components.PlayerSurface
+import com.example.socialmedia.ui.components.SURFACE_TYPE_SURFACE_VIEW
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateCaptionScreen(
@@ -66,17 +75,31 @@ fun CreateCaptionScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     
-    val videoUri by sharedFileViewModel.videoUri.collectAsState()
     
     val imageUri =
         navHostController.currentBackStackEntry?.arguments?.getString("imageUri")
+    val videoUri =
+        navHostController.currentBackStackEntry?.arguments?.getString("videoUri")
     val caption by postViewModel.caption.collectAsState()
     val createPostState by postViewModel.createPostState.collectAsState()
     
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarConfig by snackbarViewModel.snackbarState.collectAsState()
     
-    Log.d("Create Caption Screen","Video available: ${videoUri?.path}")
+    LaunchedEffect(Unit) {
+        Log.d("Create Caption Screen", "Video available: $videoUri")
+    }
+    
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            videoUri?.let {
+                setMediaItem(MediaItem.fromUri(it))
+                prepare()
+                playWhenReady = true
+                repeatMode = Player.REPEAT_MODE_ONE
+            }
+        }
+    }
     
     LaunchedEffect(createPostState) {
         when (createPostState) {
@@ -149,6 +172,13 @@ fun CreateCaptionScreen(
     ) { paddingValues ->
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
             item {
+                PlayerSurface(
+                    player = exoPlayer,
+                    surfaceType = SURFACE_TYPE_SURFACE_VIEW,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp)
+                )
                 imageUri?.let {
                     Box(
                         modifier = Modifier

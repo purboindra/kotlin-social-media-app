@@ -1,5 +1,6 @@
 package com.example.socialmedia.ui.navigation
 
+import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
@@ -29,8 +30,6 @@ import com.example.socialmedia.ui.viewmodel.SharedFileViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
-    
-    
     val navGraph = remember(navController) {
         navController.createGraph(
             startDestination = Screens.Splash.route
@@ -61,15 +60,25 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Screens.CameraPreview.route) {
                 val sharedFileViewModel: SharedFileViewModel = hiltViewModel()
+                
                 CameraPreviewScreen(
                     navController,
                     sharedFileViewModel = sharedFileViewModel
                 )
             }
-            composable("create_caption?imageUri={imageUri}",
+            composable("create_caption?imageUri={imageUri}&videoUri={videoUri}",
                 arguments = listOf(
                     navArgument("imageUri") {
                         type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                        
+                    },
+                    navArgument("videoUri") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                        
                     }
                 )
             ) {
@@ -77,6 +86,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 BackHandler(true) {
                 }
                 CreateCaptionScreen(navController, sharedFileViewModel)
+                
             }
         }
     }

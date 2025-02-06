@@ -7,6 +7,7 @@ import android.content.Context
 import android.graphics.Camera
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
@@ -17,6 +18,7 @@ import androidx.camera.core.CameraExecutor
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
+import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
@@ -58,30 +60,32 @@ object FileHelper {
         recording?.stop()
         if (recording != null) return null
         
-        val name = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
-            .format(System.currentTimeMillis())
-        
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(
-                    MediaStore.Video.Media.RELATIVE_PATH,
-                    "Movies/CameraX-Video"
-                )
-            }
+        val videoDir = File(
+            context.getExternalFilesDir(Environment.DIRECTORY_MOVIES),
+            "CameraX-Video"
+        )
+        if (!videoDir.exists()) {
+            videoDir.mkdirs()
         }
         
-        val mediaStoreOutputOptions = MediaStoreOutputOptions.Builder(
-            context.contentResolver,
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-        ).setContentValues(contentValues).setDurationLimitMillis(15000).build()
+        val videoFile = File.createTempFile(
+            SimpleDateFormat(
+                "yyyyMMdd_HHmmss", Locale.US
+            ).format(
+                System.currentTimeMillis()
+            ),
+            ".mp4",
+            videoDir,
+        )
+        
+        val fileOutputOptions = FileOutputOptions.Builder(
+            videoFile
+        ).build()
         
         val startTime = System.currentTimeMillis()
         
-        // Start the recording and handle events
         val newRecording = videoCapture.output
-            .prepareRecording(context, mediaStoreOutputOptions)
+            .prepareRecording(context, fileOutputOptions)
             .apply {
                 if (PermissionChecker.checkSelfPermission(
                         context,
@@ -123,6 +127,7 @@ object FileHelper {
                                 "Video capture failed: ${recordEvent.error}",
                                 Toast.LENGTH_LONG
                             ).show()
+                            return@start
                         }
                     }
                 }

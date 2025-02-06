@@ -195,7 +195,10 @@ private fun CameraPreviewContent(
                     Toast.makeText(context, "Long click", Toast.LENGTH_SHORT)
                         .show()
                     cameraViewModel.captureVideo(context) { video ->
+                        Log.d("Camera Preview Screen", "Video saved at: $video")
+                        navController.navigate("create_caption?videoUri=${video.toString()}")
                         sharedFileViewModel.setVideouri(video)
+                        cameraViewModel.stopRecording()
                     }
                     isRecording = true
                 }
