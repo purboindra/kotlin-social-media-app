@@ -163,4 +163,8 @@ class CameraViewModel @Inject constructor() : ViewModel() {
             cameraControl?.startFocusAndMetering(meteringAction)
         }
     }
+    
+    fun resetVideoDuration() {
+        _videoDuration.value = 0
+    }
 }
