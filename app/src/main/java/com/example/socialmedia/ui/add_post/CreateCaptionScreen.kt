@@ -172,21 +172,26 @@ fun CreateCaptionScreen(
     ) { paddingValues ->
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
             item {
-                PlayerSurface(
-                    player = exoPlayer,
-                    surfaceType = SURFACE_TYPE_SURFACE_VIEW,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(320.dp)
-                )
-                imageUri?.let {
+                if (videoUri != null)
+                    PlayerSurface(
+                        player = exoPlayer,
+                        surfaceType = SURFACE_TYPE_SURFACE_VIEW,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(320.dp)
+                    )
+                if (imageUri != null)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(320.dp)
                     ) {
                         Image(
-                            painter = rememberAsyncImagePainter(Uri.parse(it)),
+                            painter = rememberAsyncImagePainter(
+                                Uri.parse(
+                                    imageUri
+                                )
+                            ),
                             contentDescription = "Image",
                             modifier = Modifier
                                 .fillMaxSize()
@@ -194,7 +199,6 @@ fun CreateCaptionScreen(
                                 .clip(RoundedCornerShape(8.dp)),
                         )
                     }
-                }
                 TextField(
                     value = caption,
                     onValueChange = { postViewModel.onChangeCaption(it) },

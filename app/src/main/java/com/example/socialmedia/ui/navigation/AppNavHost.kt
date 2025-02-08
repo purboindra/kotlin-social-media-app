@@ -26,6 +26,7 @@ import com.example.socialmedia.ui.reels.ReelsScreen
 import com.example.socialmedia.ui.register.RegisterScreen
 import com.example.socialmedia.ui.search.SearchScreen
 import com.example.socialmedia.ui.splash.SplashScreen
+import com.example.socialmedia.ui.story.StoryVideoScreen
 import com.example.socialmedia.ui.viewmodel.SharedFileViewModel
 
 @Composable
@@ -65,6 +66,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     navController,
                     sharedFileViewModel = sharedFileViewModel
                 )
+            }
+            composable(Screens.StoryVideoScreen.route) {
+                StoryVideoScreen()
             }
             composable("create_caption?imageUri={imageUri}&videoUri={videoUri}",
                 arguments = listOf(
