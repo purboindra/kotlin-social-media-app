@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Message
@@ -33,6 +35,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -80,9 +83,9 @@ fun PostCardCompose(
             verticalAlignment = Alignment.CenterVertically
         ) {
             PostAuthorCompose(
-                userName =postModel.user.username?:"-" ,
-                profilePicture =postModel.user.profilePicture?:"" ,
-                fullName = postModel.user.fullName?:"-",
+                userName = postModel.user.username ?: "-",
+                profilePicture = postModel.user.profilePicture ?: "",
+                fullName = postModel.user.fullName ?: "-",
             )
             MoreButton()
         }
@@ -155,6 +158,25 @@ fun PostCardCompose(
             ExpandableCaptionCompose(
                 text = postModel.caption,
             )
+            postModel.comments?.let {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) {
+                    LazyColumn {
+                        items(postModel.comments, key = { it.id })
+                        { item ->
+                            CommentCompose(
+                                comment = item.comment,
+                                author = item.user.fullName ?: "-",
+                                imageUrl = item.user.profilePicture ?: "",
+                            )
+                        }
+                    }
+                }
+            }
+            
             CommentInput(
                 postViewModel,
                 id = postModel.id
