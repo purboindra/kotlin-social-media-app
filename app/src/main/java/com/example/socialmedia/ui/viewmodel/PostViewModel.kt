@@ -95,7 +95,6 @@ class PostViewModel @Inject constructor(
         }
     }
     
-    
     fun fetchAllLikes() = viewModelScope.launch {
         postUseCase.fetchAllLikes().collectLatest { state ->
             _likesState.value = state

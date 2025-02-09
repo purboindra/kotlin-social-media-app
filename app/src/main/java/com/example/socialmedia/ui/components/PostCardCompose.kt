@@ -66,8 +66,6 @@ fun PostCardCompose(
     postViewModel: PostViewModel,
 ) {
     
-    val context = LocalContext.current
-    
     Column(
         modifier = Modifier.animateContentSize()
     ) {
