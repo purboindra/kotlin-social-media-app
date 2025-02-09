@@ -13,8 +13,8 @@ interface PostDatasource {
     ): Result<Boolean>
     
     suspend fun fetchAllPosts(): Result<List<PostModel>>
-    
     suspend fun createLike(id: String): Result<Boolean>
     suspend fun deleteLike(id: String): Result<Boolean>
     suspend fun fetchAllLikes(): Result<List<LikeModel>>
+    suspend fun createComment(id: String, comment: String): Result<Boolean>
 }

@@ -25,4 +25,6 @@ data class PostModel(
     @SerialName("created_at")
     val createdAt: Instant,
     val hasLike:Boolean?=false,
+    @SerialName("comments")
+    val comments: List<CommentModel>? = null
 )

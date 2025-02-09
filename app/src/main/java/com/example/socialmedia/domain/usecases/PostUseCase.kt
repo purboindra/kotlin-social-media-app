@@ -37,4 +37,11 @@ class PostUseCase(private val postRepository: PostRepository) {
     suspend fun fetchAllLikes(): Flow<State<List<LikeModel>>> {
         return postRepository.fetchAllLikes()
     }
+    
+    suspend fun createComment(
+        id: String,
+        comment: String
+    ): Flow<State<Boolean>> {
+        return postRepository.createComment(id, comment)
+    }
 }

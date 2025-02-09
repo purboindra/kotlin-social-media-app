@@ -87,4 +87,21 @@ class PostRepositoryImpl(
             throw e
         }
     }
+    
+    override suspend fun createComment(
+        id: String,
+        comment: String
+    ): Flow<State<Boolean>> = flow {
+        try {
+            
+            val result = postDataSource.createComment(id, comment)
+            result.onSuccess {
+                emit(State.Success(it))
+            }.onFailure {
+                emit(State.Failure(it))
+            }
+        } catch (e: Exception) {
+            throw e
+        }
+    }
 }

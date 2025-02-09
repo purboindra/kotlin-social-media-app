@@ -68,6 +68,15 @@ class PostViewModel @Inject constructor(
         }
     }
     
+    fun sendComment(id: String) = viewModelScope.launch {
+        postUseCase.createComment(
+            id,
+            comment = _commentText.value
+        ).collectLatest { state ->
+            Log.d("PostViewModel", "createComment: $state")
+        }
+    }
+    
     fun invokeLike(id: String) = viewModelScope.launch {
         val currentState = _postsState.value
         if (currentState is State.Success) {

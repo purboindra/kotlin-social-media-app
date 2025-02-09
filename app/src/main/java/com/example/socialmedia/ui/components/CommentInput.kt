@@ -26,6 +26,7 @@ import com.example.socialmedia.ui.viewmodel.PostViewModel
 @Composable
 fun CommentInput(
     postViewModel: PostViewModel,
+    id: String,
 ) {
     
     val commentText by postViewModel.commentText.collectAsState()
@@ -54,12 +55,12 @@ fun CommentInput(
             12.dp
         ),
         modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Red),
-        
+            .fillMaxWidth(),
         suffix = {
             IconButton(
-                onClick = {}
+                onClick = {
+                    postViewModel.sendComment(id = id)
+                }
             ) {
                 Icon(
                     Icons.AutoMirrored.Outlined.Send,

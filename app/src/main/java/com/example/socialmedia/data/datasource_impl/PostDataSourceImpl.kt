@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.socialmedia.data.datasource.FileDatasource
 import com.example.socialmedia.data.datasource.PostDatasource
 import com.example.socialmedia.data.db.local.AppDataStore
+import com.example.socialmedia.data.model.CreateCommentModel
 import com.example.socialmedia.data.model.CreatePostModel
 import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
@@ -72,7 +73,18 @@ class PostDataSourceImpl(
     image_key,
     image_path,
     tagged_location,
-    tagged_users
+    tagged_users,
+    comments (
+          id,
+          comment,
+          user(
+             id,
+      full_name,
+      profile_picture
+          ),
+          post_id,
+          created_at
+    )
     """.trimIndent()
             )
             
@@ -81,7 +93,9 @@ class PostDataSourceImpl(
             ) {
                 order("created_at", Order.DESCENDING)
             }
+            
             val posts = rawPost.data
+            
             val decodePost = Json.decodeFromString<List<PostModel>>(posts)
             
             val bucket = supabase.storage.from("posts")
@@ -194,8 +208,6 @@ class PostDataSourceImpl(
     override suspend fun fetchAllLikes(): Result<List<LikeModel>> {
         try {
             
-            datastore.userId.first() ?: throw Exception("User ID not found")
-            
             val rawLikes =
                 supabase.from("likes").select(columns = Columns.raw("*"))
             
@@ -205,6 +217,31 @@ class PostDataSourceImpl(
             
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error fetch all likes", e)
+            throw e
+        }
+    }
+    
+    override suspend fun createComment(
+        id: String,
+        comment: String,
+    ): Result<Boolean> {
+        try {
+            
+            val userId =
+                datastore.userId.first() ?: throw Exception("User ID not found")
+            
+            val createCommentModel = CreateCommentModel(
+                postId = id,
+                comment = comment,
+                userId = userId,
+            )
+            
+            supabase.from("comments").insert(createCommentModel)
+            
+            return Result.success(true)
+            
+        } catch (e: Exception) {
+            Log.e("PostDataSourceImpl", "Error create comment", e)
             throw e
         }
     }

@@ -21,4 +21,6 @@ interface PostRepository {
     suspend fun deleteLike(id: String): Flow<State<Boolean>>
     
     suspend fun fetchAllLikes(): Flow<State<List<LikeModel>>>
+    
+    suspend fun createComment(id: String, comment: String): Flow<State<Boolean>>
 }

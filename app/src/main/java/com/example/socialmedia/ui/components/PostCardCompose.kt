@@ -156,7 +156,8 @@ fun PostCardCompose(
                 text = postModel.caption,
             )
             CommentInput(
-                postViewModel
+                postViewModel,
+                id = postModel.id
             )
         }
     }
