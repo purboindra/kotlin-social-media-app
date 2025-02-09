@@ -56,7 +56,6 @@ object FileHelper {
     ): Recording? {
         if (videoCapture == null) return null
         
-        // If a recording is in progress, stop it and return null
         recording?.stop()
         if (recording != null) return null
         
@@ -163,7 +162,6 @@ object FileHelper {
                 )
             }
         }
-        
         
         val outputFileOptions = ImageCapture.OutputFileOptions.Builder(
             photoFile,

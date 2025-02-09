@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
@@ -27,15 +28,16 @@ fun AppOutlinedTextField(
     query: String,
     onValueChange: (query: String) -> Unit,
     modifier: Modifier? = null,
-    roundedCornerShape: Dp? = null,
+    roundedCornerShape: Dp = 12.dp,
     colors: TextFieldColors? = null,
     placeholder: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
-    placeholderText: String? = null,
+    placeholderText: String = "Your placeholder",
     visualTransformation: VisualTransformation? = null,
     isError: Boolean? = null,
     validator: ((String) -> String?)? = null,
+    shape: Shape? = null,
 ) {
     
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -48,14 +50,15 @@ fun AppOutlinedTextField(
                 errorMessage = validator?.invoke(it)
             },
             modifier = modifier ?: Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(roundedCornerShape ?: 12.dp),
+            shape = shape ?: RoundedCornerShape(roundedCornerShape),
             colors = colors ?: OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = BluePrimary,
                 unfocusedBorderColor = GrayPrimary,
             ),
+            singleLine = true,
             placeholder = placeholder ?: {
                 Text(
-                    placeholderText ?: "Your placeholder",
+                    placeholderText ,
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = GrayPrimary,
                     )

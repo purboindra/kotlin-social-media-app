@@ -75,7 +75,6 @@ fun HomeScreen(
                         PostCardCompose(
                             horizontalPadding,
                             item,
-                            context = context,
                             postViewModel = postViewModel
                         )
                     }

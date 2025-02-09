@@ -47,6 +47,13 @@ class PostViewModel @Inject constructor(
     private val _caption = MutableStateFlow("")
     val caption = _caption.asStateFlow()
     
+    private val _commentText = MutableStateFlow("")
+    val commentText = _commentText.asStateFlow()
+    
+    fun onChangeComment(comment: String) {
+        _commentText.value = comment
+    }
+    
     fun selectImage(uri: Uri) {
         _image.value = uri
     }
