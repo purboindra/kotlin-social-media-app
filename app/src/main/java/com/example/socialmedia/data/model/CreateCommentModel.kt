@@ -11,6 +11,6 @@ data class CreateCommentModel(
     val comment: String,
     @SerialName("post_id")
     val postId: String,
-    @SerialName("user_id")
+    @SerialName("user")
     val userId: String
 )

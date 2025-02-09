@@ -166,11 +166,6 @@ class PostDataSourceImpl(
             val userId =
                 datastore.userId.first() ?: throw Exception("User ID not found")
             
-            Log.d(
-                "PostDataSourceImpl",
-                "Creating like for user $userId == $id"
-            )
-            
             val like = LikeModel(
                 userId = userId,
                 postId = id,

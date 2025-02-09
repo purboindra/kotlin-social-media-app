@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.socialmedia.data.db.local.AppDataStore
+import com.example.socialmedia.data.model.CommentModel
 import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.State
@@ -13,10 +15,12 @@ import com.example.socialmedia.data.model.UploadImageModel
 import com.example.socialmedia.domain.usecases.FileUseCase
 import com.example.socialmedia.domain.usecases.PostUseCase
 import com.example.socialmedia.utils.FileHelper
+import com.example.socialmedia.utils.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,6 +29,7 @@ import javax.inject.Inject
 class PostViewModel @Inject constructor(
     private val fileUseCase: FileUseCase,
     private val postUseCase: PostUseCase,
+    private val appDataStore: AppDataStore,
 ) : ViewModel() {
     
     private val _createPostState = MutableStateFlow<State<Boolean>>(State.Idle)
@@ -69,12 +74,47 @@ class PostViewModel @Inject constructor(
     }
     
     fun sendComment(id: String) = viewModelScope.launch {
+        val currentState = _postsState.value
+        
+        val token = appDataStore.accessToken.firstOrNull() ?: "No Token"
+        val user = TokenManager.getUserFromToken(token)
+        
         postUseCase.createComment(
             id,
             comment = _commentText.value
         ).collectLatest { state ->
             Log.d("PostViewModel", "createComment: $state")
+            if (currentState is State.Success) {
+                val updatedPosts = currentState.data.map { post ->
+                    if (post.id == id) {
+                        
+                        if (user == null) return@map post
+                        
+                        val comment = CommentModel(
+                            id = "",
+                            comment = _commentText.value,
+                            postId = id,
+                            createdAt = "",
+                            user = user,
+                        )
+                        post.copy(
+                            comments = post.comments?.plus(
+                                comment
+                            )
+                        )
+                    } else {
+                        post
+                    }
+                }
+                
+                _postsState.value = State.Success(updatedPosts)
+                
+            }
+            if (state is State.Success) {
+                _commentText.value = ""
+            }
         }
+        
     }
     
     fun invokeLike(id: String) = viewModelScope.launch {
