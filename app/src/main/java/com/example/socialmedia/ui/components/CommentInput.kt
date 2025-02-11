@@ -1,12 +1,11 @@
 package com.example.socialmedia.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
-import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -21,12 +20,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.socialmedia.ui.theme.GrayDark
 import com.example.socialmedia.ui.viewmodel.PostViewModel
-import androidx.compose.material3.TextButton as TextButton1
 
 @Composable
 fun CommentInput(
     postViewModel: PostViewModel,
     id: String,
+    modifier: Modifier,
 ) {
     
     val commentText by postViewModel.commentText.collectAsState()
@@ -54,8 +53,8 @@ fun CommentInput(
         shape = RoundedCornerShape(
             12.dp
         ),
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth().padding(vertical = 1.dp),
         suffix = {
             IconButton(
                 onClick = {
@@ -65,7 +64,7 @@ fun CommentInput(
                 Icon(
                     Icons.AutoMirrored.Outlined.Send,
                     contentDescription = "Send",
-                    modifier = Modifier.size(18.dp)
+                    modifier = modifier.size(18.dp)
                 )
             }
         }

@@ -18,6 +18,7 @@ import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.storage.storage
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.json.Json
 import java.util.UUID
 import kotlin.time.Duration.Companion.minutes
@@ -32,7 +33,6 @@ class PostDataSourceImpl(
         taggedUsers: List<String>?,
         taggedLocation: String,
     ): Result<Boolean> {
-        Log.d("PostDataSourceImpl", "Creating post")
         try {
             val userId =
                 datastore.userId.first() ?: throw Exception("User ID not found")
@@ -140,21 +140,34 @@ class PostDataSourceImpl(
                 post.copy(imageUrl = url)
             }
             
-            val likes = fetchAllLikes()
+            val columnsLikes = Columns.list("user_id", "post_id")
             
-            likes.onSuccess {
-                val modifiedPosts = updatedPost.map { post ->
-                    post.copy(
-                        hasLike = it.any { like ->
-                            like.postId == post.id
-                            
-                        }
-                    )
+            val userId = datastore.userId.firstOrNull()
+                ?: throw Exception("User ID not found")
+            
+            val fetchLikes = supabase.from("likes").select(columnsLikes) {
+                filter {
+                    and {
+                        eq("user_id", userId)
+                    }
                 }
-                return Result.success(modifiedPosts)
             }
             
-            return Result.success(updatedPost)
+            val dataLikes = fetchLikes.data
+            
+            val decodeLikes = Json.decodeFromString<List<LikeModel>>(dataLikes)
+            
+            val likeMap = decodeLikes.associateBy {
+                it.postId
+            }
+            
+            val modifiedPosts = updatedPost.map { post ->
+                post.copy(
+                    hasLike = likeMap.containsKey(post.id)
+                )
+            }
+            
+            return Result.success(modifiedPosts)
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error fetching all posts", e)
             throw e
@@ -204,7 +217,7 @@ class PostDataSourceImpl(
         try {
             
             val rawLikes =
-                supabase.from("likes").select(columns = Columns.raw("*"))
+                supabase.from("likes").select()
             
             val likes = Json.decodeFromString<List<LikeModel>>(rawLikes.data)
             

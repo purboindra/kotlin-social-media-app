@@ -39,8 +39,6 @@ fun HomeScreen(
     
     val horizontalPadding = 8.dp
     
-    val context = LocalContext.current
-    
     val postState by postViewModel.postState.collectAsState()
     
     var isLoaded by rememberSaveable { mutableStateOf(false) }

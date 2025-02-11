@@ -23,7 +23,8 @@ import androidx.compose.ui.text.withStyle
 @Composable
 fun ExpandableCaptionCompose(
     text: String,
-    expandedMaxLines: Int = 3
+    expandedMaxLines: Int = 3,
+    username:String,
 ) {
     
     var isExpanded by remember { mutableStateOf(false) }
@@ -35,7 +36,7 @@ fun ExpandableCaptionCompose(
                 fontWeight = FontWeight.Bold
             )
         ) {
-            append("Purboyndra ")
+            append("$username ")
         }
         append(text)
     }

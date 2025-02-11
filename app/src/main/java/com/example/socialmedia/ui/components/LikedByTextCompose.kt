@@ -32,7 +32,7 @@ fun LikedByTextCompose() {
     }
 
     Text(
-        annotatedText,
+        "You liked this post",
         style = MaterialTheme.typography.labelSmall
     )
 }

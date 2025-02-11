@@ -32,7 +32,7 @@ fun PostAuthorCompose(
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(32.dp)
                 .clip(RoundedCornerShape(100))
                 .background(
                     Color.LightGray

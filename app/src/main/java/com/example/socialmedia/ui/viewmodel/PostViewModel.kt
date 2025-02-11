@@ -18,6 +18,7 @@ import com.example.socialmedia.utils.FileHelper
 import com.example.socialmedia.utils.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
@@ -49,6 +50,9 @@ class PostViewModel @Inject constructor(
     private val _image = MutableStateFlow<Uri?>(null)
     val image = _image.asStateFlow()
     
+    private val _images = MutableStateFlow<List<Uri>>(emptyList())
+    val images = _images.asStateFlow()
+    
     private val _caption = MutableStateFlow("")
     val caption = _caption.asStateFlow()
     
@@ -65,6 +69,10 @@ class PostViewModel @Inject constructor(
     
     fun onChangeCaption(caption: String) {
         _caption.value = caption
+    }
+    
+    fun addImage(images: List<Uri>) {
+        _images.value = images
     }
     
     fun deleteLike(id: String) = viewModelScope.launch {

@@ -1,10 +1,8 @@
 package com.example.socialmedia.ui.components
 
 import android.Manifest
-import android.graphics.Paint.Align
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,14 +12,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
@@ -42,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.rememberAsyncImagePainter
 import com.example.socialmedia.ui.theme.BlueLight
 import com.example.socialmedia.ui.theme.BluePrimary
@@ -56,10 +51,10 @@ fun GalleryPickerCompose(
     postViewModel: PostViewModel
 ) {
     val context = LocalContext.current
-    val images = remember { mutableStateListOf<Uri>() }
     val permissionGranted = remember { mutableStateOf(false) }
     var loadingPermission by remember { mutableStateOf(false) }
     val selectedImage by postViewModel.image.collectAsState()
+    val images by postViewModel.images.collectAsState()
     
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -69,7 +64,7 @@ fun GalleryPickerCompose(
             }
             if (permissionGranted.value) {
                 val galleryImages = PostHelper.getGalleryImages(context)
-                images.addAll(galleryImages)
+                postViewModel.addImage(galleryImages)
             } else {
                 Toast.makeText(
                     context,
@@ -109,7 +104,7 @@ fun GalleryPickerCompose(
             galleryImages.forEach {
                 PostHelper.scanMediaFile(context, it)
             }
-            images.addAll(galleryImages)
+            postViewModel.addImage(galleryImages)
         }
         loadingPermission = false
     }

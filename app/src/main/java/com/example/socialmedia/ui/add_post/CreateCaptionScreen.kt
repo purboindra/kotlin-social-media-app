@@ -67,14 +67,11 @@ import com.example.socialmedia.ui.components.SURFACE_TYPE_SURFACE_VIEW
 @Composable
 fun CreateCaptionScreen(
     navHostController: NavHostController,
-    sharedFileViewModel: SharedFileViewModel,
     postViewModel: PostViewModel = hiltViewModel(),
     snackbarViewModel: SnackbarViewModel = hiltViewModel(),
 ) {
-    
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    
     
     val imageUri =
         navHostController.currentBackStackEntry?.arguments?.getString("imageUri")
@@ -85,10 +82,6 @@ fun CreateCaptionScreen(
     
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarConfig by snackbarViewModel.snackbarState.collectAsState()
-    
-    LaunchedEffect(Unit) {
-        Log.d("Create Caption Screen", "Video available: $videoUri")
-    }
     
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {

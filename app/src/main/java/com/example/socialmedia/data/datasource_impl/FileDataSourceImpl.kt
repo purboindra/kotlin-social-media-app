@@ -17,16 +17,12 @@ class FileDataSourceImpl(
             val userId = supabase.auth.currentSessionOrNull()?.user?.id
                 ?: throw Exception("User is not authenticated")
             
-            Log.d("FileDataSourceImpl", "Uploading image for user $userId")
-            
             val response = supabase.storage
                 .from("posts")
                 .upload(
                     "$userId-${System.currentTimeMillis()}.jpg",
                     imageByte
                 )
-            
-            Log.d("FileDataSourceImpl", "Upload response: $response")
             
             if (response.key.isNullOrEmpty() || response.id
                     .isNullOrEmpty()
@@ -43,7 +39,6 @@ class FileDataSourceImpl(
             Log.e("FileDataSourceImpl", "Error uploading file: ${e.message}")
             return Result.failure(e)
         }
-        
     }
     
 }

@@ -90,9 +90,7 @@ fun PostCardCompose(
             )
             MoreButton()
         }
-        
         4.VerticalSpacer()
-        
         Box(
             modifier = Modifier
                 .height(375.dp)
@@ -158,6 +156,7 @@ fun PostCardCompose(
             5.VerticalSpacer()
             ExpandableCaptionCompose(
                 text = postModel.caption,
+                username = postModel.user.fullName?:""
             )
             postModel.comments?.let {
                 Box(
@@ -176,10 +175,12 @@ fun PostCardCompose(
                     }
                 }
             }
-            
             CommentInput(
                 postViewModel,
-                id = postModel.id
+                id = postModel.id,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = horizontalPadding)
             )
         }
     }

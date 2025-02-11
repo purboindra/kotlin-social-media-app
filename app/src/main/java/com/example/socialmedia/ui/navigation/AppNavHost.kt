@@ -86,10 +86,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     }
                 )
             ) {
-                val sharedFileViewModel: SharedFileViewModel = hiltViewModel()
                 BackHandler(true) {
                 }
-                CreateCaptionScreen(navController, sharedFileViewModel)
+                CreateCaptionScreen(navController)
                 
             }
         }
