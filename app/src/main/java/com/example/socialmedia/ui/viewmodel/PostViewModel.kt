@@ -127,40 +127,36 @@ class PostViewModel @Inject constructor(
         val token = appDataStore.accessToken.firstOrNull() ?: "No Token"
         val user = TokenManager.getUserFromToken(token)
         
+        if (currentState is State.Success) {
+            val updatedPosts = currentState.data.map { post ->
+                if (post.id == id) {
+                    if (user == null) return@map post
+                    
+                    val comment = CommentModel(
+                        id = "",
+                        comment = _commentText.value,
+                        postId = id,
+                        createdAt = "",
+                        user = user,
+                    )
+                    post.copy(
+                        comments = post.comments?.plus(
+                            comment
+                        )
+                    )
+                } else {
+                    post
+                }
+            }
+            _commentText.value = ""
+            _postsState.value = State.Success(updatedPosts)
+        }
+        
         postUseCase.createComment(
             id,
             comment = _commentText.value
         ).collectLatest { state ->
-            Log.d("PostViewModel", "createComment: $state")
-            if (currentState is State.Success) {
-                val updatedPosts = currentState.data.map { post ->
-                    if (post.id == id) {
-                        
-                        if (user == null) return@map post
-                        
-                        val comment = CommentModel(
-                            id = "",
-                            comment = _commentText.value,
-                            postId = id,
-                            createdAt = "",
-                            user = user,
-                        )
-                        post.copy(
-                            comments = post.comments?.plus(
-                                comment
-                            )
-                        )
-                    } else {
-                        post
-                    }
-                }
-                
-                _postsState.value = State.Success(updatedPosts)
-                
-            }
-            if (state is State.Success) {
-                _commentText.value = ""
-            }
+            Log.d("Comment", "State: $state")
         }
         
     }
