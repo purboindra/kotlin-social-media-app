@@ -10,6 +10,7 @@ import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CommentModel
 import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
+import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UploadImageModel
 import com.example.socialmedia.domain.usecases.FileUseCase
@@ -18,11 +19,9 @@ import com.example.socialmedia.utils.FileHelper
 import com.example.socialmedia.utils.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,6 +45,10 @@ class PostViewModel @Inject constructor(
     private val _likesState =
         MutableStateFlow<State<List<LikeModel>>>(State.Idle)
     val likesState = _likesState.asStateFlow()
+    
+    private val _savedPostState =
+        MutableStateFlow<State<SavePostResult>>(State.Idle)
+    val savedPostState = _savedPostState.asStateFlow()
     
     private val _image = MutableStateFlow<Uri?>(null)
     val image = _image.asStateFlow()
@@ -78,6 +81,43 @@ class PostViewModel @Inject constructor(
     fun deleteLike(id: String) = viewModelScope.launch {
         postUseCase.deleteLike(id).collectLatest { state ->
             _likeState.value = state
+        }
+    }
+    
+    fun savedPost(id: String) = viewModelScope.launch {
+        val currentState = _postsState.value
+        
+        if (currentState is State.Success) {
+            val updatedPosts = currentState.data.map { post ->
+                if (post.id == id) {
+                    post.copy(
+                        hasSaved = !(post.hasSaved)
+                    )
+                } else {
+                    post
+                }
+            }
+            
+            _postsState.value = State.Success(updatedPosts)
+            
+            val result = postUseCase.savedPost(id)
+            
+            result.collectLatest { state ->
+                _savedPostState.value = state
+                
+                if (state is State.Failure) {
+                    _postsState.value = State.Success(
+                        currentState.data.map { post ->
+                            if (post.id == id) {
+                                post.copy(hasSaved = !post.hasSaved)
+                            } else {
+                                post
+                            }
+                            
+                        }
+                    )
+                }
+            }
         }
     }
     

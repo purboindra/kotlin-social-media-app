@@ -3,6 +3,7 @@ package com.example.socialmedia.domain.repository_impl
 import com.example.socialmedia.data.datasource.PostDatasource
 import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
+import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UploadImageModel
 import com.example.socialmedia.domain.repository.PostRepository
@@ -20,10 +21,7 @@ class PostRepositoryImpl(
     ): Flow<State<Boolean>> = flow {
         try {
             val result = postDataSource.createPost(
-                image,
-                caption,
-                taggedUsers,
-                taggedLocation
+                image, caption, taggedUsers, taggedLocation
             )
             result.onSuccess {
                 emit(State.Success(it))
@@ -89,8 +87,7 @@ class PostRepositoryImpl(
     }
     
     override suspend fun createComment(
-        id: String,
-        comment: String
+        id: String, comment: String
     ): Flow<State<Boolean>> = flow {
         try {
             
@@ -104,4 +101,12 @@ class PostRepositoryImpl(
             throw e
         }
     }
+    
+    override suspend fun savedPost(id: String): Flow<State<SavePostResult>> =
+        flow {
+            when (val result = postDataSource.savedPost(id)) {
+                is SavePostResult.Success -> emit(State.Success(result))
+                is SavePostResult.Error -> emit(State.Failure(Throwable(result.message)))
+            }
+        }
 }

@@ -6,8 +6,10 @@ import com.example.socialmedia.data.datasource.PostDatasource
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CreateCommentModel
 import com.example.socialmedia.data.model.CreatePostModel
+import com.example.socialmedia.data.model.CreateSavePostModel
 import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
+import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.UploadImageModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.exceptions.HttpRequestException
@@ -251,6 +253,27 @@ class PostDataSourceImpl(
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error create comment", e)
             throw e
+        }
+    }
+    
+    override suspend fun savedPost(id: String): SavePostResult {
+        return try {
+            
+            val userId = datastore.userId.firstOrNull()
+                ?: throw Exception("Invalid credentials")
+            
+            val post = CreateSavePostModel(
+                userId = userId,
+                postId = id,
+            )
+            
+            supabase.from("saved_posts").insert(post)
+            
+            return SavePostResult.Success
+            
+        } catch (e: Exception) {
+            Log.e("PostDataSourceImpl", "Error save post", e)
+            SavePostResult.Error(message = e.message ?: "Error saving post")
         }
     }
 }

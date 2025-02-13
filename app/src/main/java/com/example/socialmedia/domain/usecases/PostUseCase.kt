@@ -2,6 +2,7 @@ package com.example.socialmedia.domain.usecases
 
 import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
+import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UploadImageModel
 import com.example.socialmedia.domain.repository.PostRepository
@@ -43,5 +44,9 @@ class PostUseCase(private val postRepository: PostRepository) {
         comment: String
     ): Flow<State<Boolean>> {
         return postRepository.createComment(id, comment)
+    }
+    
+    suspend fun savedPost(id: String): Flow<State<SavePostResult>> {
+        return postRepository.savedPost(id)
     }
 }
