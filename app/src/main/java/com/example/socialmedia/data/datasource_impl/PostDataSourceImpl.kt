@@ -143,6 +143,7 @@ class PostDataSourceImpl(
             }
             
             val columnsLikes = Columns.list("user_id", "post_id")
+            val columnsSavedPost = Columns.list("user_id", "post_id")
             
             val userId = datastore.userId.firstOrNull()
                 ?: throw Exception("User ID not found")
@@ -155,15 +156,37 @@ class PostDataSourceImpl(
                 }
             }
             
+            val fetchSavedPosts =
+                supabase.from("saved_posts").select(columnsSavedPost) {
+                    filter {
+                        and {
+                            eq("user_id", userId)
+                        }
+                    }
+                }
+            
+            val dataSavedPosts = fetchSavedPosts.data
             val dataLikes = fetchLikes.data
             
+            val decodeSavedPost =
+                Json.decodeFromString<List<LikeModel>>(dataSavedPosts)
             val decodeLikes = Json.decodeFromString<List<LikeModel>>(dataLikes)
+            
+            val savedPostMap = decodeSavedPost.associateBy {
+                it.postId
+            }
             
             val likeMap = decodeLikes.associateBy {
                 it.postId
             }
             
-            val modifiedPosts = updatedPost.map { post ->
+            val updatedPostWithSavedPost = updatedPost.map { post ->
+                post.copy(
+                    hasSaved = savedPostMap.containsKey(post.id)
+                )
+            }
+            
+            val modifiedPosts = updatedPostWithSavedPost.map { post ->
                 post.copy(
                     hasLike = likeMap.containsKey(post.id)
                 )
