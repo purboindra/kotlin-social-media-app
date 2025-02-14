@@ -1,14 +1,13 @@
 package com.example.socialmedia.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Message
 import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Icon
@@ -17,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.socialmedia.R
+import com.example.socialmedia.icons.Message
+import com.example.socialmedia.icons.message.Message
 import com.example.socialmedia.utils.HorizontalSpacer
 
 @Composable
@@ -45,11 +46,11 @@ fun HomeScreenHeader() {
             
             )
             8.HorizontalSpacer()
-            Icon(
-                Icons.AutoMirrored.Outlined.Message,
-                contentDescription = "Direct Message",
-                modifier = Modifier.size(32.dp)
-            )
+         Image(
+             Message.Message,
+             contentDescription = "Direct Message",
+             modifier = Modifier.size(32.dp)
+         )
         }
     }
 }
