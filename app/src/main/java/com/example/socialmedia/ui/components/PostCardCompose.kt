@@ -145,10 +145,10 @@ fun PostCardCompose(
                         )
                     }
                 }
-                Icon(
-                    Icons.Outlined.Save,
-                    contentDescription = "Save",
-                    modifier = Modifier.size(24.dp)
+                SavedPostButton(
+                    id = postModel.id,
+                    postViewModel = postViewModel,
+                    hasSaved = postModel.hasSaved
                 )
             }
             5.VerticalSpacer()
@@ -156,12 +156,13 @@ fun PostCardCompose(
             5.VerticalSpacer()
             ExpandableCaptionCompose(
                 text = postModel.caption,
-                username = postModel.user.fullName?:""
+                username = postModel.user.fullName ?: ""
             )
             postModel.comments?.let {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth().heightIn(max = 200.dp)
+                        .fillMaxWidth()
+                        .heightIn(max = 200.dp)
                 ) {
                     LazyColumn {
                         items(postModel.comments, key = { it.id })

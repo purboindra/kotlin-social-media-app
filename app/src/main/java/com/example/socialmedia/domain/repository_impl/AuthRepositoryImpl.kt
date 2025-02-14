@@ -3,7 +3,6 @@ package com.example.socialmedia.domain.repository_impl
 import android.content.Context
 import com.example.socialmedia.data.datasource.AuthDatasource
 import com.example.socialmedia.data.model.State
-import com.example.socialmedia.data.model.UserModel
 import com.example.socialmedia.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
