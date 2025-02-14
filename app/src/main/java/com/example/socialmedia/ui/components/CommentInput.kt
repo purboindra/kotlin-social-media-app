@@ -1,9 +1,9 @@
 package com.example.socialmedia.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material3.Icon
@@ -13,10 +13,13 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.example.socialmedia.ui.theme.GrayDark
 import com.example.socialmedia.ui.viewmodel.PostViewModel
@@ -28,12 +31,12 @@ fun CommentInput(
     modifier: Modifier,
 ) {
     
-    val commentText by postViewModel.commentText.collectAsState()
+    var commentText by remember { mutableStateOf("") }
     
     TextField(
         value = commentText,
         onValueChange = {
-            postViewModel.onChangeComment(it)
+            commentText = it
         },
         singleLine = true,
         placeholder = {
@@ -49,22 +52,25 @@ fun CommentInput(
             unfocusedContainerColor = Color.Transparent,
             focusedBorderColor = Color.Transparent,
             unfocusedBorderColor = Color.Transparent,
-        ),
-        shape = RoundedCornerShape(
-            12.dp
-        ),
+            
+            ),
+        shape = RectangleShape,
         modifier = modifier
-            .fillMaxWidth().padding(vertical = 1.dp),
+            .fillMaxWidth()
+            .padding(0.dp)
+            .heightIn(min = 0.dp),
+        textStyle = MaterialTheme.typography.bodyMedium,
         suffix = {
             IconButton(
                 onClick = {
-                    postViewModel.sendComment(id = id)
+                    postViewModel.sendComment(id = id, commentText)
+                    commentText = ""
                 }
             ) {
                 Icon(
                     Icons.AutoMirrored.Outlined.Send,
                     contentDescription = "Send",
-                    modifier = modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
