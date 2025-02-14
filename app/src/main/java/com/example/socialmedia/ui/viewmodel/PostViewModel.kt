@@ -59,13 +59,6 @@ class PostViewModel @Inject constructor(
     private val _caption = MutableStateFlow("")
     val caption = _caption.asStateFlow()
     
-    private val _commentText = MutableStateFlow("")
-    val commentText = _commentText.asStateFlow()
-    
-    fun onChangeComment(comment: String) {
-        _commentText.value = comment
-    }
-    
     fun selectImage(uri: Uri) {
         _image.value = uri
     }
@@ -84,7 +77,7 @@ class PostViewModel @Inject constructor(
         }
     }
     
-    fun savedPost(id: String) = viewModelScope.launch {
+    fun invokeSavedPost(id: String) = viewModelScope.launch {
         val currentState = _postsState.value
         
         if (currentState is State.Success) {
@@ -100,28 +93,53 @@ class PostViewModel @Inject constructor(
             
             _postsState.value = State.Success(updatedPosts)
             
-            val result = postUseCase.savedPost(id)
-            
-            result.collectLatest { state ->
-                _savedPostState.value = state
-                
-                if (state is State.Failure) {
-                    _postsState.value = State.Success(
-                        currentState.data.map { post ->
-                            if (post.id == id) {
-                                post.copy(hasSaved = !post.hasSaved)
-                            } else {
-                                post
-                            }
-                            
+            updatedPosts.firstOrNull()?.let {
+                if (it.hasSaved) {
+                    val result = postUseCase.savedPost(id)
+                    
+                    result.collectLatest { state ->
+                        _savedPostState.value = state
+                        
+                        if (state is State.Failure) {
+                            _postsState.value = State.Success(
+                                currentState.data.map { post ->
+                                    if (post.id == id) {
+                                        post.copy(hasSaved = !post.hasSaved)
+                                    } else {
+                                        post
+                                    }
+                                    
+                                }
+                            )
                         }
-                    )
+                    }
+                } else {
+                    val result = postUseCase.deleteSavedPost(id)
+                    
+                    result.collectLatest { state ->
+                        _savedPostState.value = state
+                        
+                        if (state is State.Failure) {
+                            _postsState.value = State.Success(
+                                currentState.data.map { post ->
+                                    if (post.id == id) {
+                                        post.copy(hasSaved = !post.hasSaved)
+                                    } else {
+                                        post
+                                    }
+                                    
+                                }
+                            )
+                        }
+                    }
                 }
             }
+            
+            
         }
     }
     
-    fun sendComment(id: String) = viewModelScope.launch {
+    fun sendComment(id: String, commentInput: String) = viewModelScope.launch {
         val currentState = _postsState.value
         
         val token = appDataStore.accessToken.firstOrNull() ?: "No Token"
@@ -134,7 +152,7 @@ class PostViewModel @Inject constructor(
                     
                     val comment = CommentModel(
                         id = "",
-                        comment = _commentText.value,
+                        comment = commentInput,
                         postId = id,
                         createdAt = "",
                         user = user,
@@ -148,13 +166,12 @@ class PostViewModel @Inject constructor(
                     post
                 }
             }
-            _commentText.value = ""
             _postsState.value = State.Success(updatedPosts)
         }
         
         postUseCase.createComment(
             id,
-            comment = _commentText.value
+            comment = commentInput
         ).collectLatest { state ->
             Log.d("Comment", "State: $state")
         }

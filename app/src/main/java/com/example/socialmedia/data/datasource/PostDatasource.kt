@@ -20,4 +20,5 @@ interface PostDatasource {
     suspend fun fetchAllLikes(): Result<List<LikeModel>>
     suspend fun createComment(id: String, comment: String): Result<Boolean>
     suspend fun savedPost(id: String): SavePostResult
+    suspend fun deleteSavedPost(id: String): SavePostResult
 }

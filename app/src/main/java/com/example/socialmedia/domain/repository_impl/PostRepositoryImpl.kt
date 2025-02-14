@@ -109,4 +109,12 @@ class PostRepositoryImpl(
                 is SavePostResult.Error -> emit(State.Failure(Throwable(result.message)))
             }
         }
+    
+    override suspend fun deleteSavedPost(id: String): Flow<State<SavePostResult>> =
+        flow {
+            when (val result = postDataSource.deleteSavedPost(id)) {
+                is SavePostResult.Success -> emit(State.Success(result))
+                is SavePostResult.Error -> emit(State.Failure(Throwable(result.message)))
+            }
+        }
 }

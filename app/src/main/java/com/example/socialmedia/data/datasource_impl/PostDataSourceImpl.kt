@@ -11,6 +11,7 @@ import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.UploadImageModel
+import com.example.socialmedia.ui.components.SavedPostButton
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
@@ -19,6 +20,8 @@ import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.storage.storage
 import io.ktor.client.plugins.HttpRequestTimeoutException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.json.Json
@@ -59,6 +62,66 @@ class PostDataSourceImpl(
             throw e
         }
     }
+    
+    private suspend fun fetchAndUpdatePosts(posts: List<PostModel>): Result<List<PostModel>> =
+        coroutineScope {
+            val userId = datastore.userId.firstOrNull()
+                ?: return@coroutineScope Result.failure(Exception("User ID not found"))
+            
+            val columnsLikes = Columns.list("user_id", "post_id")
+            val columnsSavedPost = Columns.list("user_id", "post_id")
+            
+            val fetchLikes = async {
+                supabase.from("likes").select(
+                    columnsLikes
+                ) {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                }
+            }
+            
+            val fetchSavedPosts = async {
+                supabase.from("saved_posts")
+                    .select(columnsSavedPost) {
+                        filter { eq("user_id", userId) }
+                    }
+            }
+            
+            try {
+                val likesResult = fetchLikes.await()
+                val savedPostResult = fetchSavedPosts.await()
+                
+                val dataLikes =
+                    Json.decodeFromString<List<LikeModel>>(likesResult.data)
+                val dataSavedPosts =
+                    Json.decodeFromString<List<LikeModel>>(savedPostResult.data)
+                
+                val savedPostSet = dataSavedPosts.mapTo(
+                    mutableSetOf()
+                ) {
+                    it.postId
+                }
+                
+                val likesSavedPostSet = dataLikes.mapTo(
+                    mutableSetOf()
+                ) {
+                    it.postId
+                }
+                
+                val modifiedPosts = posts.map { post ->
+                    post.copy(
+                        hasSaved = post.id in savedPostSet,
+                        hasLike = post.id in likesSavedPostSet
+                    
+                    )
+                }
+                
+                return@coroutineScope Result.success(modifiedPosts)
+            } catch (e: Exception) {
+                return@coroutineScope Result.failure(e)
+            }
+        }
     
     override suspend fun fetchAllPosts(): Result<List<PostModel>> {
         try {
@@ -142,57 +205,14 @@ class PostDataSourceImpl(
                 post.copy(imageUrl = url)
             }
             
-            val columnsLikes = Columns.list("user_id", "post_id")
-            val columnsSavedPost = Columns.list("user_id", "post_id")
+            val fetchAndUpdatePosts = fetchAndUpdatePosts(updatedPost)
             
-            val userId = datastore.userId.firstOrNull()
-                ?: throw Exception("User ID not found")
-            
-            val fetchLikes = supabase.from("likes").select(columnsLikes) {
-                filter {
-                    and {
-                        eq("user_id", userId)
-                    }
-                }
+            return fetchAndUpdatePosts.onSuccess {
+                return Result.success(it)
+            }.onFailure {
+                throw Exception(it)
             }
             
-            val fetchSavedPosts =
-                supabase.from("saved_posts").select(columnsSavedPost) {
-                    filter {
-                        and {
-                            eq("user_id", userId)
-                        }
-                    }
-                }
-            
-            val dataSavedPosts = fetchSavedPosts.data
-            val dataLikes = fetchLikes.data
-            
-            val decodeSavedPost =
-                Json.decodeFromString<List<LikeModel>>(dataSavedPosts)
-            val decodeLikes = Json.decodeFromString<List<LikeModel>>(dataLikes)
-            
-            val savedPostMap = decodeSavedPost.associateBy {
-                it.postId
-            }
-            
-            val likeMap = decodeLikes.associateBy {
-                it.postId
-            }
-            
-            val updatedPostWithSavedPost = updatedPost.map { post ->
-                post.copy(
-                    hasSaved = savedPostMap.containsKey(post.id)
-                )
-            }
-            
-            val modifiedPosts = updatedPostWithSavedPost.map { post ->
-                post.copy(
-                    hasLike = likeMap.containsKey(post.id)
-                )
-            }
-            
-            return Result.success(modifiedPosts)
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error fetching all posts", e)
             throw e
@@ -297,6 +317,28 @@ class PostDataSourceImpl(
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error save post", e)
             SavePostResult.Error(message = e.message ?: "Error saving post")
+        }
+    }
+    
+    override suspend fun deleteSavedPost(id: String): SavePostResult {
+        return try {
+            
+            supabase.from("saved_posts").delete {
+                filter {
+                    eq("post_id", id)
+                }
+            }
+            
+            supabase.from("saved_posts").delete {
+                filter {
+                    eq("post_id", id)
+                }
+            }
+            
+            return SavePostResult.Success
+            
+        } catch (e: Exception) {
+            SavePostResult.Error(message = e.message ?: "Error deleting post")
         }
     }
 }

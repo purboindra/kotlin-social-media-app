@@ -49,4 +49,8 @@ class PostUseCase(private val postRepository: PostRepository) {
     suspend fun savedPost(id: String): Flow<State<SavePostResult>> {
         return postRepository.savedPost(id)
     }
+    
+    suspend fun deleteSavedPost(id: String): Flow<State<SavePostResult>> {
+        return postRepository.deleteSavedPost(id)
+    }
 }

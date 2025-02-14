@@ -26,4 +26,5 @@ interface PostRepository {
     suspend fun createComment(id: String, comment: String): Flow<State<Boolean>>
     
     suspend fun savedPost(id: String): Flow<State<SavePostResult>>
+    suspend fun deleteSavedPost(id: String): Flow<State<SavePostResult>>
 }
