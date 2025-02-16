@@ -75,7 +75,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
                     Log.d("CameraViewModel", "Video saved: $it")
                 },
                 onError = {},
-                lifecycleOwner,
+                lifecycleOwner=lifecycleOwner,
                 cameraPreviewUseCase
             )
         }

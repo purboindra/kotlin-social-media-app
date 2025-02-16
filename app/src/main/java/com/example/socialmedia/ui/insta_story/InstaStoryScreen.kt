@@ -2,6 +2,7 @@ package com.example.socialmedia.ui.insta_story
 
 import android.Manifest
 import android.os.Build
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,9 +35,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,6 +51,7 @@ import com.example.socialmedia.ui.viewmodel.CameraViewModel
 import com.example.socialmedia.utils.PermissionHelper
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun InstaStoryScreen(
     navHostController: NavHostController,
@@ -205,7 +209,26 @@ fun InstaStoryScreen(
                         .height(56.dp)
                         .width(56.dp)
                         .clip(RoundedCornerShape(100))
-                        .background(Color.White),
+                        .background(Color.White)
+                        .pointerInteropFilter { event ->
+                            when (event.action) {
+                                MotionEvent.ACTION_DOWN -> {
+                                    
+                                    cameraViewModel.startVideoRecording(
+                                        context,
+                                        lifecycleOwner = lifecycleOwner,
+                                    )
+                                    true
+                                }
+                                
+                                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                                    /// STOP VIDEO
+                                    true
+                                }
+                                
+                                else -> false
+                            }
+                        },
                 )
             }
         }
