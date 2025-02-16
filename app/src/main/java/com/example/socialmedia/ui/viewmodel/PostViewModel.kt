@@ -71,12 +71,6 @@ class PostViewModel @Inject constructor(
         _images.value = images
     }
     
-    fun deleteLike(id: String) = viewModelScope.launch {
-        postUseCase.deleteLike(id).collectLatest { state ->
-            _likeState.value = state
-        }
-    }
-    
     fun invokeSavedPost(id: String) = viewModelScope.launch {
         val currentState = _postsState.value
         

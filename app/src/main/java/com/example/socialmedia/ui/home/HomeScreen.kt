@@ -56,7 +56,7 @@ fun HomeScreen(
             .nestedScroll(rememberNestedScrollInteropConnection())
     ) {
         item {
-            HomeScreenHeader()
+            HomeScreenHeader(navController)
             10.VerticalSpacer()
         }
         item {

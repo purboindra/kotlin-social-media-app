@@ -4,34 +4,41 @@ import android.Manifest
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
-import android.graphics.Camera
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.camera.core.CameraControl
-import androidx.camera.core.CameraExecutor
+import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.ImageProxy
+import androidx.camera.core.MirrorMode
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.lifecycle.awaitInstance
+import androidx.camera.video.FallbackStrategy
 import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.MediaStoreOutputOptions
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.coroutines.resume
 
 object FileHelper {
     
@@ -46,6 +53,123 @@ object FileHelper {
             null
         }
     }
+    
+    suspend fun takeVideo(
+        context: Context,
+        onSave: (Uri) -> Unit,
+        onError: (Exception) -> Unit,
+        lifecycleOwner: androidx.lifecycle.LifecycleOwner,
+        cameraPreviewUseCase: Preview
+    ): CameraControl {
+        
+        val processCameraProvider =
+            ProcessCameraProvider.awaitInstance(context)
+        
+        val qualitySelector = QualitySelector.fromOrderedList(
+            listOf(Quality.UHD, Quality.FHD, Quality.HD, Quality.SD),
+            FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
+        )
+        
+        val recorder = Recorder.Builder().setQualitySelector(
+            qualitySelector
+        ).build()
+        
+        val videoCapture = VideoCapture.Builder(recorder).setMirrorMode(
+            MirrorMode.MIRROR_MODE_ON_FRONT_ONLY
+        ).build()
+        
+        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        
+        val camera = processCameraProvider.bindToLifecycle(
+            lifecycleOwner,
+            cameraSelector, videoCapture,
+            cameraPreviewUseCase,
+        )
+        
+        startRecording(
+            context,
+            videoCapture,
+            onSave,
+            onError,
+        )
+        
+        return camera.cameraControl
+    }
+    
+    private suspend fun startRecording(
+        context: Context,
+        videoCapture: VideoCapture<Recorder>,
+        onSave: (Uri) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        val fileName = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+            .format(System.currentTimeMillis()) + ".mp4"
+        
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                put(
+                    MediaStore.Video.Media.RELATIVE_PATH,
+                    "Movies/CameraX-Video"
+                )
+            }
+        }
+        
+        val mediaStoreOutputOptions = MediaStoreOutputOptions.Builder(
+            context.contentResolver,
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        ).setContentValues(contentValues).build()
+        
+        try {
+            suspendCancellableCoroutine { continuation ->
+                val recording = videoCapture.output
+                    .prepareRecording(context, mediaStoreOutputOptions)
+                    .apply {
+                        if (ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.RECORD_AUDIO
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        ) {
+                            withAudioEnabled()
+                        }
+                    }
+                    .start(ContextCompat.getMainExecutor(context)) { recordEvent ->
+                        when (recordEvent) {
+                            is VideoRecordEvent.Start -> {
+                                Log.d("CameraX", "Recording Started")
+                            }
+                            
+                            is VideoRecordEvent.Finalize -> {
+                                if (!recordEvent.hasError()) {
+                                    val savedUri =
+                                        recordEvent.outputResults.outputUri
+                                    Log.d("CameraX", "Video saved to $savedUri")
+                                    onSave(savedUri)
+                                } else {
+                                    Log.e(
+                                        "CameraX",
+                                        "Recording Error: ${recordEvent.error}"
+                                    )
+
+//                                    val message = recordEvent.error.m
+                                    
+                                    onError(Exception("Something went wrong!"))
+                                }
+                                continuation.resume(Unit)
+                            }
+                        }
+                    }
+                
+                continuation.invokeOnCancellation {
+                    recording.stop()
+                }
+            }
+        } catch (e: Exception) {
+            onError(e)
+        }
+    }
+    
     
     fun captureVideo(
         onVideoSaved: (Uri) -> Unit,

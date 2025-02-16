@@ -2,6 +2,7 @@ package com.example.socialmedia.ui.viewmodel
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.Surface
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
@@ -21,6 +22,7 @@ import androidx.camera.video.VideoCapture
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.socialmedia.utils.FileHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +30,7 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -39,6 +42,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
     private var surfaceMateringPointFactory: SurfaceOrientedMeteringPointFactory? =
         null
     private var cameraControl: CameraControl? = null
+    private var cameraControlInstaStory: CameraControl? = null
     
     private var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     
@@ -61,6 +65,46 @@ class CameraViewModel @Inject constructor() : ViewModel() {
                 newSurfaceRequest.resolution.height.toFloat()
             )
         }
+    }
+    
+    fun startVideoRecording(context: Context, lifecycleOwner: LifecycleOwner) {
+        viewModelScope.launch {
+            cameraControlInstaStory = FileHelper.takeVideo(
+                context,
+                onSave = { it ->
+                    Log.d("CameraViewModel", "Video saved: $it")
+                },
+                onError = {},
+                lifecycleOwner,
+                cameraPreviewUseCase
+            )
+        }
+    }
+    
+    fun zoomIn() {
+        cameraControlInstaStory?.setZoomRatio(2.0f)
+    }
+    
+    fun disableFlashLight() {
+        cameraControlInstaStory?.enableTorch(false)
+    }
+    
+    fun toggleFlashLight() {
+        cameraControlInstaStory?.enableTorch(true)
+    }
+    
+    suspend fun bindToCameraInstaStory(
+        context: Context,
+        lifecycleOwner: LifecycleOwner
+    ) {
+        cameraControlInstaStory = FileHelper.takeVideo(
+            context,
+            onSave = {},
+            onError = {},
+            lifecycleOwner,
+            cameraPreviewUseCase
+        )
+        
     }
     
     suspend fun bindToCamera(
