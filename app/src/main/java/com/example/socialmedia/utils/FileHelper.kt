@@ -54,7 +54,7 @@ object FileHelper {
         }
     }
     
-    suspend fun takeVideo(
+    suspend fun instaStoryVideoCapture(
         context: Context,
         onSave: (Uri) -> Unit,
         onError: (Exception) -> Unit,

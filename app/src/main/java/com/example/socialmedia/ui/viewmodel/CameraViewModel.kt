@@ -69,13 +69,13 @@ class CameraViewModel @Inject constructor() : ViewModel() {
     
     fun startVideoRecording(context: Context, lifecycleOwner: LifecycleOwner) {
         viewModelScope.launch {
-            cameraControlInstaStory = FileHelper.takeVideo(
+            cameraControlInstaStory = FileHelper.instaStoryVideoCapture(
                 context,
                 onSave = { it ->
                     Log.d("CameraViewModel", "Video saved: $it")
                 },
                 onError = {},
-                lifecycleOwner=lifecycleOwner,
+                lifecycleOwner = lifecycleOwner,
                 cameraPreviewUseCase
             )
         }
@@ -97,7 +97,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         context: Context,
         lifecycleOwner: LifecycleOwner
     ) {
-        cameraControlInstaStory = FileHelper.takeVideo(
+        cameraControlInstaStory = FileHelper.instaStoryVideoCapture(
             context,
             onSave = {},
             onError = {},
