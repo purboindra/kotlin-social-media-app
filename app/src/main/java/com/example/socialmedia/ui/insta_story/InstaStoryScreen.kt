@@ -2,6 +2,7 @@ package com.example.socialmedia.ui.insta_story
 
 import android.Manifest
 import android.os.Build
+import android.util.Log
 import android.view.MotionEvent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -213,15 +214,18 @@ fun InstaStoryScreen(
                         .pointerInteropFilter { event ->
                             when (event.action) {
                                 MotionEvent.ACTION_DOWN -> {
-                                    
-                                    cameraViewModel.startVideoRecording(
+                                    Log.d("Insta Story Screen", "onPressed")
+                                    cameraViewModel.toggleIsRecording()
+                                    cameraViewModel.bindToCameraInstaStory(
                                         context,
-                                        lifecycleOwner = lifecycleOwner,
+                                        lifecycleOwner,
                                     )
                                     true
                                 }
                                 
                                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                                    cameraViewModel.toggleIsRecording()
+                                    Log.d("Insta Story Screen", "onRelease")
                                     /// STOP VIDEO
                                     true
                                 }

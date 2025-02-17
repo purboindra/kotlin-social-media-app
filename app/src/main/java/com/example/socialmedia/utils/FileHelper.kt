@@ -59,11 +59,16 @@ object FileHelper {
         onSave: (Uri) -> Unit,
         onError: (Exception) -> Unit,
         lifecycleOwner: androidx.lifecycle.LifecycleOwner,
-        cameraPreviewUseCase: Preview
+        cameraPreviewUseCase: Preview,
+        onDurationUpdate: (Long) -> Unit,
+        onRecordingStop: (() -> Unit)? = null,
+        onRecordingStart: (() -> Unit)? = null,
     ): CameraControl {
         
         val processCameraProvider =
             ProcessCameraProvider.awaitInstance(context)
+        
+        processCameraProvider.unbindAll()
         
         val qualitySelector = QualitySelector.fromOrderedList(
             listOf(Quality.UHD, Quality.FHD, Quality.HD, Quality.SD),
@@ -82,15 +87,20 @@ object FileHelper {
         
         val camera = processCameraProvider.bindToLifecycle(
             lifecycleOwner,
-            cameraSelector, videoCapture,
+            cameraSelector,
+            videoCapture,
             cameraPreviewUseCase,
         )
+        
+        onRecordingStart?.invoke()
         
         startRecording(
             context,
             videoCapture,
             onSave,
             onError,
+            onDurationUpdate,
+            onRecordingStop,
         )
         
         return camera.cameraControl
@@ -100,7 +110,9 @@ object FileHelper {
         context: Context,
         videoCapture: VideoCapture<Recorder>,
         onSave: (Uri) -> Unit,
-        onError: (Exception) -> Unit
+        onError: (Exception) -> Unit,
+        onDurationUpdate: (Long) -> Unit,
+        onRecordingStop: (() -> Unit)? = null,
     ) {
         val fileName = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
             .format(System.currentTimeMillis()) + ".mp4"
@@ -121,7 +133,10 @@ object FileHelper {
             MediaStore.Video.Media.EXTERNAL_CONTENT_URI
         ).setContentValues(contentValues).build()
         
+        val startTime = System.currentTimeMillis()
+        
         try {
+            
             suspendCancellableCoroutine { continuation ->
                 val recording = videoCapture.output
                     .prepareRecording(context, mediaStoreOutputOptions)
@@ -140,6 +155,13 @@ object FileHelper {
                                 Log.d("CameraX", "Recording Started")
                             }
                             
+                            is VideoRecordEvent.Status -> {
+                                val durationMillis =
+                                    System.currentTimeMillis() - startTime
+                                val seconds = (durationMillis / 1000).toInt()
+                                onDurationUpdate(seconds.toLong())
+                            }
+                            
                             is VideoRecordEvent.Finalize -> {
                                 if (!recordEvent.hasError()) {
                                     val savedUri =
@@ -149,10 +171,8 @@ object FileHelper {
                                 } else {
                                     Log.e(
                                         "CameraX",
-                                        "Recording Error: ${recordEvent.error}"
+                                        "Recording Error: ${recordEvent.cause?.message}"
                                     )
-
-//                                    val message = recordEvent.error.m
                                     
                                     onError(Exception("Something went wrong!"))
                                 }
@@ -162,7 +182,10 @@ object FileHelper {
                     }
                 
                 continuation.invokeOnCancellation {
+                    Log.d("CameraX", "Recording Stopped")
+                    
                     recording.stop()
+                    onRecordingStop?.invoke()
                 }
             }
         } catch (e: Exception) {

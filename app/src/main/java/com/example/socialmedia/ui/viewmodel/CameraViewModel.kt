@@ -27,6 +27,7 @@ import com.example.socialmedia.utils.FileHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -38,6 +39,9 @@ import javax.inject.Inject
 class CameraViewModel @Inject constructor() : ViewModel() {
     private val _surfaceRequest = MutableStateFlow<SurfaceRequest?>(null)
     val surfaceRequest: StateFlow<SurfaceRequest?> = _surfaceRequest
+    
+    private val _isRecording = MutableStateFlow(false)
+    val isRecording: StateFlow<Boolean> = _isRecording
     
     private var surfaceMateringPointFactory: SurfaceOrientedMeteringPointFactory? =
         null
@@ -67,18 +71,8 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         }
     }
     
-    fun startVideoRecording(context: Context, lifecycleOwner: LifecycleOwner) {
-        viewModelScope.launch {
-            cameraControlInstaStory = FileHelper.instaStoryVideoCapture(
-                context,
-                onSave = { it ->
-                    Log.d("CameraViewModel", "Video saved: $it")
-                },
-                onError = {},
-                lifecycleOwner = lifecycleOwner,
-                cameraPreviewUseCase
-            )
-        }
+    fun toggleIsRecording() {
+        _isRecording.value = !_isRecording.value
     }
     
     fun zoomIn() {
@@ -93,18 +87,41 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         cameraControlInstaStory?.enableTorch(true)
     }
     
-    suspend fun bindToCameraInstaStory(
+    fun stopRecordingInstaStory() {
+        viewModelScope.launch {
+            Log.d("CameraViewModel", "Stopping recording...")
+            cancel()
+        }
+    }
+    
+    fun bindToCameraInstaStory(
         context: Context,
         lifecycleOwner: LifecycleOwner
     ) {
-        cameraControlInstaStory = FileHelper.instaStoryVideoCapture(
-            context,
-            onSave = {},
-            onError = {},
-            lifecycleOwner,
-            cameraPreviewUseCase
-        )
-        
+        viewModelScope.launch {
+            cameraControlInstaStory = FileHelper.instaStoryVideoCapture(
+                context,
+                onSave = {
+                    Log.d("CameraViewModel", "Video saved: $it")
+                },
+                onError = {
+                    Log.d("CameraViewModel", "Video error: $it")
+                },
+                lifecycleOwner,
+                cameraPreviewUseCase,
+                onDurationUpdate = { duration ->
+                    _videoDuration.value = duration
+                },
+                onRecordingStart = {
+                    Log.d("CameraViewModel", "Recording started")
+                    _isRecording.value = true
+                },
+                onRecordingStop = {
+                    Log.d("CameraViewModel", "Recording stopped")
+                    _isRecording.value = false
+                },
+            )
+        }
     }
     
     suspend fun bindToCamera(
