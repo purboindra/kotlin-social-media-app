@@ -111,13 +111,13 @@ fun LoginScreen(
                     }
                 }
             }
-            
+
             is State.Failure -> {
                 val message =
                     (loginState as State.Failure).throwable.message
                         ?: "Something went wrong"
                 coroutineScope.launch {
-                    snackbarViewModel.showSnackbar(message, isError = false)
+                    snackbarViewModel.showSnackbar(message, isError = true)
                 }
             }
             
