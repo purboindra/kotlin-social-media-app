@@ -9,23 +9,30 @@ data class UserModel(
     @SerialName("id")
     val id: String,
     @SerialName("created_at")
-    val createdAt: Instant?=null,
+    val createdAt: Instant? = null,
     @SerialName("access_token")
-    val accessToken: String?=null,
+    val accessToken: String? = null,
     @SerialName("refresh_token")
-    val refreshToken: String?=null,
+    val refreshToken: String? = null,
     @SerialName("username")
-    val username: String?=null,
+    val username: String? = null,
     @SerialName("full_name")
-    val fullName: String?=null,
+    val fullName: String? = null,
     @SerialName("password")
-    val password: String?=null,
+    val password: String? = null,
     @SerialName("profile_picture")
-    val profilePicture: String?=null,
+    val profilePicture: String? = null,
     @SerialName("email")
-    val email: String?=null,
+    val email: String? = null,
     @SerialName("birth_date")
-    val birthDate: Instant? = null
-    // TODO POSTS
+    val birthDate: Instant? = null,
+    @SerialName("providers")
+    val providers: List<String>? = null,
+    @SerialName("following")
+    val following: List<String>? = null,
+    @SerialName("followers")
+    val followers: List<String>? = null,
+    @SerialName("posts")
+    val posts: List<String>? = null
 )
 
