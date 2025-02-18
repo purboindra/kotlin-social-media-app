@@ -102,7 +102,7 @@ fun RegisterScreen(
                 coroutineScope.launch {
                     snackbarViewModel.showSnackbar(
                         "Successfully logged in",
-                        isError = true
+                        isError = false
                     )
                 }
             }
@@ -112,7 +112,7 @@ fun RegisterScreen(
                     (registerState as State.Failure).throwable.message
                         ?: "Something went wrong"
                 coroutineScope.launch {
-                    snackbarViewModel.showSnackbar(message, isError = false)
+                    snackbarViewModel.showSnackbar(message, isError = true)
                 }
             }
             
