@@ -1,6 +1,7 @@
 package com.example.socialmedia.ui.insta_story
 
 import android.Manifest
+import android.graphics.Paint.Align
 import android.os.Build
 import android.util.Log
 import android.view.MotionEvent
@@ -12,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,7 +28,9 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -67,6 +72,7 @@ fun InstaStoryScreen(
     val coroutineScope = rememberCoroutineScope()
     
     val surfaceRequest by cameraViewModel.surfaceRequest.collectAsState()
+    val videoDuration by cameraViewModel.videoDuration.collectAsState()
     
     var isRecording by remember {
         mutableStateOf(false)
@@ -139,6 +145,19 @@ fun InstaStoryScreen(
                 modifier = Modifier.fillMaxSize(),
                 surfaceRequest = surfaceRequest
             )
+            
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "$videoDuration",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontSize = 24.sp,
+                        color = Color.DarkGray
+                    )
+                )
+            }
             
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -216,17 +235,16 @@ fun InstaStoryScreen(
                                 MotionEvent.ACTION_DOWN -> {
                                     Log.d("Insta Story Screen", "onPressed")
                                     cameraViewModel.toggleIsRecording()
-                                    cameraViewModel.bindToCameraInstaStory(
-                                        context,
-                                        lifecycleOwner,
+                                    cameraViewModel.startRecordingInstaStory(
+                                        context
                                     )
                                     true
                                 }
                                 
                                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                                     cameraViewModel.toggleIsRecording()
+                                    cameraViewModel.stopRecordingInstaStory()
                                     Log.d("Insta Story Screen", "onRelease")
-                                    /// STOP VIDEO
                                     true
                                 }
                                 

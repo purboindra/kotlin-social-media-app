@@ -91,36 +91,58 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             Log.d("CameraViewModel", "Stopping recording...")
             cancel()
+            _isRecording.value = false
+            recording?.stop()
+            recording = null
         }
+    }
+    
+    fun startRecordingInstaStory(context: Context) {
+        videoCapture?.let { vc ->
+            viewModelScope.launch {
+                recording = FileHelper.startVideoRecordingInstaStory(
+                    context,
+                    videoCapture = vc,
+                    onSave = { uri ->
+                        Log.d(
+                            "CameraViewModel",
+                            "Saved uri: $uri"
+                        )
+                        _recordedVideoUri.value = uri
+                    },
+                    onError = { error ->
+                        Log.e(
+                            "CameraViewModel",
+                            "Error recording: ${error.message}"
+                        )
+                    },
+                    onRecordingStart = {
+                        _isRecording.value = true
+                    },
+                    onRecordingStop = {
+                        _isRecording.value = false
+                    },
+                    onDurationUpdate = { duration ->
+                        _videoDuration.value = duration
+                    }
+                )
+            }
+        } ?: Log.e("CameraViewModel", "Video capture is not bound yet")
     }
     
     fun bindToCameraInstaStory(
         context: Context,
-        lifecycleOwner: LifecycleOwner
-    ) {
+        lifecycleOwner: LifecycleOwner,
+        
+        ) {
         viewModelScope.launch {
-            cameraControlInstaStory = FileHelper.instaStoryVideoCapture(
+            val (cameraControl, videoCaptureInstance) = FileHelper.bindCameraInstaStory(
                 context,
-                onSave = {
-                    Log.d("CameraViewModel", "Video saved: $it")
-                },
-                onError = {
-                    Log.d("CameraViewModel", "Video error: $it")
-                },
                 lifecycleOwner,
-                cameraPreviewUseCase,
-                onDurationUpdate = { duration ->
-                    _videoDuration.value = duration
-                },
-                onRecordingStart = {
-                    Log.d("CameraViewModel", "Recording started")
-                    _isRecording.value = true
-                },
-                onRecordingStop = {
-                    Log.d("CameraViewModel", "Recording stopped")
-                    _isRecording.value = false
-                },
+                cameraPreviewUseCase
             )
+            videoCapture = videoCaptureInstance
+            cameraControlInstaStory = cameraControl
         }
     }
     

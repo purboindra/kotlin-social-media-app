@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -14,13 +15,11 @@ import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.MirrorMode
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.lifecycle.awaitInstance
 import androidx.camera.video.FallbackStrategy
 import androidx.camera.video.FileOutputOptions
-import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
@@ -29,6 +28,7 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -54,143 +54,111 @@ object FileHelper {
         }
     }
     
-    suspend fun instaStoryVideoCapture(
+    
+    suspend fun bindCameraInstaStory(
         context: Context,
-        onSave: (Uri) -> Unit,
-        onError: (Exception) -> Unit,
-        lifecycleOwner: androidx.lifecycle.LifecycleOwner,
-        cameraPreviewUseCase: Preview,
-        onDurationUpdate: (Long) -> Unit,
-        onRecordingStop: (() -> Unit)? = null,
-        onRecordingStart: (() -> Unit)? = null,
-    ): CameraControl {
-        
-        val processCameraProvider =
-            ProcessCameraProvider.awaitInstance(context)
+        lifecycleOwner: LifecycleOwner,
+        cameraPreviewUseCase: Preview
+    ): Pair<CameraControl, VideoCapture<Recorder>> {
+        val processCameraProvider = ProcessCameraProvider.awaitInstance(context)
         
         processCameraProvider.unbindAll()
         
         val qualitySelector = QualitySelector.fromOrderedList(
-            listOf(Quality.UHD, Quality.FHD, Quality.HD, Quality.SD),
+            listOf(
+                Quality.UHD, Quality.FHD, Quality.HD, Quality.SD,
+            ),
             FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
         )
         
-        val recorder = Recorder.Builder().setQualitySelector(
-            qualitySelector
-        ).build()
+        val recorder =
+            Recorder.Builder().setQualitySelector(qualitySelector).build()
         
-        val videoCapture = VideoCapture.Builder(recorder).setMirrorMode(
-            MirrorMode.MIRROR_MODE_ON_FRONT_ONLY
-        ).build()
-        
+        val videoCapture = VideoCapture.withOutput(recorder)
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
         
         val camera = processCameraProvider.bindToLifecycle(
             lifecycleOwner,
             cameraSelector,
             videoCapture,
-            cameraPreviewUseCase,
+            cameraPreviewUseCase
         )
         
-        onRecordingStart?.invoke()
-        
-        startRecording(
-            context,
-            videoCapture,
-            onSave,
-            onError,
-            onDurationUpdate,
-            onRecordingStop,
-        )
-        
-        return camera.cameraControl
+        return Pair(camera.cameraControl, videoCapture)
     }
     
-    private suspend fun startRecording(
+    suspend fun startVideoRecordingInstaStory(
         context: Context,
         videoCapture: VideoCapture<Recorder>,
         onSave: (Uri) -> Unit,
         onError: (Exception) -> Unit,
         onDurationUpdate: (Long) -> Unit,
-        onRecordingStop: (() -> Unit)? = null,
-    ) {
-        val fileName = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
-            .format(System.currentTimeMillis()) + ".mp4"
+        onRecordingStop: (() -> Unit)?,
+        onRecordingStart: (() -> Unit)?,
+    ): Recording? {
+        onRecordingStart?.invoke()
         
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(
-                    MediaStore.Video.Media.RELATIVE_PATH,
-                    "Movies/CameraX-Video"
+        val videoFile =
+            withContext(Dispatchers.IO) {
+                File.createTempFile(
+                    "temp_video_", ".mp4"
                 )
             }
-        }
         
-        val mediaStoreOutputOptions = MediaStoreOutputOptions.Builder(
-            context.contentResolver,
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-        ).setContentValues(contentValues).build()
+        val outputOptions = FileOutputOptions.Builder(videoFile).build()
         
         val startTime = System.currentTimeMillis()
         
-        try {
-            
-            suspendCancellableCoroutine { continuation ->
-                val recording = videoCapture.output
-                    .prepareRecording(context, mediaStoreOutputOptions)
-                    .apply {
-                        if (ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.RECORD_AUDIO
-                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                        ) {
-                            withAudioEnabled()
-                        }
-                    }
-                    .start(ContextCompat.getMainExecutor(context)) { recordEvent ->
-                        when (recordEvent) {
-                            is VideoRecordEvent.Start -> {
-                                Log.d("CameraX", "Recording Started")
-                            }
-                            
-                            is VideoRecordEvent.Status -> {
-                                val durationMillis =
-                                    System.currentTimeMillis() - startTime
-                                val seconds = (durationMillis / 1000).toInt()
-                                onDurationUpdate(seconds.toLong())
-                            }
-                            
-                            is VideoRecordEvent.Finalize -> {
-                                if (!recordEvent.hasError()) {
-                                    val savedUri =
-                                        recordEvent.outputResults.outputUri
-                                    Log.d("CameraX", "Video saved to $savedUri")
-                                    onSave(savedUri)
-                                } else {
-                                    Log.e(
-                                        "CameraX",
-                                        "Recording Error: ${recordEvent.cause?.message}"
-                                    )
-                                    
-                                    onError(Exception("Something went wrong!"))
-                                }
-                                continuation.resume(Unit)
-                            }
-                        }
-                    }
+        val recording = videoCapture.output.prepareRecording(
+            context,
+            outputOptions
+        ).apply {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.RECORD_AUDIO
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                withAudioEnabled()
+            }
+        }.start(
+            ContextCompat.getMainExecutor(context)
+        ) { recordEvent ->
+            when (recordEvent) {
+                is VideoRecordEvent.Start -> Log.d(
+                    "CameraX",
+                    "Recording started"
+                )
                 
-                continuation.invokeOnCancellation {
-                    Log.d("CameraX", "Recording Stopped")
-                    
-                    recording.stop()
-                    onRecordingStop?.invoke()
+                is VideoRecordEvent.Status -> {
+                    val durationMills =
+                        System.currentTimeMillis() - startTime
+                    val seconds = (durationMills / 1000).toInt()
+                    onDurationUpdate(seconds.toLong())
+                }
+                
+                is VideoRecordEvent.Finalize -> {
+                    if (!recordEvent.hasError()) {
+                        val savedUri = recordEvent.outputResults.outputUri
+                        onSave(savedUri)
+                    } else {
+                        Log.e(
+                            "CameraX",
+                            "Recording Error: ${recordEvent.error}"
+                        )
+//                            onError(
+//                                Exception(
+//                                    message = recordEvent.error,
+//                                    cause = recordEvent.cause
+//                                )
+//                            )
+                    }
+                    onRecordingStart?.invoke()
                 }
             }
-        } catch (e: Exception) {
-            onError(e)
         }
+        
+        return recording
+        
     }
     
     
