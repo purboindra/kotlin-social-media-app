@@ -1,7 +1,6 @@
 package com.example.socialmedia.ui.insta_story
 
 import android.Manifest
-import android.graphics.Paint.Align
 import android.os.Build
 import android.util.Log
 import android.view.MotionEvent
@@ -13,7 +12,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -64,24 +62,25 @@ fun InstaStoryScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     cameraViewModel: CameraViewModel = hiltViewModel()
 ) {
-    
+
     val context = LocalContext.current
     val permissionGranted = remember { mutableStateOf(false) }
     var loadingPermission by remember { mutableStateOf(false) }
-    
+
     val coroutineScope = rememberCoroutineScope()
-    
+
     val surfaceRequest by cameraViewModel.surfaceRequest.collectAsState()
     val videoDuration by cameraViewModel.videoDuration.collectAsState()
-    
+    val videoUri by cameraViewModel.recordedVideoUri.collectAsState()
+
     var isRecording by remember {
         mutableStateOf(false)
     }
-    
+
     LaunchedEffect(lifecycleOwner) {
         cameraViewModel.bindToCameraInstaStory(context, lifecycleOwner)
     }
-    
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
@@ -97,7 +96,7 @@ fun InstaStoryScreen(
             }
         }
     )
-    
+
     val requiredPermission = when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
             arrayOf(
@@ -105,14 +104,14 @@ fun InstaStoryScreen(
                 Manifest.permission.RECORD_AUDIO,
             )
         }
-        
+
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
             arrayOf(
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO,
             )
         }
-        
+
         else -> {
             arrayOf(
                 Manifest.permission.CAMERA,
@@ -121,7 +120,7 @@ fun InstaStoryScreen(
             )
         }
     }
-    
+
     LaunchedEffect(Unit) {
         loadingPermission = true
         if (!PermissionHelper.hasMediaPermissions(context)) {
@@ -129,23 +128,24 @@ fun InstaStoryScreen(
                 requiredPermission
             )
         }
-        
+
         loadingPermission = false
     }
-    
+
+
     Scaffold { paddingValues ->
-        Box(
+        if (videoUri != null) InstaStoryVideoScreen(videoUri) else Box(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
                 .background(Color.Gray)
         ) {
-            
+
             InstaStoryContent(
                 modifier = Modifier.fillMaxSize(),
                 surfaceRequest = surfaceRequest
             )
-            
+
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -158,7 +158,7 @@ fun InstaStoryScreen(
                     )
                 )
             }
-            
+
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
@@ -175,14 +175,14 @@ fun InstaStoryScreen(
                             navHostController.popBackStack()
                         }
                 )
-                
+
                 Icon(
                     Icons.Outlined.FlashOn,
                     contentDescription = "Flash",
                     tint = Color.White,
                     modifier = Modifier.size(32.dp)
                 )
-                
+
                 Icon(
                     Icons.Outlined.Settings,
                     contentDescription = "Settings",
@@ -190,7 +190,7 @@ fun InstaStoryScreen(
                     modifier = Modifier.size(32.dp)
                 )
             }
-            
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -240,14 +240,14 @@ fun InstaStoryScreen(
                                     )
                                     true
                                 }
-                                
+
                                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                                     cameraViewModel.toggleIsRecording()
                                     cameraViewModel.stopRecordingInstaStory()
                                     Log.d("Insta Story Screen", "onRelease")
                                     true
                                 }
-                                
+
                                 else -> false
                             }
                         },
