@@ -1,5 +1,6 @@
 package com.example.socialmedia.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,6 +27,16 @@ import com.example.socialmedia.utils.HorizontalSpacer
 
 @Composable
 fun HomeScreenHeader(navHostController: NavHostController) {
+    
+    val navBackStackEntry = navHostController.currentBackStackEntry
+    val videoUri = navBackStackEntry?.savedStateHandle?.get<String>("videoUri")
+    
+    LaunchedEffect(videoUri) {
+        videoUri?.let {
+            Log.d("HomeScreenHeader", "Video uri: ${it}")
+        }
+    }
+    
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
