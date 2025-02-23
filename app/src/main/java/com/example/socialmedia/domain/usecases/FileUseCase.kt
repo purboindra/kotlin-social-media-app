@@ -9,4 +9,8 @@ class FileUseCase(private val fileRepository: FileRepository) {
     suspend fun uploadFile(imageByte: ByteArray): Flow<State<UploadImageModel?>> {
         return fileRepository.uploadImage(imageByte)
     }
+    
+    suspend fun uploadVideo(videoByte: ByteArray): Flow<State<UploadImageModel?>> {
+        return fileRepository.uploadVideo(videoByte)
+    }
 }

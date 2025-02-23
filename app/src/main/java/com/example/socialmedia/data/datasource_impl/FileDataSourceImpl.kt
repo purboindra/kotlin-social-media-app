@@ -6,6 +6,7 @@ import com.example.socialmedia.data.model.UploadImageModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.storage.storage
+import io.ktor.http.ContentType
 
 class FileDataSourceImpl(
     private val supabase: SupabaseClient,
@@ -38,6 +39,37 @@ class FileDataSourceImpl(
         } catch (e: Exception) {
             Log.e("FileDataSourceImpl", "Error uploading file: ${e.message}")
             return Result.failure(e)
+        }
+    }
+    
+    override suspend fun uploadVideo(videoByte: ByteArray): Result<UploadImageModel?> {
+        return try {
+            val userId = supabase.auth.currentSessionOrNull()?.user?.id
+                ?: throw Exception("User is not authenticated")
+            
+            val fileName = "$userId-${System.currentTimeMillis()}.mp4"
+            val response = supabase.storage.from("instastories").upload(
+                fileName,
+                videoByte,
+                options = {
+                    contentType = ContentType("video", "mp4")
+                }
+            )
+            
+            if (response.key.isNullOrEmpty() || response.id.isNullOrEmpty()) {
+                throw Exception("Video upload failed")
+            }
+            
+            val uploadImageModel = UploadImageModel(
+                key = response.key ?: "",
+                id = response.id ?: "",
+                path = response.path
+            )
+            
+            Result.success(uploadImageModel)
+        } catch (e: Exception) {
+            Log.e("FileDataSourceImpl", "Error uploading video: ${e.message}")
+            Result.failure(e)
         }
     }
     

@@ -1,6 +1,7 @@
 package com.example.socialmedia.data.datasource_impl
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.socialmedia.data.datasource.InstaStoryDatasource
 import com.example.socialmedia.data.db.local.AppDataStore
@@ -24,13 +25,15 @@ class InstaStoryDatasourceImpl(
     override suspend fun createInstaStory(video: UploadImageModel): ResponseModel {
         return try {
             
+            Log.d("InstaStoryDatasourceImpl", "Creating story")
+            Log.d("InstaStoryDatasourceImpl", "Video: ${video.key} // ${video.path}")
+            
             val userId = datastore.userId.firstOrNull()
                 ?: throw Exception("User ID not found")
             
             val uuid = UUID.randomUUID().toString()
             
             val expiresAt = Clock.System.now().plus(24.hours).toString()
-            
             
             val createInstaStoryModel = CreateInstaStoryModel(
                 id = uuid,
@@ -45,6 +48,7 @@ class InstaStoryDatasourceImpl(
             ResponseModel.Success
             
         } catch (e: Throwable) {
+            Log.e("InstaStoryDatasourceImpl", "Error creating story", e)
             ResponseModel.Error(e.message ?: "Error creating story")
         }
     }

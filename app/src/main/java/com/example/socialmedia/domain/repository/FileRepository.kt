@@ -10,4 +10,6 @@ interface FileRepository {
     suspend fun uploadImage(
         imageByte: ByteArray,
     ): Flow<State<UploadImageModel?>>
+    
+    suspend fun uploadVideo(videoByte: ByteArray): Flow<State<UploadImageModel?>>
 }

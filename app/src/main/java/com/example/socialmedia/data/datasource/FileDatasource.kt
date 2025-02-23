@@ -6,4 +6,5 @@ import com.example.socialmedia.data.model.UploadImageModel
 
 interface FileDatasource {
     suspend fun uploadImage(imageByte: ByteArray): Result<UploadImageModel?>
+    suspend fun uploadVideo(videoByte: ByteArray): Result<UploadImageModel?>
 }

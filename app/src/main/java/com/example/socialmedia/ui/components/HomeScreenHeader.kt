@@ -1,5 +1,6 @@
 package com.example.socialmedia.ui.components
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -17,23 +18,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.socialmedia.R
 import com.example.socialmedia.icons.Message
 import com.example.socialmedia.icons.message.Message
 import com.example.socialmedia.ui.navigation.Screens
+import com.example.socialmedia.ui.viewmodel.HomeViewModel
 import com.example.socialmedia.utils.HorizontalSpacer
 
 @Composable
-fun HomeScreenHeader(navHostController: NavHostController) {
+fun HomeScreenHeader(
+    navHostController: NavHostController,
+    homeViewModel: HomeViewModel
+) {
     
     val navBackStackEntry = navHostController.currentBackStackEntry
     val videoUri = navBackStackEntry?.savedStateHandle?.get<String>("videoUri")
     
+    val context = LocalContext.current
+    
     LaunchedEffect(videoUri) {
         videoUri?.let {
-            Log.d("HomeScreenHeader", "Video uri: ${it}")
+            Log.d("HomeScreenHeader", "Video uri: $it")
+            val parseVideoUri = Uri.parse(it)
+            homeViewModel.createInstaStory(parseVideoUri, context)
         }
     }
     

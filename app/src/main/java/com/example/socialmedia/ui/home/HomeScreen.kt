@@ -28,13 +28,15 @@ import com.example.socialmedia.ui.components.HomeScreenHeader
 import com.example.socialmedia.ui.components.InstaStoryCompose
 import com.example.socialmedia.ui.components.LoadingPostCard
 import com.example.socialmedia.ui.components.PostCardCompose
+import com.example.socialmedia.ui.viewmodel.HomeViewModel
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.VerticalSpacer
 
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    postViewModel: PostViewModel = hiltViewModel()
+    postViewModel: PostViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     
     val horizontalPadding = 8.dp
@@ -56,7 +58,7 @@ fun HomeScreen(
             .nestedScroll(rememberNestedScrollInteropConnection())
     ) {
         item {
-            HomeScreenHeader(navController)
+            HomeScreenHeader(navController, homeViewModel)
             10.VerticalSpacer()
         }
         item {

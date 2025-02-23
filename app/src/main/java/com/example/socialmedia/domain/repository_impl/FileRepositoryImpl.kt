@@ -24,4 +24,19 @@ class FileRepositoryImpl(private val fileDatasource: FileDatasource) :
             emit(State.Failure(e))
         }
     }
+    
+    override suspend fun uploadVideo(videoByte: ByteArray): Flow<State<UploadImageModel?>> = flow {
+        emit(State.Loading)
+        try {
+            
+            val result = fileDatasource.uploadVideo(videoByte)
+            result.onSuccess {
+                emit(State.Success(it))
+            }.onFailure {
+                emit(State.Failure(it))
+            }
+        } catch (e: Exception) {
+            emit(State.Failure(e))
+        }
+    }
 }
