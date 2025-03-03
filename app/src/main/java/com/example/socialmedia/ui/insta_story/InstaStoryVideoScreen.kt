@@ -7,9 +7,11 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +35,7 @@ import com.example.socialmedia.ui.components.AppElevatedButton
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.PermissionHelper
 import com.example.socialmedia.utils.PostHelper
+import com.example.socialmedia.utils.VerticalSpacer
 
 @Composable
 fun InstaStoryVideoScreen(
@@ -98,42 +101,14 @@ fun InstaStoryVideoScreen(
         loadingPermission = false
     }
     
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            playWhenReady = true
-            repeatMode = Player.REPEAT_MODE_ONE
-        }
-    }
-    
-    LaunchedEffect(videoUri) {
-        if (videoUri != null) {
-            exoPlayer.setMediaItem(MediaItem.fromUri(videoUri))
-            exoPlayer.prepare()
-        }
-    }
-    
-    DisposableEffect(Unit) {
-        onDispose {
-            exoPlayer.release()
-        }
-    }
     
     Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { context ->
-                PlayerView(context).apply {
-                    player = exoPlayer
-                    useController = true
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 32.dp, horizontal = 16.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
+        
+        if (loadingPermission) Text("Loading...") else Column {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Text("Image")
+            }
+            10.VerticalSpacer()
             AppElevatedButton(
                 onClick = {
                     navHostController.previousBackStackEntry?.savedStateHandle?.set(

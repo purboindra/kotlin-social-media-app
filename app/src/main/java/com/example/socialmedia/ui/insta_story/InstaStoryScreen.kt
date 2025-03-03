@@ -73,9 +73,7 @@ fun InstaStoryScreen(
     val videoDuration by cameraViewModel.videoDuration.collectAsState()
     val videoUri by cameraViewModel.recordedVideoUri.collectAsState()
     
-    var isRecording by remember {
-        mutableStateOf(false)
-    }
+    
     
     LaunchedEffect(lifecycleOwner) {
         cameraViewModel.bindToCameraInstaStory(context, lifecycleOwner)
@@ -97,29 +95,20 @@ fun InstaStoryScreen(
         }
     )
     
-    val requiredPermission = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+    val requiredPermission =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             arrayOf(
                 Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.READ_MEDIA_IMAGES,
             )
-        }
-        
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+        } else {
             arrayOf(
                 Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-            )
-        }
-        
-        else -> {
-            arrayOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
             )
         }
-    }
+    
     
     LaunchedEffect(Unit) {
         loadingPermission = true
@@ -128,7 +117,6 @@ fun InstaStoryScreen(
                 requiredPermission
             )
         }
-        
         loadingPermission = false
     }
     
@@ -236,7 +224,10 @@ fun InstaStoryScreen(
                         .pointerInteropFilter { event ->
                             when (event.action) {
                                 MotionEvent.ACTION_DOWN -> {
-                                    Log.d("Insta Story Screen", "onPressed")
+                                    Log.d(
+                                        "Insta Story Screen",
+                                        "onPressed"
+                                    )
                                     cameraViewModel.toggleIsRecording()
                                     cameraViewModel.startRecordingInstaStory(
                                         context
@@ -247,7 +238,10 @@ fun InstaStoryScreen(
                                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                                     cameraViewModel.toggleIsRecording()
                                     cameraViewModel.stopRecordingInstaStory()
-                                    Log.d("Insta Story Screen", "onRelease")
+                                    Log.d(
+                                        "Insta Story Screen",
+                                        "onRelease"
+                                    )
                                     true
                                 }
                                 
