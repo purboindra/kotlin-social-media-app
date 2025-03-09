@@ -10,26 +10,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
 import androidx.navigation.NavHostController
 import com.example.socialmedia.ui.components.AppElevatedButton
 import com.example.socialmedia.ui.viewmodel.PostViewModel
@@ -38,7 +29,7 @@ import com.example.socialmedia.utils.PostHelper
 import com.example.socialmedia.utils.VerticalSpacer
 
 @Composable
-fun InstaStoryVideoScreen(
+fun InstaStoryPreviewScreen(
     videoUri: Uri?,
     navHostController: NavHostController,
     postViewModel: PostViewModel = hiltViewModel()
