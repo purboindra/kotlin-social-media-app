@@ -78,7 +78,7 @@ class InstastoryViewModel @Inject constructor(
                 return@launch
             }
             
-            fileUseCase.uploadFile(imageBytes).collectLatest { state ->
+            fileUseCase.uploadFile(imageBytes,"instastories").collectLatest { state ->
                 
                 when (state) {
                     is State.Success -> {
