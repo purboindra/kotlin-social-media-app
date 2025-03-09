@@ -72,13 +72,30 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             composable(Screens.StoryVideoScreen.route) {
                 StoryVideoScreen()
             }
-            composable(Screens.InstaStoryPreviewScreen.route) {
-                InstaStoryPreviewScreen()
-            }
-            composable("instastory_screen?imageUri={imageUri}",
+            composable("instastory_preview_screen?imageUrl={imageUrl}&profilePicture={profilePicture}",
                 arguments = listOf(
                     navArgument(
-                        "imageUri"
+                        "imageUrl"
+                    ) {
+                        type = NavType.StringType
+                        nullable = false
+                        defaultValue = ""
+                    },
+                    navArgument(
+                        "profilePicture"
+                    ) {
+                        type = NavType.StringType
+                        nullable = false
+                        defaultValue = ""
+                    }
+                )
+            ) {
+                InstaStoryPreviewScreen(navController)
+            }
+            composable("instastory_screen?imageUrl={imageUrl}",
+                arguments = listOf(
+                    navArgument(
+                        "imageUrl"
                     ) {
                         type = NavType.StringType
                         nullable = true
@@ -86,7 +103,6 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     }
                 )
             ) {
-                BackHandler(true) { }
                 InstaStoryScreen(navController)
             }
             composable("create_caption?imageUri={imageUri}&videoUri={videoUri}",
