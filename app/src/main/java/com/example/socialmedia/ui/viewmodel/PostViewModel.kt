@@ -223,7 +223,7 @@ class PostViewModel @Inject constructor(
             return@launch
         }
         
-        fileUseCase.uploadFile(imageBytes).collectLatest { state ->
+        fileUseCase.uploadFile(imageBytes, "posts").collectLatest { state ->
             handleFileUploadState(state)
         }
     }

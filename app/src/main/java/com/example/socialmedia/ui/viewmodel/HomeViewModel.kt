@@ -41,7 +41,7 @@ class HomeViewModel @Inject constructor(
                         State.Failure(Throwable("Failed to convert video to bytes"))
                 }
         
-        fileUseCase.uploadFile(videoBytes)
+        fileUseCase.uploadFile(videoBytes,"instastories")
             .flatMapLatest { state ->
                 when (state) {
                     is State.Success -> {
