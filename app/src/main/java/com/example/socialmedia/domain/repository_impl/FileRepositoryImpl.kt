@@ -11,10 +11,11 @@ class FileRepositoryImpl(private val fileDatasource: FileDatasource) :
     FileRepository {
     override suspend fun uploadImage(
         imageByte: ByteArray,
+        bucketId: String,
     ): Flow<State<UploadImageModel?>> = flow {
         emit(State.Loading)
         try {
-            val result = fileDatasource.uploadImage(imageByte)
+            val result = fileDatasource.uploadImage(imageByte, bucketId)
             result.onSuccess {
                 emit(State.Success(it))
             }.onFailure {
@@ -25,18 +26,19 @@ class FileRepositoryImpl(private val fileDatasource: FileDatasource) :
         }
     }
     
-    override suspend fun uploadVideo(videoByte: ByteArray): Flow<State<UploadImageModel?>> = flow {
-        emit(State.Loading)
-        try {
-            
-            val result = fileDatasource.uploadVideo(videoByte)
-            result.onSuccess {
-                emit(State.Success(it))
-            }.onFailure {
-                emit(State.Failure(it))
+    override suspend fun uploadVideo(videoByte: ByteArray): Flow<State<UploadImageModel?>> =
+        flow {
+            emit(State.Loading)
+            try {
+                
+                val result = fileDatasource.uploadVideo(videoByte)
+                result.onSuccess {
+                    emit(State.Success(it))
+                }.onFailure {
+                    emit(State.Failure(it))
+                }
+            } catch (e: Exception) {
+                emit(State.Failure(e))
             }
-        } catch (e: Exception) {
-            emit(State.Failure(e))
         }
-    }
 }

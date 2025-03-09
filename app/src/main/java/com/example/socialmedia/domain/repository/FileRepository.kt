@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface FileRepository {
     suspend fun uploadImage(
         imageByte: ByteArray,
+        bucketId:String,
     ): Flow<State<UploadImageModel?>>
     
     suspend fun uploadVideo(videoByte: ByteArray): Flow<State<UploadImageModel?>>

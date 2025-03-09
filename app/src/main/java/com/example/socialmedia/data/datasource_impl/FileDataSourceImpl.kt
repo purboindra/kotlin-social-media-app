@@ -12,14 +12,15 @@ class FileDataSourceImpl(
     private val supabase: SupabaseClient,
 ) : FileDatasource {
     override suspend fun uploadImage(
-        imageByte: ByteArray
+        imageByte: ByteArray,
+        bucketId: String
     ): Result<UploadImageModel?> {
         try {
             val userId = supabase.auth.currentSessionOrNull()?.user?.id
                 ?: throw Exception("User is not authenticated")
             
             val response = supabase.storage
-                .from("posts")
+                .from(bucketId)
                 .upload(
                     "$userId-${System.currentTimeMillis()}.jpg",
                     imageByte
