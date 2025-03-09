@@ -1,12 +1,10 @@
 package com.example.socialmedia.ui.home
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,7 +26,6 @@ import com.example.socialmedia.ui.components.HomeScreenHeader
 import com.example.socialmedia.ui.components.InstaStoryCompose
 import com.example.socialmedia.ui.components.LoadingPostCard
 import com.example.socialmedia.ui.components.PostCardCompose
-import com.example.socialmedia.ui.viewmodel.HomeViewModel
 import com.example.socialmedia.ui.viewmodel.InstastoryViewModel
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.VerticalSpacer
@@ -67,7 +64,10 @@ fun HomeScreen(
             10.VerticalSpacer()
         }
         item {
-            InstaStoryCompose(instaStoryViewModel)
+            InstaStoryCompose(
+                navHostController = navController,
+                instastoryViewModel = instaStoryViewModel
+            )
             10.VerticalSpacer()
         }
         when (postState) {
