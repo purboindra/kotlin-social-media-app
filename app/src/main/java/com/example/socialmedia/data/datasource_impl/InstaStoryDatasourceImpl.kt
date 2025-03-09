@@ -7,17 +7,21 @@ import com.example.socialmedia.data.datasource.InstaStoryDatasource
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CreateInstaStoryModel
 import com.example.socialmedia.data.model.InstaStoryModel
-import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.UploadImageModel
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.exceptions.HttpRequestException
+import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.storage.storage
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 import java.util.UUID
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 data class InstaStory(
     val id: String,
@@ -41,11 +45,14 @@ class InstaStoryDatasourceImpl(
             val currentUserId = datastore.userId.firstOrNull()
                 ?: throw Exception("User ID not found")
             
+            val bucket = supabase.storage.from("instastories")
+            
             val stories = supabase.from("instastories").select(
                 columns = Columns.raw(
                     """
                    id,
-                   video_path,
+                   content_path,
+                   content_url,
                    expires_at,
                    status,
                    duration,
@@ -63,16 +70,55 @@ class InstaStoryDatasourceImpl(
             
             val parsedData = Json.decodeFromString<List<InstaStoryModel>>(data)
             
-            for (instastory in parsedData) {
+            val updateInstaStories = parsedData.map { instastory ->
+                Log.d("PostDataSourceImpl", "InstaStory: $instastory")
+                val url = try {
+                    bucket.createSignedUrl(
+                        path = instastory.contentPath,
+                        expiresIn = 5.minutes
+                    )
+                } catch (e: RestException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url RestException",
+                        e
+                    )
+                    ""
+                } catch (e: HttpRequestException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url HttpRequestException",
+                        e
+                    )
+                    ""
+                } catch (e: HttpRequestTimeoutException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url HttpRequestTimeoutException",
+                        e
+                    )
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url Exception",
+                        e
+                    )
+                    ""
+                }
+                
+                instastory.copy(
+                    contentUrl = url
+                )
+            }
+            
+            for (instastory in updateInstaStories) {
                 val userId = instastory.user.id
                 
-                var profilePicture = ""
-                var fullName = ""
+                val profilePicture =
+                    instastory.user.profilePicture ?: ""
                 
-                profilePicture =
-                    instastory.user.profilePicture ?: profilePicture
-                
-                fullName = instastory.user.fullName ?: fullName
+                val fullName = instastory.user.fullName ?: ""
                 
                 groupedStories.putIfAbsent(
                     userId, InstaStory(
@@ -87,6 +133,22 @@ class InstaStoryDatasourceImpl(
             }
             
             instastories.addAll(groupedStories.values)
+            
+            val findCurrentUserInstaStory = instastories.find {
+                it.id == currentUserId
+            }
+            
+            val profilePicture = datastore.profilePicture.firstOrNull()
+            
+            if (findCurrentUserInstaStory == null) {
+                val currentUserInstaStory = InstaStory(
+                    id = currentUserId,
+                    profilePicture = profilePicture ?: "",
+                    fullName = "",
+                    instastories = mutableListOf(),
+                )
+                instastories.add(currentUserInstaStory)
+            }
             
             val sortedInstastories = instastories.sortedWith(
                 compareByDescending {
@@ -120,7 +182,8 @@ class InstaStoryDatasourceImpl(
             
             val createInstaStoryModel = CreateInstaStoryModel(
                 id = uuid,
-                videoPath = video.key,
+                contentPath = video.path,
+                contentUrl = "",
                 user = userId,
                 expiresAt = expiresAt,
                 status = true,
