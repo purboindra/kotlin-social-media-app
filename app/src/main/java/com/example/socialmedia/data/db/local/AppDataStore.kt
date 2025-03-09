@@ -22,6 +22,7 @@ class AppDataStore(private val context: Context) {
         val USER_ACCESS_TOKEN = stringPreferencesKey("access_token")
         val USER_REFRESH_TOKEN = stringPreferencesKey("refresh_token")
         val USER_EMAIL = stringPreferencesKey("email")
+        val PROFILE_PICTURE = stringPreferencesKey("profile_picture")
     }
     
     private suspend fun <T> saveData(key: Preferences.Key<T>, value: T) {
@@ -35,6 +36,12 @@ class AppDataStore(private val context: Context) {
             preferences[key]
         }
     }
+    
+    suspend fun saveProfilePicture(profilePicture: String) {
+        saveData(PROFILE_PICTURE, profilePicture)
+    }
+    
+    val profilePicture: Flow<String?> = getData(PROFILE_PICTURE)
     
     suspend fun saveUserEmail(email: String) {
         saveData(USER_EMAIL, email)
