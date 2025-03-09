@@ -1,6 +1,7 @@
 package com.example.socialmedia.domain.repository
 
 import android.content.Context
+import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.State
 import kotlinx.coroutines.flow.Flow
 
@@ -14,4 +15,6 @@ interface AuthRepository {
     suspend fun login(email: String, password: String): Flow<State<Boolean>>
     
     suspend fun loginWithGoogle(context: Context): Flow<State<Boolean>>
+    
+    suspend fun logout(): Flow<State<ResponseModel<Boolean>>>
 }

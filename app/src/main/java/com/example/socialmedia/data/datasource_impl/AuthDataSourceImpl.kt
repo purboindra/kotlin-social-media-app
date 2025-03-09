@@ -12,6 +12,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.example.socialmedia.data.datasource.AuthDatasource
 import com.example.socialmedia.data.db.local.AppDataStore
+import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.UserModel
 import com.example.socialmedia.domain.supabase.SupabaseClientModule
 import com.example.socialmedia.domain.supabase.SupabaseClientModule.SUPABASE_SERVER_CLIENT_ID
@@ -21,6 +22,7 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.SignOutScope
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.exception.AuthRestException
 import io.github.jan.supabase.auth.providers.Google
@@ -63,35 +65,35 @@ class AuthDataSourceImpl(
         password: String,
         username: String
     ): Boolean {
-
+        
         try {
             supabase.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
             }
-
+            
             val currentUser = supabase.auth.currentUserOrNull()
-
+            
             val userInfo = currentUser
                 ?: throw Exception("Something went wrong. Please try again!")
-
+            
             val createdAt = userInfo.createdAt
-
+            
             val userId = userInfo.id
-
+            
             val hashPassword = PasswordUtils.hashPassword(password)
-
+            
             val userJwt = User(
                 username,
                 email,
                 userId
             )
-
+            
             val accessToken =
                 TokenManager.createAccessToken(Json.encodeToString(userJwt))
             val refreshToken =
                 TokenManager.createRefreshToken(Json.encodeToString(userJwt))
-
+            
             val userModel = UserModel(
                 id = userId,
                 email = email,
@@ -103,79 +105,80 @@ class AuthDataSourceImpl(
                 refreshToken = refreshToken,
                 fullName = username,
             )
-
+            
             supabase.from("users").insert(userModel)
-
+            
             dataStore.saveUserId(userId)
             dataStore.saveUserName(username)
             dataStore.saveUserEmail(email)
             dataStore.saveAccessToken(accessToken)
             dataStore.saveRefreshToken(refreshToken)
-
+            
             return true
-
+            
         } catch (e: Exception) {
             Log.e(TAG, "Error registering: ${e.message}")
             throw e
         }
     }
-
+    
     override suspend fun login(
         email: String,
         password: String
     ): Result<Boolean> {
         try {
-
+            
             val checkUserExist = checkUserExist(email)
-
+            
             checkUserExist.onSuccess {
                 if (!it) throw Exception("User does not exist, please register first...")
             }
-
+            
             supabase.auth.signInWith(Email) {
                 this.email = email
                 this.password = password
             }
-
+            
             val currentUser = supabase.auth.currentUserOrNull()
-
+            
             val userInfo = currentUser
                 ?: throw Exception("Something went wrong. Please try again!")
-
+            
             val userDb = supabase.from("users").select(
             ) {
                 filter {
                     eq("email", email)
                 }
             }
-
+            
             val userData = userDb.data
-
+            
             Log.d("AuthDatasourceImpl", "USer data: ${userData}")
-
-            val parseStringToList = Json.decodeFromString<List<UserModel>>(userData)
-
+            
+            val parseStringToList =
+                Json.decodeFromString<List<UserModel>>(userData)
+            
             val user = parseStringToList.first()
-
+            
             val userJwt = User(
-                user.username?:"",
+                user.username ?: "",
                 email,
                 userInfo.id
             )
-
+            
             val accessToken =
                 TokenManager.createAccessToken(Json.encodeToString(userJwt))
             val refreshToken =
                 TokenManager.createRefreshToken(Json.encodeToString(userJwt))
-
+            
             dataStore.saveUserId(userInfo.id)
-            dataStore.saveUserName(user.username?:"")
+            dataStore.saveUserName(user.username ?: "")
             dataStore.saveUserEmail(email)
             dataStore.saveAccessToken(accessToken)
             dataStore.saveRefreshToken(refreshToken)
-
+            
             return Result.success(true)
-
+            
         } catch (e: AuthRestException) {
             Log.e(TAG, "AuthRestException login: ${e.message}")
             throw e
@@ -184,10 +187,10 @@ class AuthDataSourceImpl(
             throw e
         }
     }
-
+    
     override suspend fun loginWithGoogle(context: Context): Result<Boolean> {
         val credentialManager = CredentialManager.create(context)
-
+        
         val rawNonce = UUID.randomUUID()
             .toString()
         val bytes = rawNonce.toByteArray()
@@ -195,44 +198,44 @@ class AuthDataSourceImpl(
         val digest = md.digest(bytes)
         val hashedNonce =
             digest.fold("") { str, it -> str + "%02x".format(it) }
-
+        
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
             .setServerClientId(SUPABASE_SERVER_CLIENT_ID)
             .setNonce(hashedNonce)
             .build()
-
+        
         val request: GetCredentialRequest = GetCredentialRequest.Builder()
             .addCredentialOption(googleIdOption)
             .build()
-
+        
         try {
-
+            
             val result = credentialManager.getCredential(
                 request = request,
                 context = context,
             )
-
+            
             val googleIdTokenCredential = GoogleIdTokenCredential
                 .createFrom(result.credential.data)
-
+            
             val googleIdToken = googleIdTokenCredential.idToken
-
+            
             supabase.auth.signInWith(IDToken) {
                 idToken = googleIdToken
                 provider = Google
                 nonce = rawNonce
             }
-
+            
             val session = supabase.auth.currentSessionOrNull()
                 ?: throw AuthException("No active session found. Please log in again.")
-
+            
             val user = session.user
                 ?: throw AuthException("Unable to retrieve user information from the session.")
-
+            
             val userId = user.identities?.get(0)?.userId
                 ?: throw AuthException("User ID not found in user identities.")
-
+            
             val userModel = UserModel(
                 id = userId,
                 email = user.email!!,
@@ -247,25 +250,25 @@ class AuthDataSourceImpl(
                 fullName = user.userMetadata?.get("full_name").toString()
                     .trim('\"'),
             )
-
+            
             if (userModel.email.isNullOrEmpty()) throw AuthException("User email is null or empty.")
-
+            
             val checkUserExist = checkUserExist(userModel.email!!)
-
+            
             checkUserExist.onSuccess {
                 if (!it) {
                     supabase.from("users").insert(userModel)
                 }
             }
-
+            
             dataStore.saveUserId(userModel.id!!)
             dataStore.saveUserName(userModel.username!!)
             dataStore.saveUserEmail(userModel.email)
             dataStore.saveAccessToken(userModel.accessToken!!)
             dataStore.saveRefreshToken(userModel.refreshToken!!)
-
+            
             return Result.success(true)
-
+            
         } catch (e: AuthException) {
             Log.e(TAG, "Error Auth Exception: ${e.message}")
             return Result.failure(e)
@@ -281,7 +284,10 @@ class AuthDataSourceImpl(
                     Log.e(TAG, "Error Get Credential: ${e.message}")
                     return Result.failure(e)
                 } else {
-                    Log.e(TAG, "Error Get Credential Else: ${e.message} == ${e.javaClass}")
+                    Log.e(
+                        TAG,
+                        "Error Get Credential Else: ${e.message} == ${e.javaClass}"
+                    )
                     return Result.failure(e)
                 }
             } else {
@@ -290,7 +296,7 @@ class AuthDataSourceImpl(
             }
         }
     }
-
+    
     override suspend fun checkUserExist(email: String): Result<Boolean> {
         try {
             val fetchUserFromDb = supabase.from("users")
@@ -301,15 +307,26 @@ class AuthDataSourceImpl(
                         eq("email", email)
                     }
                 }
-
+            
             val user = fetchUserFromDb.data
-
+            
             val parseStringToList = Json.decodeFromString<List<User>>(user)
-
+            
             return Result.success(parseStringToList.isNotEmpty())
         } catch (e: Exception) {
             Log.e(TAG, "Error checking user: ${e.message}")
             throw e
+        }
+    }
+    
+    override suspend fun logout(): ResponseModel<Boolean> {
+        return try {
+            supabase.auth.signOut(SignOutScope.GLOBAL)
+            dataStore.saveAccessToken("")
+            dataStore.saveRefreshToken("")
+            ResponseModel.Success(true)
+        } catch (e: Exception) {
+            ResponseModel.Error(e.message ?: "Something went wrong")
         }
     }
 }

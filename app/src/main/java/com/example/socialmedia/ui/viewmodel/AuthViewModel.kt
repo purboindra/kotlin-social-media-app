@@ -3,6 +3,7 @@ package com.example.socialmedia.ui.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.domain.usecases.AuthUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,10 @@ enum class ObsecurePasswordType {
 class AuthViewModel @Inject constructor(
     private val authUseCase: AuthUseCase
 ) : ViewModel() {
+    
+    private val _logoutState: MutableStateFlow<State<Boolean>> =
+        MutableStateFlow(State.Idle)
+    val logoutState = _logoutState.asStateFlow()
     
     private val _registerState: MutableStateFlow<State<Boolean>> =
         MutableStateFlow(State.Idle)
@@ -103,6 +108,17 @@ class AuthViewModel @Inject constructor(
     fun loginWithGoogle(context: Context) = viewModelScope.launch {
         authUseCase.loginWithGoogle(context).collectLatest { state ->
             _loginWithGoogleState.value = state
+        }
+    }
+    
+    fun logout() = viewModelScope.launch {
+        authUseCase.logout().collectLatest { state ->
+            if (state is State.Success) {
+                _logoutState.value = State.Success(true)
+            } else {
+                _logoutState.value =
+                    State.Failure(Throwable("Failed to logout"))
+            }
         }
     }
 }

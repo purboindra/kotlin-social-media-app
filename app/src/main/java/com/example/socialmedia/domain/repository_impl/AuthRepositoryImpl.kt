@@ -2,6 +2,7 @@ package com.example.socialmedia.domain.repository_impl
 
 import android.content.Context
 import com.example.socialmedia.data.datasource.AuthDatasource
+import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
@@ -50,4 +51,15 @@ class AuthRepositoryImpl(private val authDatasource: AuthDatasource) :
                 emit(State.Failure(e))
             }
         }
+    
+    override suspend fun logout(): Flow<State<ResponseModel<Boolean>>> = flow {
+        emit(State.Loading)
+        try {
+            authDatasource.logout()
+            emit(State.Success(ResponseModel.Success(true)))
+        } catch (e: Exception) {
+            emit(State.Failure(e))
+        }
+        
+    }
 }

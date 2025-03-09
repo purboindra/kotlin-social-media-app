@@ -1,6 +1,7 @@
 package com.example.socialmedia.domain.usecases
 
 import android.content.Context
+import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
@@ -20,5 +21,9 @@ class AuthUseCase(private val authRepository: AuthRepository) {
     
     suspend fun loginWithGoogle(context: Context): Flow<State<Boolean>> {
         return authRepository.loginWithGoogle(context)
+    }
+    
+    suspend fun logout(): Flow<State<ResponseModel<Boolean>>> {
+        return authRepository.logout()
     }
 }
