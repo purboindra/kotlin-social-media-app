@@ -43,15 +43,17 @@ fun SplashScreen(
     
     LaunchedEffect(Unit) {
         delay(1000)
-        Log.d("SplashScreen", "NavController: $navHostController")
-        
         if (accessToken == null) {
-            Log.d("SplashScreen", "Navigating to Login")
             navHostController.navigate(Screens.Login.route) {
                 popUpTo(Screens.Splash.route) { inclusive = true }
             }
         } else {
-            Log.d("SplashScreen", "Navigating to Main")
+            if(accessToken!!.isEmpty()) {
+                navHostController.navigate(Screens.Login.route) {
+                    popUpTo(Screens.Splash.route) { inclusive = true }
+                }
+                return@LaunchedEffect
+            }
             navHostController.navigate(Screens.Main.route) {
                 popUpTo(Screens.Splash.route) { inclusive = true }
             }
