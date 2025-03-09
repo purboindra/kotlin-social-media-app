@@ -113,6 +113,7 @@ class AuthDataSourceImpl(
             dataStore.saveUserEmail(email)
             dataStore.saveAccessToken(accessToken)
             dataStore.saveRefreshToken(refreshToken)
+            dataStore.saveProfilePicture(userModel.profilePicture ?: "")
             
             return true
             
@@ -176,6 +177,7 @@ class AuthDataSourceImpl(
             dataStore.saveUserEmail(email)
             dataStore.saveAccessToken(accessToken)
             dataStore.saveRefreshToken(refreshToken)
+            dataStore.saveProfilePicture(user.profilePicture ?: "")
             
             return Result.success(true)
             
@@ -266,6 +268,7 @@ class AuthDataSourceImpl(
             dataStore.saveUserEmail(userModel.email)
             dataStore.saveAccessToken(userModel.accessToken!!)
             dataStore.saveRefreshToken(userModel.refreshToken!!)
+            dataStore.saveProfilePicture(userModel.profilePicture ?: "")
             
             return Result.success(true)
             
