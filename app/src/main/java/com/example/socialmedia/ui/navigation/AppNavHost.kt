@@ -19,6 +19,7 @@ import androidx.navigation.navArgument
 import com.example.socialmedia.ui.add_post.CreateCaptionScreen
 import com.example.socialmedia.ui.camera.CameraPreviewScreen
 import com.example.socialmedia.ui.home.HomeScreen
+import com.example.socialmedia.ui.insta_story.InstaStoryPreviewScreen
 import com.example.socialmedia.ui.insta_story.InstaStoryScreen
 import com.example.socialmedia.ui.login.LoginScreen
 import com.example.socialmedia.ui.main.MainScreen
@@ -70,6 +71,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Screens.StoryVideoScreen.route) {
                 StoryVideoScreen()
+            }
+            composable(Screens.InstaStoryPreviewScreen.route) {
+                InstaStoryPreviewScreen()
             }
             composable("instastory_screen?imageUri={imageUri}",
                 arguments = listOf(

@@ -14,4 +14,5 @@ sealed class Screens(val route: String) {
     data object CameraPreview : Screens("/camera-preview")
     data object StoryVideoScreen : Screens("/story-video-screen")
     data object InstaStoryScreen : Screens("/insta-story-screen")
+    data object InstaStoryPreviewScreen : Screens("/insta-story-preview-screen")
 }
