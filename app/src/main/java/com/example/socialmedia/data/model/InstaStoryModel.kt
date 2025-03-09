@@ -11,8 +11,10 @@ data class InstaStoryModel(
     val createdAt: String,
     @SerialName("user")
     val user: UserModel,
-    @SerialName("video_path")
-    val videoPath: String,
+    @SerialName("content_path")
+    val contentPath: String,
+    @SerialName("content_url")
+    val contentUrl: String,
     @SerialName("expires_at")
     val expiresAt: String,
     @SerialName("status")
