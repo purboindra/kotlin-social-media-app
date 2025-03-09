@@ -1,34 +1,54 @@
 package com.example.socialmedia.ui.insta_story
 
 import android.Manifest
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.view.MotionEvent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cameraswitch
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,7 +62,9 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,34 +72,38 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
+import coil3.compose.rememberAsyncImagePainter
+import com.example.socialmedia.ui.components.AppElevatedButton
 import com.example.socialmedia.ui.components.InstaStoryContent
+import com.example.socialmedia.ui.theme.BlueLight
+import com.example.socialmedia.ui.theme.BluePrimary
+import com.example.socialmedia.ui.theme.GrayPrimary
 import com.example.socialmedia.ui.viewmodel.CameraViewModel
+import com.example.socialmedia.ui.viewmodel.InstastoryViewModel
 import com.example.socialmedia.utils.PermissionHelper
+import com.example.socialmedia.utils.PostHelper
+import com.example.socialmedia.utils.VerticalSpacer
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InstaStoryScreen(
     navHostController: NavHostController,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
-    cameraViewModel: CameraViewModel = hiltViewModel()
+    cameraViewModel: CameraViewModel = hiltViewModel(),
+    instaStoryViewModel: InstastoryViewModel = hiltViewModel(),
 ) {
-    
     val context = LocalContext.current
     val permissionGranted = remember { mutableStateOf(false) }
     var loadingPermission by remember { mutableStateOf(false) }
     
-    val coroutineScope = rememberCoroutineScope()
+    val images by instaStoryViewModel.images.collectAsState()
+    val selectedImage by instaStoryViewModel.image.collectAsState()
     
-    val surfaceRequest by cameraViewModel.surfaceRequest.collectAsState()
-    val videoDuration by cameraViewModel.videoDuration.collectAsState()
-    val videoUri by cameraViewModel.recordedVideoUri.collectAsState()
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
     
-    
-    
-    LaunchedEffect(lifecycleOwner) {
-        cameraViewModel.bindToCameraInstaStory(context, lifecycleOwner)
-    }
     
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -91,6 +117,9 @@ fun InstaStoryScreen(
                     "Permissions denied. Cannot take a video.",
                     Toast.LENGTH_LONG
                 ).show()
+            } else {
+                val galleryImages = PostHelper.getGalleryImages(context)
+                instaStoryViewModel.addImages(galleryImages)
             }
         }
     )
@@ -100,6 +129,7 @@ fun InstaStoryScreen(
             arrayOf(
                 Manifest.permission.CAMERA,
                 Manifest.permission.READ_MEDIA_IMAGES,
+                Manifest.permission.READ_MEDIA_VIDEO,
             )
         } else {
             arrayOf(
@@ -109,147 +139,159 @@ fun InstaStoryScreen(
             )
         }
     
-    
     LaunchedEffect(Unit) {
         loadingPermission = true
         if (!PermissionHelper.hasMediaPermissions(context)) {
             permissionLauncher.launch(
                 requiredPermission
             )
+        } else {
+            val galleryImages = PostHelper.getGalleryImages(context)
+            galleryImages.forEach {
+                PostHelper.scanMediaFile(context, it)
+            }
+            instaStoryViewModel.addImages(galleryImages)
+            instaStoryViewModel.selectImage(
+                galleryImages.firstOrNull() ?: Uri.EMPTY
+            )
         }
         loadingPermission = false
     }
     
-    
     Scaffold { paddingValues ->
-        if (videoUri != null) InstaStoryVideoScreen(
-            videoUri,
-            navHostController
-        ) else Box(
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showBottomSheet = false
+                },
+                sheetState = sheetState
+            ) {
+                LazyVerticalGrid(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 320.dp)
+                        .padding(8.dp),
+                    contentPadding = PaddingValues(8.dp),
+                    columns = GridCells.Adaptive(minSize = 158.dp)
+                ) {
+                    items(
+                        images
+                    ) { imageUri ->
+                        Box(
+                            modifier = Modifier.aspectRatio(1f)
+                        ) {
+                            Image(
+                                painter = rememberAsyncImagePainter(imageUri),
+                                contentDescription = "Gallery Image",
+                                modifier = Modifier
+                                    .aspectRatio(1f)
+                                    .padding(3.dp)
+                                    .clickable {
+                                        imageUri?.let {
+                                            instaStoryViewModel.selectImage(it)
+                                        }
+                                    },
+                                contentScale = ContentScale.Crop
+                            )
+                            Box(
+                                modifier = Modifier.align(Alignment.TopEnd)
+                            ) {
+                                RadioButton(
+                                    selected = selectedImage == imageUri,
+                                    onClick = {},
+                                    enabled = false,
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = BluePrimary,
+                                        unselectedColor = GrayPrimary,
+                                        disabledUnselectedColor = GrayPrimary,
+                                        disabledSelectedColor = BlueLight,
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (loadingPermission) Box(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
-                .background(Color.Gray)
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center,
         ) {
-            
-            InstaStoryContent(
-                modifier = Modifier.fillMaxSize(),
-                surfaceRequest = surfaceRequest
+            CircularProgressIndicator(
+                color = BluePrimary,
+                strokeWidth = 3.dp,
+                modifier = Modifier.size(50.dp)
             )
-            
+        } else if (images.isEmpty()) Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No Images Found")
+        } else Column {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .weight(1f)
+                    .background(Color.Black)
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, dragAmount ->
+                            val (x, y) = dragAmount
+                            if (y < -50) {
+                                showBottomSheet = true
+                            }
+                        }
+                        
+                    },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "$videoDuration",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontSize = 24.sp,
-                        color = Color.DarkGray
+                if (selectedImage == null) Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Swipe up for choose an image",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            color = Color.White
+                        ),
                     )
-                )
-            }
-            
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .padding(horizontal = 12.dp)
-                    .fillMaxWidth()
-            ) {
-                Icon(
-                    Icons.Outlined.Close,
-                    contentDescription = "Close",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable {
-                            navHostController.popBackStack()
-                        }
-                )
+                }
+                else
+                    Image(
+                        painter = rememberAsyncImagePainter(selectedImage),
+                        contentDescription = "Insta Story Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
                 
-                Icon(
-                    Icons.Outlined.FlashOn,
-                    contentDescription = "Flash",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-                
-                Icon(
-                    Icons.Outlined.Settings,
-                    contentDescription = "Settings",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-            
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(x = 64.dp, y = 5.dp),
-                contentAlignment = Alignment.BottomCenter
-            ) {
                 Box(
                     modifier = Modifier
-                        .height(56.dp)
-                        .width(56.dp),
-                    contentAlignment = Alignment.Center,
+                        .fillMaxHeight()
+                        .safeContentPadding(),
+                    contentAlignment = Alignment.BottomCenter
                 ) {
-                    Icon(
-                        Icons.Outlined.Cameraswitch,
-                        contentDescription = "Switch Camera",
+                    AppElevatedButton(
+                        onClick = {
+                            navHostController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set("imageUri", selectedImage.toString())
+                            
+                            navHostController.popBackStack()
+                            
+                        },
                         modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                coroutineScope.launch {
-                                    cameraViewModel.switchCamera(
-                                        context,
-                                        lifecycleOwner
-                                    )
-                                }
-                            },
-                        tint = Color.White,
+                            .height(48.dp)
+                            .fillMaxWidth(),
+                        text = "Upload"
                     )
                 }
             }
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                Box(
-                    modifier = Modifier
-                        .height(56.dp)
-                        .width(56.dp)
-                        .clip(RoundedCornerShape(100))
-                        .background(Color.White)
-                        .pointerInteropFilter { event ->
-                            when (event.action) {
-                                MotionEvent.ACTION_DOWN -> {
-                                    Log.d(
-                                        "Insta Story Screen",
-                                        "onPressed"
-                                    )
-                                    cameraViewModel.toggleIsRecording()
-                                    cameraViewModel.startRecordingInstaStory(
-                                        context
-                                    )
-                                    true
-                                }
-                                
-                                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                                    cameraViewModel.toggleIsRecording()
-                                    cameraViewModel.stopRecordingInstaStory()
-                                    Log.d(
-                                        "Insta Story Screen",
-                                        "onRelease"
-                                    )
-                                    true
-                                }
-                                
-                                else -> false
-                            }
-                        },
-                )
-            }
+            
+            
         }
     }
 }

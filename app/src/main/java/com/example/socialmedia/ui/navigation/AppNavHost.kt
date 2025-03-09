@@ -71,7 +71,18 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             composable(Screens.StoryVideoScreen.route) {
                 StoryVideoScreen()
             }
-            composable(Screens.InstaStoryScreen.route) {
+            composable("instastory_screen?imageUri={imageUri}",
+                arguments = listOf(
+                    navArgument(
+                        "imageUri"
+                    ) {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) {
+                BackHandler(true) { }
                 InstaStoryScreen(navController)
             }
             composable("create_caption?imageUri={imageUri}&videoUri={videoUri}",

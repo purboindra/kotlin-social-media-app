@@ -29,6 +29,7 @@ import com.example.socialmedia.ui.components.InstaStoryCompose
 import com.example.socialmedia.ui.components.LoadingPostCard
 import com.example.socialmedia.ui.components.PostCardCompose
 import com.example.socialmedia.ui.viewmodel.HomeViewModel
+import com.example.socialmedia.ui.viewmodel.InstastoryViewModel
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.VerticalSpacer
 
@@ -36,7 +37,7 @@ import com.example.socialmedia.utils.VerticalSpacer
 fun HomeScreen(
     navController: NavHostController,
     postViewModel: PostViewModel = hiltViewModel(),
-    homeViewModel: HomeViewModel = hiltViewModel(),
+    instaStoryViewModel: InstastoryViewModel = hiltViewModel(),
 ) {
     
     val horizontalPadding = 8.dp
@@ -45,9 +46,13 @@ fun HomeScreen(
     
     var isLoaded by rememberSaveable { mutableStateOf(false) }
     
+    val context = LocalContext.current
+    
     LaunchedEffect(Unit) {
         if (!isLoaded) {
+            instaStoryViewModel.getUserId(context)
             postViewModel.fetchAllPosts()
+            instaStoryViewModel.fetchAllInstastories()
             isLoaded = true
         }
     }
@@ -58,11 +63,11 @@ fun HomeScreen(
             .nestedScroll(rememberNestedScrollInteropConnection())
     ) {
         item {
-            HomeScreenHeader(navController, homeViewModel)
+            HomeScreenHeader(navController, instaStoryViewModel)
             10.VerticalSpacer()
         }
         item {
-            InstaStoryCompose()
+            InstaStoryCompose(instaStoryViewModel)
             10.VerticalSpacer()
         }
         when (postState) {

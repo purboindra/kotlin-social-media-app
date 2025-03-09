@@ -26,24 +26,24 @@ import com.example.socialmedia.icons.Message
 import com.example.socialmedia.icons.message.Message
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.viewmodel.HomeViewModel
+import com.example.socialmedia.ui.viewmodel.InstastoryViewModel
 import com.example.socialmedia.utils.HorizontalSpacer
 
 @Composable
 fun HomeScreenHeader(
     navHostController: NavHostController,
-    homeViewModel: HomeViewModel
+    instaStoryViewModel: InstastoryViewModel,
 ) {
     
     val navBackStackEntry = navHostController.currentBackStackEntry
-    val videoUri = navBackStackEntry?.savedStateHandle?.get<String>("videoUri")
+    val imageUri = navBackStackEntry?.savedStateHandle?.get<String>("imageUri")
     
     val context = LocalContext.current
     
-    LaunchedEffect(videoUri) {
-        videoUri?.let {
-            Log.d("HomeScreenHeader", "Video uri: $it")
+    LaunchedEffect(imageUri) {
+        imageUri?.let {
             val parseVideoUri = Uri.parse(it)
-            homeViewModel.createInstaStory(parseVideoUri, context)
+            instaStoryViewModel.uploadInstaStory(context, parseVideoUri)
         }
     }
     
@@ -66,7 +66,7 @@ fun HomeScreenHeader(
                 modifier = Modifier
                     .size(32.dp)
                     .clickable {
-                        navHostController.navigate(Screens.InstaStoryScreen.route)
+                        navHostController.navigate("instastory_screen?imageUri=null")
                     }
             )
             8.HorizontalSpacer()

@@ -27,8 +27,8 @@ class HomeViewModel @Inject constructor(
     private val fileUseCase: FileUseCase,
 ) : ViewModel() {
     private val _instaStoryState =
-        MutableStateFlow<State<ResponseModel>>(State.Idle)
-    val instaStoryState: StateFlow<State<ResponseModel>> = _instaStoryState
+        MutableStateFlow<State<ResponseModel<Boolean>>>(State.Idle)
+    val instaStoryState: StateFlow<State<ResponseModel<Boolean>>> = _instaStoryState
     
     @OptIn(ExperimentalCoroutinesApi::class)
     fun createInstaStory(video: Uri, context: Context) = viewModelScope.launch {

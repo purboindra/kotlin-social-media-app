@@ -4,11 +4,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-class CreateInstaStoryModel(
+data class InstaStoryModel(
     @SerialName("id")
     val id: String,
+    @SerialName("created_at")
+    val createdAt: String,
     @SerialName("user")
-    val user: String,
+    val user: UserModel,
     @SerialName("video_path")
     val videoPath: String,
     @SerialName("expires_at")
