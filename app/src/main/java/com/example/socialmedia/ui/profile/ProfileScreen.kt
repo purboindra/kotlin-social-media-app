@@ -64,7 +64,7 @@ fun ProfileScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Profile")
+                    Text(userName ?: "Profile")
                 },
                 actions = {
                     IconButton(
@@ -92,6 +92,7 @@ fun ProfileScreen(
                         profilePicture = profilePicture ?: "",
                     )
                 )
+                
             }
         }
     }
