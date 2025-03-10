@@ -178,28 +178,28 @@ class PostDataSourceImpl(
                         "Error creating signed url RestException",
                         e
                     )
-                    throw e
+                    ""
                 } catch (e: HttpRequestException) {
                     Log.e(
                         "PostDataSourceImpl",
                         "Error creating signed url HttpRequestException",
                         e
                     )
-                    throw e
+                   ""
                 } catch (e: HttpRequestTimeoutException) {
                     Log.e(
                         "PostDataSourceImpl",
                         "Error creating signed url HttpRequestTimeoutException",
                         e
                     )
-                    throw e
+                    ""
                 } catch (e: Exception) {
                     Log.e(
                         "PostDataSourceImpl",
                         "Error creating signed url Exception",
                         e
                     )
-                    throw e
+                   ""
                 }
                 
                 post.copy(imageUrl = url)
