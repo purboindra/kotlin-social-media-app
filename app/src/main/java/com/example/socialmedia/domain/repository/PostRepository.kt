@@ -1,6 +1,6 @@
 package com.example.socialmedia.domain.repository
 
-import com.example.socialmedia.data.model.LikeModel
+import com.example.socialmedia.data.datasource_impl.FetchLikesModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.State
@@ -21,7 +21,7 @@ interface PostRepository {
     
     suspend fun deleteLike(id: String): Flow<State<Boolean>>
     
-    suspend fun fetchAllLikes(): Flow<State<List<LikeModel>>>
+    suspend fun fetchAllLikes(): Flow<State<List<FetchLikesModel>>>
     
     suspend fun createComment(id: String, comment: String): Flow<State<Boolean>>
     

@@ -1,7 +1,7 @@
 package com.example.socialmedia.domain.repository_impl
 
 import com.example.socialmedia.data.datasource.PostDatasource
-import com.example.socialmedia.data.model.LikeModel
+import com.example.socialmedia.data.datasource_impl.FetchLikesModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.State
@@ -73,7 +73,7 @@ class PostRepositoryImpl(
         }
     }
     
-    override suspend fun fetchAllLikes(): Flow<State<List<LikeModel>>> = flow {
+    override suspend fun fetchAllLikes(): Flow<State<List<FetchLikesModel>>> = flow {
         try {
             val result = postDataSource.fetchAllLikes()
             result.onSuccess {

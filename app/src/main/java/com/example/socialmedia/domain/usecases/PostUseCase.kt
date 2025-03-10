@@ -1,6 +1,6 @@
 package com.example.socialmedia.domain.usecases
 
-import com.example.socialmedia.data.model.LikeModel
+import com.example.socialmedia.data.datasource_impl.FetchLikesModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.State
@@ -35,7 +35,7 @@ class PostUseCase(private val postRepository: PostRepository) {
         return postRepository.deleteLike(id)
     }
     
-    suspend fun fetchAllLikes(): Flow<State<List<LikeModel>>> {
+    suspend fun fetchAllLikes(): Flow<State<List<FetchLikesModel>>> {
         return postRepository.fetchAllLikes()
     }
     

@@ -1,10 +1,9 @@
 package com.example.socialmedia.data.datasource
 
-import com.example.socialmedia.data.model.LikeModel
+import com.example.socialmedia.data.datasource_impl.FetchLikesModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.UploadImageModel
-import io.github.jan.supabase.postgrest.query.Columns
 
 interface PostDatasource {
     suspend fun createPost(
@@ -17,7 +16,7 @@ interface PostDatasource {
     suspend fun fetchAllPosts(): Result<List<PostModel>>
     suspend fun createLike(id: String): Result<Boolean>
     suspend fun deleteLike(id: String): Result<Boolean>
-    suspend fun fetchAllLikes(): Result<List<LikeModel>>
+    suspend fun fetchAllLikes(): Result<List<FetchLikesModel>>
     suspend fun createComment(id: String, comment: String): Result<Boolean>
     suspend fun savedPost(id: String): SavePostResult
     suspend fun deleteSavedPost(id: String): SavePostResult

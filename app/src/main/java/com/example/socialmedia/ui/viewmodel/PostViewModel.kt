@@ -5,10 +5,9 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.socialmedia.data.datasource_impl.FetchLikesModel
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CommentModel
-import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.State
@@ -42,9 +41,9 @@ class PostViewModel @Inject constructor(
     private val _likeState = MutableStateFlow<State<Boolean>>(State.Idle)
     val likeState = _likeState.asStateFlow()
     
-    private val _likesState =
-        MutableStateFlow<State<List<LikeModel>>>(State.Idle)
-    val likesState = _likesState.asStateFlow()
+    private val _allLikesState =
+        MutableStateFlow<State<List<FetchLikesModel>>>(State.Idle)
+    val allLikesState = _allLikesState.asStateFlow()
     
     private val _savedPostState =
         MutableStateFlow<State<SavePostResult>>(State.Idle)
@@ -200,8 +199,9 @@ class PostViewModel @Inject constructor(
     }
     
     fun fetchAllLikes() = viewModelScope.launch {
+        _allLikesState.emit(State.Loading)
         postUseCase.fetchAllLikes().collectLatest { state ->
-            _likesState.value = state
+            _allLikesState.value = state
         }
     }
     
