@@ -39,34 +39,6 @@ import com.example.socialmedia.ui.theme.GrayPrimary
 import com.example.socialmedia.ui.viewmodel.InstastoryViewModel
 import com.example.socialmedia.utils.VerticalSpacer
 
-val dummyUsers = listOf(
-    mapOf(
-        "username" to "Ilya",
-        "imageUrl" to "https://images.unsplash.com/photo-1512316609839-ce289d3eba0a?q=80&w=1738&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    ),
-    mapOf(
-        "username" to "Olga",
-        "imageUrl" to "https://images.unsplash.com/photo-1614786269829-d24616faf56d?q=80&w=1635&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    ),
-    mapOf(
-        "username" to "Daenarys",
-        "imageUrl" to "https://images.unsplash.com/photo-1533973860717-d49dfd14cf64?q=80&w=1571&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    ),
-    mapOf(
-        "username" to "Arya Targaryen",
-        "imageUrl" to "https://images.unsplash.com/photo-1525299374597-911581e1bdef?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    ),
-    
-    mapOf(
-        "username" to "Jenny",
-        "imageUrl" to "https://images.unsplash.com/photo-1510706019500-d23a509eecd4?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    ),
-    mapOf(
-        "username" to "Cersei",
-        "imageUrl" to "https://images.unsplash.com/photo-1577912931989-cf038df56a56?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    ),
-)
-
 @Composable
 fun InstaStoryCompose(
     instastoryViewModel: InstastoryViewModel,
