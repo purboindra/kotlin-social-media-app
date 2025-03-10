@@ -74,7 +74,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 StoryVideoScreen()
             }
             composable(Screens.LikeScreen.route) {
-                LikeScreen(navController)
+                LikeScreen(navHostController = navController)
             }
             composable("instastory_preview_screen?imageUrl={imageUrl}&profilePicture={profilePicture}",
                 arguments = listOf(
