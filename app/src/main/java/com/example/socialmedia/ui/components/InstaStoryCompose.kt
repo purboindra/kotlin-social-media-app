@@ -178,31 +178,43 @@ fun InstaStoryCompose(
                                             )
                                         },
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(28.dp)
-                                            .clip(shape = RoundedCornerShape(100))
-                                            .background(Color.White)
-                                            .align(Alignment.BottomEnd)
-                                    )
-                                    
-                                    Box(
-                                        modifier = Modifier
-                                            .size(22.dp)
-                                            .offset(x = 7.dp, y = 7.dp)
-                                            .clip(shape = RoundedCornerShape(100))
-                                            .background(BlueLight)
-                                    ) {
-                                        Icon(
-                                            Icons.Outlined.Add,
-                                            contentDescription = "Add",
+                                    if (instaStory.instastories.isEmpty()) {
+                                        Box(
                                             modifier = Modifier
-                                                .size(16.dp)
-                                                .offset(
-                                                    x = 3.dp, y = 3.dp
-                                                ),
-                                            tint = Color.White,
+                                                .size(28.dp)
+                                                .clip(
+                                                    shape = RoundedCornerShape(
+                                                        100
+                                                    )
+                                                )
+                                                .background(Color.White)
+                                                .align(Alignment.BottomEnd)
                                         )
+                                    }
+                                    
+                                    if (instaStory.instastories.isEmpty()) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(22.dp)
+                                                .offset(x = 7.dp, y = 7.dp)
+                                                .clip(
+                                                    shape = RoundedCornerShape(
+                                                        100
+                                                    )
+                                                )
+                                                .background(BlueLight)
+                                        ) {
+                                            Icon(
+                                                Icons.Outlined.Add,
+                                                contentDescription = "Add",
+                                                modifier = Modifier
+                                                    .size(16.dp)
+                                                    .offset(
+                                                        x = 3.dp, y = 3.dp
+                                                    ),
+                                                tint = Color.White,
+                                            )
+                                        }
                                     }
                                 }
                             }
