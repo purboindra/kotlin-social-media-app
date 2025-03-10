@@ -1,7 +1,6 @@
 package com.example.socialmedia.data.datasource_impl
 
 import android.util.Log
-import com.example.socialmedia.data.datasource.FileDatasource
 import com.example.socialmedia.data.datasource.PostDatasource
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CreateCommentModel
@@ -11,7 +10,6 @@ import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.UploadImageModel
-import com.example.socialmedia.ui.components.SavedPostButton
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
@@ -24,9 +22,39 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.util.UUID
 import kotlin.time.Duration.Companion.minutes
+
+@Serializable
+data class UserModelLikes(
+    @SerialName("full_name")
+    val fullName: String,
+    @SerialName("profile_picture")
+    val profilePicture: String
+)
+
+@Serializable
+data class PostModelLikes(
+    @SerialName("image_path")
+    val imagePath: String,
+    @SerialName("image_url")
+    val imageUrl: String = "",
+)
+
+@Serializable
+data class FetchLikesModel(
+    @SerialName("id")
+    val id: String,
+    @SerialName("created_at")
+    val createdAt: String,
+    @SerialName("post_id")
+    val post: PostModelLikes,
+    @SerialName("user_id")
+    val user: UserModelLikes
+)
 
 class PostDataSourceImpl(
     private val supabase: SupabaseClient,
@@ -185,7 +213,7 @@ class PostDataSourceImpl(
                         "Error creating signed url HttpRequestException",
                         e
                     )
-                   ""
+                    ""
                 } catch (e: HttpRequestTimeoutException) {
                     Log.e(
                         "PostDataSourceImpl",
@@ -199,7 +227,7 @@ class PostDataSourceImpl(
                         "Error creating signed url Exception",
                         e
                     )
-                   ""
+                    ""
                 }
                 
                 post.copy(imageUrl = url)
@@ -258,15 +286,81 @@ class PostDataSourceImpl(
         }
     }
     
-    override suspend fun fetchAllLikes(): Result<List<LikeModel>> {
+    override suspend fun fetchAllLikes(): Result<List<FetchLikesModel>> {
         try {
             
+            val userId = datastore.userId.firstOrNull()
+                ?: throw Exception("Invalid credentials")
+            
             val rawLikes =
-                supabase.from("likes").select()
+                supabase.from("likes").select(
+                    columns = Columns.raw(
+                        """
+                            id,
+                            created_at,
+                            post_id(
+                                image_path
+                            ),
+                            user_id(
+                                full_name,
+                                profile_picture
+                            )
+                        """.trimIndent()
+                    )
+                ) {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                }
             
-            val likes = Json.decodeFromString<List<LikeModel>>(rawLikes.data)
+            val likes =
+                Json.decodeFromString<List<FetchLikesModel>>(rawLikes.data)
             
-            return Result.success(likes)
+            val bucket = supabase.storage.from("posts")
+            
+            val updatedLikes = likes.map { like ->
+                
+                val url = try {
+                    bucket.createSignedUrl(
+                        path = like.post.imagePath,
+                        expiresIn = 5.minutes
+                    )
+                } catch (e: RestException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url RestException",
+                        e
+                    )
+                    ""
+                } catch (e: HttpRequestException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url HttpRequestException",
+                        e
+                    )
+                    ""
+                } catch (e: HttpRequestTimeoutException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url HttpRequestTimeoutException",
+                        e
+                    )
+                    ""
+                } catch (e: Exception) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url Exception",
+                        e
+                    )
+                    ""
+                }
+                
+                like.copy(
+                    post = like.post.copy(imageUrl = url)
+                )
+            }
+            
+            return Result.success(updatedLikes)
             
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error fetch all likes", e)
