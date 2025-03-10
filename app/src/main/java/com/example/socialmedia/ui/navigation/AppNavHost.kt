@@ -21,6 +21,7 @@ import com.example.socialmedia.ui.camera.CameraPreviewScreen
 import com.example.socialmedia.ui.home.HomeScreen
 import com.example.socialmedia.ui.insta_story.InstaStoryPreviewScreen
 import com.example.socialmedia.ui.insta_story.InstaStoryScreen
+import com.example.socialmedia.ui.like.LikeScreen
 import com.example.socialmedia.ui.login.LoginScreen
 import com.example.socialmedia.ui.main.MainScreen
 import com.example.socialmedia.ui.profile.ProfileScreen
@@ -71,6 +72,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Screens.StoryVideoScreen.route) {
                 StoryVideoScreen()
+            }
+            composable(Screens.LikeScreen.route) {
+                LikeScreen(navController)
             }
             composable("instastory_preview_screen?imageUrl={imageUrl}&profilePicture={profilePicture}",
                 arguments = listOf(

@@ -73,7 +73,9 @@ fun HomeScreenHeader(
             Icon(
                 Icons.Outlined.FavoriteBorder,
                 contentDescription = "Favorite",
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp).clickable {
+                    navHostController.navigate(Screens.LikeScreen.route)
+                }
             
             )
             8.HorizontalSpacer()
