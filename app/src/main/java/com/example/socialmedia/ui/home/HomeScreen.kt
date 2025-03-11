@@ -45,7 +45,7 @@ fun HomeScreen(
     
     val context = LocalContext.current
     
-    LaunchedEffect(Unit) {
+    LaunchedEffect(isLoaded) {
         if (!isLoaded) {
             instaStoryViewModel.getUserId(context)
             postViewModel.fetchAllPosts()

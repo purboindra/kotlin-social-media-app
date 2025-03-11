@@ -1,17 +1,12 @@
 package com.example.socialmedia.ui.navigation
 
-import android.net.Uri
-import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
@@ -48,7 +43,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 RegisterScreen(navHostController = navController)
             }
             composable(Screens.Main.route) {
-                MainScreen(navHostController = navController)
+                MainScreen(
+                    navHostController = navController
+                )
             }
             composable(Screens.Home.route) {
                 HomeScreen(navController)
