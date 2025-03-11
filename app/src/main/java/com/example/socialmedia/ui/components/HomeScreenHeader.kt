@@ -1,6 +1,7 @@
 package com.example.socialmedia.ui.components
 
 import android.net.Uri
+import android.os.Message
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -22,8 +23,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.socialmedia.R
-import com.example.socialmedia.icons.Message
-import com.example.socialmedia.icons.message.Message
+import com.example.socialmedia.icons.MyIconPack
+import com.example.socialmedia.icons.myiconpack.Message
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.viewmodel.HomeViewModel
 import com.example.socialmedia.ui.viewmodel.InstastoryViewModel
@@ -80,7 +81,7 @@ fun HomeScreenHeader(
             )
             8.HorizontalSpacer()
             Image(
-                Message.Message,
+                MyIconPack.Message,
                 contentDescription = "Direct Message",
                 modifier = Modifier.size(32.dp)
             )

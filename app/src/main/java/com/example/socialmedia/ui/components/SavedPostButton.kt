@@ -8,8 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
-import com.example.socialmedia.icons.Save
-import com.example.socialmedia.icons.save.Save
+import com.example.socialmedia.icons.MyIconPack
+import com.example.socialmedia.icons.myiconpack.Save
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 
 @Composable
@@ -20,7 +20,7 @@ fun SavedPostButton(
 ) {
     
     Image(
-        imageVector = Save.Save,
+        imageVector = MyIconPack.Save,
         contentDescription = "Save",
         modifier = Modifier
             .size(24.dp)

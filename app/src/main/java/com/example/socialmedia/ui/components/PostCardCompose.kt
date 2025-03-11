@@ -26,8 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.socialmedia.data.model.PostModel
-import com.example.socialmedia.icons.Message
-import com.example.socialmedia.icons.message.Message
+import com.example.socialmedia.icons.MyIconPack
+import com.example.socialmedia.icons.myiconpack.Message
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
@@ -92,7 +92,7 @@ fun PostCardCompose(
                         postModel = postModel
                     )
                     5.HorizontalSpacer()
-                    Image(imageVector = Message.Message, contentDescription = "Message", modifier = Modifier.size(24.dp))
+                    Image(imageVector = MyIconPack.Message, contentDescription = "Message", modifier = Modifier.size(24.dp))
                     
                     5.HorizontalSpacer()
                     IconButton(
