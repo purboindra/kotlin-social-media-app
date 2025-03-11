@@ -11,8 +11,12 @@ import kotlinx.coroutines.flow.flow
 class UserRepositoryImpl(
     private val userDatasource: UserDatasource,
 ) : UserRepository {
-    override suspend fun search(query: String): Flow<List<UserModel>> = flow {
-
-
-    }
+    override suspend fun search(query: String): Flow<State<List<UserModel>>> =
+        flow {
+            emit(State.Loading)
+            when (val result = userDatasource.search(query)) {
+                is ResponseModel.Success -> emit(State.Success(result.value))
+                is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
+            }
+        }
 }
