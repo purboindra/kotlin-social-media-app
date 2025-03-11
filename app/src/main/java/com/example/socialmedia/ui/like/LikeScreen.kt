@@ -41,13 +41,13 @@ fun LikeScreen(
     postViewModel: PostViewModel = hiltViewModel<PostViewModel>(),
     navHostController: NavHostController
 ) {
-    
+
     val likesState by postViewModel.allLikesState.collectAsState()
-    
+
     LaunchedEffect(Unit) {
         postViewModel.fetchAllLikes()
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -82,6 +82,15 @@ fun LikeScreen(
             when (likesState) {
                 is State.Success -> {
                     val items = (likesState as State.Success).data
+                    if (items.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No Liked Post Found....")
+                        }
+                        return@Scaffold
+                    }
                     LazyVerticalStaggeredGrid(
                         columns = StaggeredGridCells.Fixed(3),
                         verticalItemSpacing = 4.dp,
@@ -101,7 +110,7 @@ fun LikeScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                
+
                 is State.Failure -> {
                     val errorMessage =
                         (likesState as State.Failure).throwable.message
@@ -110,7 +119,7 @@ fun LikeScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                
+
                 is State.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -119,9 +128,9 @@ fun LikeScreen(
                         CircularProgressIndicator()
                     }
                 }
-                
+
                 else -> {
-                
+
                 }
             }
         }
