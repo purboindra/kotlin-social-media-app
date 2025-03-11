@@ -1,6 +1,5 @@
 package com.example.socialmedia.ui.components
 
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -8,7 +7,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -25,8 +23,8 @@ data class BottomNavigationItem(
 @Composable
 fun AppBottomNavigationBar(
     items: List<BottomNavigationItem>,
-    selectedItem: Int,
-    onSelectedItem: (Int) -> Unit
+    selectedItem: String,
+    onSelectedItem: (String) -> Unit
 ) {
     NavigationBar(
         contentColor = Color.White,
@@ -35,9 +33,9 @@ fun AppBottomNavigationBar(
     ) {
         items.forEachIndexed { index, i ->
             NavigationBarItem(
-                selected = selectedItem == index,
+                selected = selectedItem == i.route,
                 onClick = {
-                    onSelectedItem(index)
+                    onSelectedItem(i.route)
                 },
                 icon = {
                     BadgedBox(
@@ -52,7 +50,7 @@ fun AppBottomNavigationBar(
                         }
                     ) {
                         Icon(
-                            imageVector = if (index == selectedItem) i.selectedItem else i.unSelectedItem,
+                            imageVector = if (i.route == selectedItem) i.selectedItem else i.unSelectedItem,
                             contentDescription = i.title
                         )
                     }

@@ -1,6 +1,8 @@
 package com.example.socialmedia.ui.main
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -15,16 +17,13 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.socialmedia.data.db.local.AppDataStore
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.socialmedia.ui.add_post.AddPostScreen
 import com.example.socialmedia.ui.components.AppBottomNavigationBar
 import com.example.socialmedia.ui.components.BottomNavigationItem
@@ -41,13 +40,10 @@ fun MainScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     navHostController: NavHostController
 ) {
-    
-    val context = LocalContext.current
-    
-    val emailFlow = remember { AppDataStore(context) }
-    val email by emailFlow.email.collectAsState("")
-    val bottomNavbarIndex by mainViewModel.bottomNavbarIndex.collectAsState()
-    
+    val bottomNavController = rememberNavController()
+    val currentDestination =
+        bottomNavController.currentBackStackEntryAsState().value?.destination?.route
+
     val items = listOf(
         BottomNavigationItem(
             title = "Home",
@@ -56,7 +52,7 @@ fun MainScreen(
             hasNews = false,
             route = Screens.Home.route
         ),
-        
+
         BottomNavigationItem(
             title = "Search",
             selectedItem = Icons.Filled.Search,
@@ -86,40 +82,42 @@ fun MainScreen(
             route = Screens.Profile.route
         ),
     )
-    
+
     Scaffold(
         bottomBar = {
             AppBottomNavigationBar(
                 items = items,
-                selectedItem = bottomNavbarIndex,
-                onSelectedItem = { index ->
-                    mainViewModel.onSelectedBottomNavbar(index)
-//                    navHostController.navigate(
-//                        items[index].route
-//                    ) {
-//                        popUpTo(Screens.Home.route) {
-//                            saveState = true
-//                        }
-//                        launchSingleTop = true
-//                        restoreState = true
-//                    }
+                selectedItem = currentDestination ?: Screens.Home.route,
+                onSelectedItem = { route ->
+                    if (route != currentDestination) {
+                        bottomNavController.navigate(route) {
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo(bottomNavController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                        }
+                    }
                 }
             )
         },
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+        NavHost(
+            navController = bottomNavController,
+            startDestination = Screens.Home.route,
+            modifier = Modifier.padding(paddingValues),
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-            when (bottomNavbarIndex) {
-                0 -> HomeScreen(navController = navHostController)
-                1 -> SearchScreen(navHostController)
-                2 -> AddPostScreen(navHostController = navHostController)
-                3 -> ReelsScreen(navHostController)
-                4 -> ProfileScreen(navHostController)
-            }
+            composable(Screens.Home.route) { HomeScreen(navHostController) }
+            composable(Screens.Search.route) { SearchScreen(navHostController) }
+            composable(Screens.AddPost.route) { AddPostScreen(navHostController = navHostController) }
+            composable(Screens.Reels.route) { ReelsScreen(navHostController) }
+            composable(Screens.Profile.route) { ProfileScreen(navHostController) }
         }
     }
+
 }

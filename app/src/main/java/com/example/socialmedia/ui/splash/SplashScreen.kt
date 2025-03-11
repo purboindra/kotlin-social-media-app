@@ -1,6 +1,5 @@
 package com.example.socialmedia.ui.splash
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,27 +39,23 @@ fun SplashScreen(
     val context = LocalContext.current
     val appDataStore = remember { AppDataStore(context) }
     val accessToken by appDataStore.accessToken.collectAsState(null)
-    
+
     LaunchedEffect(Unit) {
         delay(1000)
-        if (accessToken == null) {
-            navHostController.navigate(Screens.Login.route) {
-                popUpTo(Screens.Splash.route) { inclusive = true }
-            }
+
+        val destination = if (accessToken.isNullOrEmpty()) {
+            Screens.Login.route
         } else {
-            if(accessToken!!.isEmpty()) {
-                navHostController.navigate(Screens.Login.route) {
-                    popUpTo(Screens.Splash.route) { inclusive = true }
-                }
-                return@LaunchedEffect
-            }
-            navHostController.navigate(Screens.Main.route) {
-                popUpTo(Screens.Splash.route) { inclusive = true }
-            }
+            Screens.Main.route
+        }
+
+        navHostController.navigate(destination) {
+            popUpTo(Screens.Splash.route) { inclusive = true }
         }
     }
-    
-    
+
+
+
     Scaffold { paddingValues ->
         Box(
             modifier = Modifier
