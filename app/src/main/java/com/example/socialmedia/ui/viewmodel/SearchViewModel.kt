@@ -17,20 +17,20 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val userUsecase: UserUsecase
+    private val userUsecase: UserUsecase,
 ) : ViewModel() {
-    
+
     private val _searchState =
         MutableStateFlow<State<List<UserModel>>>(State.Idle)
     val searchState = _searchState.asStateFlow()
-    
+
     private val _queryState = MutableStateFlow("")
     val queryState = _queryState.asStateFlow()
-    
+
     init {
         observeQueryChange()
     }
-    
+
     @OptIn(FlowPreview::class)
     private fun observeQueryChange() {
         viewModelScope.launch {
@@ -49,8 +49,11 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun onChangeQuery(query: String) {
+        if (query.isBlank()) {
+            _searchState.value = State.Idle
+        }
         _queryState.value = query
     }
 }
