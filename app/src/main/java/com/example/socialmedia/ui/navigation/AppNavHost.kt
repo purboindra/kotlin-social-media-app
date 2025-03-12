@@ -56,9 +56,20 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             composable(Screens.Reels.route) {
                 ReelsScreen(navController)
             }
-            composable(Screens.Profile.route) {
-                ProfileScreen(navController)
+            composable(
+                route = "/profile?userId={userId}",
+                arguments = listOf(
+                    navArgument("userId") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                        nullable = false
+                    }
+                )
+            ) { backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                ProfileScreen(navHostController = navController, userId = userId)
             }
+            
             composable(Screens.CameraPreview.route) {
                 val sharedFileViewModel: SharedFileViewModel = hiltViewModel()
                 
