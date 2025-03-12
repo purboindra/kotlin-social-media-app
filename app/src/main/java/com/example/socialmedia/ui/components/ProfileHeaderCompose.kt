@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.socialmedia.utils.HorizontalSpacer
-import com.example.socialmedia.utils.VerticalSpacer
 
 data class ProfileHeaderComposeParams(
     val userName: String,
@@ -40,14 +41,25 @@ fun ProfileHeaderCompose(
             .fillMaxSize(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = params.profilePicture,
-            contentDescription = params.userName,
+        Box(
             modifier = Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(100)),
-            contentScale = ContentScale.Crop
-        )
+                .size(104.dp)
+                .clip(RoundedCornerShape(100))
+                .background(Color.LightGray.copy(0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            if (params.profilePicture.isBlank()) Icon(
+                Icons.Outlined.Person,
+                contentDescription = "Profile",
+                modifier = Modifier.size(48.dp),
+                tint = Color.Gray,
+            ) else AsyncImage(
+                model = params.profilePicture,
+                contentDescription = params.userName,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
         15.HorizontalSpacer()
         Row(
             horizontalArrangement = Arrangement.SpaceAround,

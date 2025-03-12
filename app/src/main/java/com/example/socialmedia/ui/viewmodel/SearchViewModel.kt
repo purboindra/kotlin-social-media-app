@@ -39,7 +39,7 @@ class SearchViewModel @Inject constructor(
             ).distinctUntilChanged().collectLatest { query ->
                 if (query.isNotBlank()) {
                     _searchState.value = State.Loading
-                    userUsecase.search(query)
+                    userUsecase.fetchAllUsers(query)
                         .collectLatest { state ->
                             _searchState.value = state
                         }

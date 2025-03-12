@@ -8,7 +8,11 @@ import kotlinx.coroutines.flow.Flow
 class UserUsecase(
     private val userRepository: UserRepository
 ) {
-    suspend fun search(query: String): Flow<State<List<UserModel>>> {
-        return userRepository.search(query)
+    suspend fun fetchAllUsers(query: String?): Flow<State<List<UserModel>>> {
+        return userRepository.fetchAllUsers(query)
+    }
+
+    suspend fun fetchUserById(userId: String): Flow<State<UserModel>> {
+        return userRepository.fetchUserById(userId)
     }
 }

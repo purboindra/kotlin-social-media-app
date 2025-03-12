@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.AppElevatedButton
+import com.example.socialmedia.ui.components.ProfileCaptionCompose
 import com.example.socialmedia.ui.components.ProfileHeaderCompose
 import com.example.socialmedia.ui.components.ProfileHeaderComposeParams
 import com.example.socialmedia.ui.navigation.Screens
@@ -92,6 +93,9 @@ fun ProfileScreen(
                         profilePicture = profilePicture ?: "",
                     )
                 )
+//            ProfileCaptionCompose(
+//                bio =
+//            )
                 
             }
         }
