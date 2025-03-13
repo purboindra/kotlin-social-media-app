@@ -31,6 +31,9 @@ class ProfileViewModel @Inject constructor(
     private val _username = MutableStateFlow<String?>(null)
     val username = _username.asStateFlow()
     
+    private val _followState = MutableStateFlow(false)
+    val followState = _followState.asStateFlow()
+    
     fun getProfilePicture() = viewModelScope.launch {
         dataStore.profilePicture.collectLatest { state ->
             _profilePicture.value = state
@@ -43,14 +46,17 @@ class ProfileViewModel @Inject constructor(
         }
     }
     
+    val userId: StateFlow<String?> = dataStore.userId.stateIn(
+        viewModelScope, SharingStarted.Lazily, ""
+    )
+    
     fun fetchUserById(userId: String) = viewModelScope.launch {
         userUseCase.fetchUserById(userId).collectLatest { state ->
             _userState.value = state
         }
     }
     
-    val userId: StateFlow<String?> = dataStore.userId.stateIn(
-        viewModelScope, SharingStarted.Lazily, ""
-    )
+    fun invokeFollow(userId: String) = viewModelScope.launch {
     
+    }
 }
