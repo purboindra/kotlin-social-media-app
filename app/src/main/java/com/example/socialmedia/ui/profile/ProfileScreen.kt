@@ -1,12 +1,9 @@
 package com.example.socialmedia.ui.profile
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -14,17 +11,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.GridOn
 import androidx.compose.material.icons.outlined.MovieCreation
-import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PersonPin
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRow
@@ -44,8 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.socialmedia.data.model.State
-import com.example.socialmedia.ui.components.AppOutlinedButton
 import com.example.socialmedia.ui.components.PostGridCompose
+import com.example.socialmedia.ui.components.ProfileActionButtons
 import com.example.socialmedia.ui.components.ProfileHeaderCompose
 import com.example.socialmedia.ui.components.ProfileHeaderComposeParams
 import com.example.socialmedia.ui.components.TabContent
@@ -66,7 +61,7 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel = hiltViewModel(),
     userId: String,
 ) {
-    
+    val currentUserId by profileViewModel.userId.collectAsState()
     val logoutState by authViewModel.logoutState.collectAsState()
     val userState by profileViewModel.userState.collectAsState()
     
@@ -97,139 +92,115 @@ fun ProfileScreen(
         profileViewModel.fetchUserById(userId)
     }
     
-    when (userState) {
-        is State.Success -> {
-            val user = (userState as State.Success).data
-            LazyColumn(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp).padding(bottom = 16.dp).fillMaxSize()
-            ) {
-                item {
-                    ProfileHeaderCompose(
-                        ProfileHeaderComposeParams(
-                            userName = user.username ?: "",
-                            profilePicture = user.profilePicture ?: "",
+    Scaffold { paddingValues ->
+        when (userState) {
+            is State.Success -> {
+                val user = (userState as State.Success).data
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp)
+                        .fillMaxSize()
+                ) {
+                    item {
+                        ProfileHeaderCompose(
+                            ProfileHeaderComposeParams(
+                                userName = user.username ?: "",
+                                profilePicture = user.profilePicture ?: "",
+                            )
                         )
-                    )
-                    8.VerticalSpacer()
-                    Text(
-                        user.bio ?: "",
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    12.VerticalSpacer()
-                    Row(
-                        modifier = Modifier
-                            .height(64.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        AppOutlinedButton(
-                            modifier = Modifier.weight(1f),
-                            onClick = {},
-                            content = {
-                                Text("Edit Profile")
-                            }
+                        8.VerticalSpacer()
+                        Text(
+                            user.bio ?: "",
+                            style = MaterialTheme.typography.labelMedium
                         )
-                        
-                        AppOutlinedButton(
-                            modifier = Modifier.weight(1f),
-                            onClick = {},
-                            content = {
-                                Text("Bagikan Profile")
-                            }
+                        12.VerticalSpacer()
+                        ProfileActionButtons(
+                            isCurrentUser = userId == currentUserId
                         )
-                        
-                        OutlinedButton(
-                            onClick = {},
-                            modifier = Modifier.width(56.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, Color.Black)
+                        8.VerticalSpacer()
+                        /// INSIGHT
+                        if (currentUserId == userId) LazyRow(
+                            modifier = Modifier.height(
+                                84.dp
+                            )
                         ) {
-                            Icon(
-                                Icons.Outlined.PersonAdd,
-                                contentDescription = "Person Add",
-                                tint = Color.Black,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                    8.VerticalSpacer()
-                    /// INSIGHT
-                    LazyRow(modifier = Modifier.height(84.dp)) {
-                        item {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Surface(
-                                    shape = CircleShape,
-                                    border = BorderStroke(2.dp, Color.Gray),
-                                    modifier = Modifier
-                                        .height(64.dp)
-                                        .width(64.dp)
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center
+                            item {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Surface(
+                                        shape = CircleShape,
+                                        border = BorderStroke(2.dp, Color.Gray),
+                                        modifier = Modifier
+                                            .height(64.dp)
+                                            .width(64.dp)
                                     ) {
-                                        Icon(
-                                            Icons.Outlined.Add,
-                                            contentDescription = "",
-                                            modifier = Modifier.size(32.dp),
-                                        )
+                                        Box(
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                Icons.Outlined.Add,
+                                                contentDescription = "",
+                                                modifier = Modifier.size(32.dp),
+                                            )
+                                        }
                                     }
+                                    2.VerticalSpacer()
+                                    Text("Baru")
                                 }
-                                2.VerticalSpacer()
-                                Text("Baru")
                             }
                         }
-                    }
-                    /// TAB PROFILE
-                    TabRow(
-                        selectedTabIndex,
-                        modifier = Modifier
-                            .padding(vertical = 4.dp, horizontal = 8.dp)
-                            .padding(1.dp),
-                        indicator = { tabPositions: List<TabPosition> ->
-                            Box {}
-                        },
-                        divider = {
-                            Box {}
-                        },
-                    ) {
-                        tabList.forEachIndexed { index, tabContentModel ->
-                            
-                            val hasSelect = index == selectedTabIndex
-                            
-                            TabContent(
-                                imageVector = tabContentModel.imageVector,
-                                contentDescription = tabContentModel.contentDescription,
-                                onClick = {
-                                    selectedTabIndex = index
-                                },
-                                hasSelected = hasSelect
-                            )
+                        /// TAB PROFILE
+                        TabRow(
+                            selectedTabIndex,
+                            modifier = Modifier
+                                .padding(vertical = 4.dp, horizontal = 8.dp)
+                                .padding(1.dp),
+                            indicator = { tabPositions: List<TabPosition> ->
+                                Box {}
+                            },
+                            divider = {
+                                Box {}
+                            },
+                        ) {
+                            tabList.forEachIndexed { index, tabContentModel ->
+                                
+                                val hasSelect = index == selectedTabIndex
+                                
+                                TabContent(
+                                    imageVector = tabContentModel.imageVector,
+                                    contentDescription = tabContentModel.contentDescription,
+                                    onClick = {
+                                        selectedTabIndex = index
+                                    },
+                                    hasSelected = hasSelect
+                                )
+                            }
                         }
+                        /// BODY CONTENT
+                        PostGridCompose()
                     }
-                    /// BODY CONTENT
-                    PostGridCompose()
+                    
                 }
-               
             }
-        }
-        
-        is State.Failure -> {
-            val message = (userState as State.Failure).throwable.message
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(message ?: "Unknown Error Occurred")
+            
+            is State.Failure -> {
+                val message = (userState as State.Failure).throwable.message
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(message ?: "Unknown Error Occurred")
+                }
             }
-        }
-        
-        else -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+            
+            else -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
         }
     }
