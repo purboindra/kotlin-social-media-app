@@ -61,22 +61,27 @@ fun ProfileHeaderCompose(
             )
         }
         15.HorizontalSpacer()
-        Row(
-            horizontalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            ProfileStatus(
-                "Posts",
-                value = "54"
-            )
-            ProfileStatus(
-                "Followers",
-                value = "923"
-            )
-            ProfileStatus(
-                "Following",
-                value = "411"
-            )
+        Column {
+            Text(params.userName, style = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+            ))
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
+                ) {
+                ProfileStatus(
+                    "Posts",
+                    value = "54"
+                )
+                ProfileStatus(
+                    "Followers",
+                    value = "923"
+                )
+                ProfileStatus(
+                    "Following",
+                    value = "411"
+                )
+            }
         }
     }
 }
