@@ -5,9 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.socialmedia.data.db.local.AppDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,9 +19,6 @@ class MainViewModel @Inject constructor(
     private val _username = MutableStateFlow("")
     val username = _username.asStateFlow()
 
-    private val _userId = MutableStateFlow("")
-    val userId = _userId.asStateFlow()
-
     private val _bottomNavbarIndex = MutableStateFlow(0)
     val bottomNavbarIndex = _bottomNavbarIndex.asStateFlow()
 
@@ -28,9 +26,6 @@ class MainViewModel @Inject constructor(
         _bottomNavbarIndex.value = index
     }
 
-    fun getUserId() = viewModelScope.launch {
-        dataStore.userId.collectLatest { state ->
-            _userId.value = state ?: ""
-        }
-    }
+    val userId: StateFlow<String?> =
+        dataStore.userId.stateIn(viewModelScope, SharingStarted.Lazily, "")
 }
