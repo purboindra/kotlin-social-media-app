@@ -17,6 +17,8 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -43,6 +45,8 @@ fun MainScreen(
     val bottomNavController = rememberNavController()
     val currentDestination =
         bottomNavController.currentBackStackEntryAsState().value?.destination?.route
+
+    val userId by mainViewModel.userId.collectAsState()
 
     val items = listOf(
         BottomNavigationItem(
@@ -90,7 +94,10 @@ fun MainScreen(
                 selectedItem = currentDestination ?: Screens.Home.route,
                 onSelectedItem = { route ->
                     if (route != currentDestination) {
-                        bottomNavController.navigate(route) {
+
+                        val routeName =
+                            if (route.contains("profile")) "/profile?userId=${userId ?: ""}" else route
+                        bottomNavController.navigate(routeName) {
                             launchSingleTop = true
                             restoreState = true
                             popUpTo(bottomNavController.graph.startDestinationId) {
@@ -116,7 +123,12 @@ fun MainScreen(
             composable(Screens.Search.route) { SearchScreen(navHostController) }
             composable(Screens.AddPost.route) { AddPostScreen(navHostController = navHostController) }
             composable(Screens.Reels.route) { ReelsScreen(navHostController) }
-            composable(Screens.Profile.route) { ProfileScreen(navHostController) }
+            composable(Screens.Profile.route) {
+                ProfileScreen(
+                    navHostController,
+                    userId = userId ?: ""
+                )
+            }
         }
     }
 
