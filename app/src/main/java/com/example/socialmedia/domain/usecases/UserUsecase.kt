@@ -11,8 +11,16 @@ class UserUsecase(
     suspend fun fetchAllUsers(query: String?): Flow<State<List<UserModel>>> {
         return userRepository.fetchAllUsers(query)
     }
-
+    
     suspend fun fetchUserById(userId: String): Flow<State<UserModel>> {
         return userRepository.fetchUserById(userId)
+    }
+    
+    suspend fun followUser(userId: String): Flow<State<Boolean>> {
+        return userRepository.followUser(userId)
+    }
+    
+    suspend fun unFollowUser(userId: String): Flow<State<Boolean>> {
+        return userRepository.unFollowUser(userId)
     }
 }
