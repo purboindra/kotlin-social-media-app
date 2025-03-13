@@ -45,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.AppOutlinedButton
+import com.example.socialmedia.ui.components.PostGridCompose
 import com.example.socialmedia.ui.components.ProfileHeaderCompose
 import com.example.socialmedia.ui.components.ProfileHeaderComposeParams
 import com.example.socialmedia.ui.components.TabContent
@@ -101,7 +102,7 @@ fun ProfileScreen(
             val user = (userState as State.Success).data
             LazyColumn(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp).padding(bottom = 16.dp).fillMaxSize()
             ) {
                 item {
                     ProfileHeaderCompose(
@@ -111,7 +112,10 @@ fun ProfileScreen(
                         )
                     )
                     8.VerticalSpacer()
-                    Text(user.bio ?: "", style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        user.bio ?: "",
+                        style = MaterialTheme.typography.labelMedium
+                    )
                     12.VerticalSpacer()
                     Row(
                         modifier = Modifier
@@ -142,7 +146,8 @@ fun ProfileScreen(
                             border = BorderStroke(1.dp, Color.Black)
                         ) {
                             Icon(
-                                Icons.Outlined.PersonAdd, contentDescription = "Person Add",
+                                Icons.Outlined.PersonAdd,
+                                contentDescription = "Person Add",
                                 tint = Color.Black,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -175,7 +180,7 @@ fun ProfileScreen(
                             }
                         }
                     }
-                    /// BODY CONTENT
+                    /// TAB PROFILE
                     TabRow(
                         selectedTabIndex,
                         modifier = Modifier
@@ -202,19 +207,28 @@ fun ProfileScreen(
                             )
                         }
                     }
+                    /// BODY CONTENT
+                    PostGridCompose()
                 }
+               
             }
         }
         
         is State.Failure -> {
             val message = (userState as State.Failure).throwable.message
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(message ?: "Unknown Error Occurred")
             }
         }
         
         else -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
         }
