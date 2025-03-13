@@ -62,8 +62,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     nullable = false
                     defaultValue = ""
                 }
-            )) {
-                ProfileScreen(navController)
+            )) { backStackEntry ->
+                val userId = backStackEntry?.arguments?.getString("userId") ?: ""
+                ProfileScreen(navController, userId = userId)
             }
             composable(Screens.CameraPreview.route) {
                 val sharedFileViewModel: SharedFileViewModel = hiltViewModel()
