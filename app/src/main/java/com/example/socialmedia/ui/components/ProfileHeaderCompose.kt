@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.socialmedia.utils.HorizontalSpacer
+import com.example.socialmedia.utils.VerticalSpacer
 
 data class ProfileHeaderComposeParams(
     val userName: String,
@@ -62,9 +63,10 @@ fun ProfileHeaderCompose(
         }
         15.HorizontalSpacer()
         Column {
-            Text(params.userName, style = MaterialTheme.typography.headlineMedium.copy(
+            Text(params.userName, style = MaterialTheme.typography.titleSmall.copy(
                 fontWeight = FontWeight.SemiBold,
             ))
+            8.VerticalSpacer()
             Row(
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth()
@@ -93,7 +95,7 @@ private fun ProfileStatus(
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            value, style = MaterialTheme.typography.titleLarge.copy(
+            value, style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.SemiBold,
             )
         )
