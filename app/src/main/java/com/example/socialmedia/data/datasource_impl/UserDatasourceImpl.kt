@@ -50,7 +50,9 @@ class UserDatasourceImpl(
 
             val data = result.data
 
-            val user = Json.decodeFromString<UserModel>(data)
+            val users = Json.decodeFromString<List<UserModel>>(data)
+
+            val user = users.firstOrNull() ?: throw Exception("User not found")
 
             ResponseModel.Success(user)
 
