@@ -15,18 +15,17 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val dataStore: AppDataStore
 ) : ViewModel() {
-    
+
     private val _username = MutableStateFlow("")
     val username = _username.asStateFlow()
-    
+
     private val _bottomNavbarIndex = MutableStateFlow(0)
     val bottomNavbarIndex = _bottomNavbarIndex.asStateFlow()
-    
+
     fun onSelectedBottomNavbar(index: Int) {
         _bottomNavbarIndex.value = index
     }
-    
-    val userId: StateFlow<String?> = dataStore.userId
-        .stateIn(viewModelScope, SharingStarted.Lazily, "")
-    
+
+    val userId: StateFlow<String?> =
+        dataStore.userId.stateIn(viewModelScope, SharingStarted.Lazily, "")
 }

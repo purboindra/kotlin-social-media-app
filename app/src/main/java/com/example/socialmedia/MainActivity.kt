@@ -1,20 +1,18 @@
 package com.example.socialmedia
 
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.core.app.ActivityCompat
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.socialmedia.ui.navigation.AppNavHost
 import com.example.socialmedia.ui.theme.SocialMediaTheme
-import com.example.socialmedia.utils.PermissionHelper
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -24,14 +22,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         setContent {
             SocialMediaTheme {
-                MainAppContent()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainAppContent()
+                }
             }
         }
     }
-    
 }
 
 

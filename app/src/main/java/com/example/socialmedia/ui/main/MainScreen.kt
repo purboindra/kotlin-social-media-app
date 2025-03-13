@@ -45,8 +45,9 @@ fun MainScreen(
     val bottomNavController = rememberNavController()
     val currentDestination =
         bottomNavController.currentBackStackEntryAsState().value?.destination?.route
+
     val userId by mainViewModel.userId.collectAsState()
-    
+
     val items = listOf(
         BottomNavigationItem(
             title = "Home",
@@ -55,7 +56,7 @@ fun MainScreen(
             hasNews = false,
             route = Screens.Home.route
         ),
-        
+
         BottomNavigationItem(
             title = "Search",
             selectedItem = Icons.Filled.Search,
@@ -85,7 +86,7 @@ fun MainScreen(
             route = Screens.Profile.route
         ),
     )
-    
+
     Scaffold(
         bottomBar = {
             AppBottomNavigationBar(
@@ -93,9 +94,9 @@ fun MainScreen(
                 selectedItem = currentDestination ?: Screens.Home.route,
                 onSelectedItem = { route ->
                     if (route != currentDestination) {
+
                         val routeName =
-                            if (route.contains("profile")) "/profile?userId=${userId}" else route
-                        
+                            if (route.contains("profile")) "/profile?userId=${userId ?: ""}" else route
                         bottomNavController.navigate(routeName) {
                             launchSingleTop = true
                             restoreState = true
@@ -122,8 +123,13 @@ fun MainScreen(
             composable(Screens.Search.route) { SearchScreen(navHostController) }
             composable(Screens.AddPost.route) { AddPostScreen(navHostController = navHostController) }
             composable(Screens.Reels.route) { ReelsScreen(navHostController) }
-            composable(Screens.Profile.route) { ProfileScreen(navHostController, userId = userId?:"") }
+            composable(Screens.Profile.route) {
+                ProfileScreen(
+                    navHostController,
+                    userId = userId ?: ""
+                )
+            }
         }
     }
-    
+
 }

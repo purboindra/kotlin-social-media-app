@@ -33,6 +33,8 @@ data class UserModel(
     @SerialName("followers")
     val followers: List<String>? = null,
     @SerialName("posts")
-    val posts: List<String>? = null
+    val posts: List<String>? = null,
+    @SerialName("bio")
+    val bio: String? = null,
 )
 
