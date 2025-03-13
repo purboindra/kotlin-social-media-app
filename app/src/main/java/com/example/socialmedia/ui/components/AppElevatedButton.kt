@@ -18,13 +18,14 @@ fun AppElevatedButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     text: String,
+    contentPadding: PaddingValues? = null
 ) {
     ElevatedButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,
         shape = RoundedCornerShape(8.dp),
-        contentPadding = PaddingValues(vertical = 15.dp),
+        contentPadding = contentPadding ?: PaddingValues(vertical = 15.dp),
         colors = ButtonDefaults.elevatedButtonColors(
             containerColor = BluePrimary,
             contentColor = Color.White,
