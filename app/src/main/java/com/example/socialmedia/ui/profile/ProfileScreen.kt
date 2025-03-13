@@ -98,9 +98,13 @@ fun ProfileScreen(
                 val user = (userState as State.Success).data
                 LazyColumn(
                     modifier = Modifier
-                        .padding(paddingValues)
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 16.dp)
+                        .then(
+                            if (userId != currentUserId) Modifier.padding(
+                                paddingValues
+                            ) else Modifier
+                        )
                         .fillMaxSize()
                 ) {
                     item {
