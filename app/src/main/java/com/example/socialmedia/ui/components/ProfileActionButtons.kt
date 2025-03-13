@@ -21,11 +21,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ProfileActionButtons(isCurrentUser: Boolean) {
+fun ProfileActionButtons(
+    isCurrentUser: Boolean,
+    isFollow: Boolean,
+    onFollow: () -> Unit
+) {
     if (!isCurrentUser) {
         AppElevatedButton(
-            onClick = {},
-            text = "Follow",
+            onClick = onFollow,
+            text = if (isFollow) "Following" else "Follow",
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(6.dp)
         )
