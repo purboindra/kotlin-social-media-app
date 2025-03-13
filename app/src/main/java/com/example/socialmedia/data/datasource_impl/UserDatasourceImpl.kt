@@ -47,12 +47,12 @@ class UserDatasourceImpl(
         return try {
             
             val result = supabase.from("users").select(
-                columns = Columns.ALL, {
-                    filter {
-                        eq("id", userId)
-                    }
+                columns = Columns.ALL
+            ) {
+                filter {
+                    eq("id", userId)
                 }
-            )
+            }
             
             val data = result.data
             
