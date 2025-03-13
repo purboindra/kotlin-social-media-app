@@ -1,6 +1,7 @@
 package com.example.socialmedia.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,19 +18,23 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.imageLoader
 
 @Composable
 fun PostAuthorCompose(
-    profilePicture:String,
-    userName:String,
-    fullName:String,
+    profilePicture: String,
+    userName: String,
+    fullName: String,
+    onClick: () -> Unit,
 ) {
     val context = LocalContext.current
     
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.clickable { onClick() }) {
         Box(
             modifier = Modifier
                 .size(32.dp)

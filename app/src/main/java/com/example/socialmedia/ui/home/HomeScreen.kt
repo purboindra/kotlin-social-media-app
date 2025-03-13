@@ -80,7 +80,8 @@ fun HomeScreen(
                         PostCardCompose(
                             horizontalPadding,
                             item,
-                            postViewModel = postViewModel
+                            postViewModel = postViewModel,
+                            navHostController = navController
                         )
                     }
                 } else {

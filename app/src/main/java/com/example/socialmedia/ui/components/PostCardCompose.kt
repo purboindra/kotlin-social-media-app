@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.icons.MyIconPack
 import com.example.socialmedia.icons.myiconpack.Message
@@ -37,7 +39,12 @@ fun PostCardCompose(
     horizontalPadding: Dp,
     postModel: PostModel,
     postViewModel: PostViewModel,
+    navHostController: NavHostController
 ) {
+    
+    fun onClickProfile() {
+        navHostController.navigate("/profile?userId=${postModel.user.id}")
+    }
     
     Column(
         modifier = Modifier.animateContentSize()
@@ -56,6 +63,9 @@ fun PostCardCompose(
                 userName = postModel.user.username ?: "-",
                 profilePicture = postModel.user.profilePicture ?: "",
                 fullName = postModel.user.fullName ?: "-",
+                onClick = {
+                    onClickProfile()
+                }
             )
             MoreButton()
         }
@@ -92,7 +102,11 @@ fun PostCardCompose(
                         postModel = postModel
                     )
                     5.HorizontalSpacer()
-                    Image(imageVector = MyIconPack.Message, contentDescription = "Message", modifier = Modifier.size(24.dp))
+                    Image(
+                        imageVector = MyIconPack.Message,
+                        contentDescription = "Message",
+                        modifier = Modifier.size(24.dp)
+                    )
                     
                     5.HorizontalSpacer()
                     IconButton(
