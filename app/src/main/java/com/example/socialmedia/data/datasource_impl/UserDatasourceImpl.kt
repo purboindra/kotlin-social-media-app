@@ -12,7 +12,19 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.filter.TextSearchType
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.Json
+
+data class Follow(
+    @SerialName("id")
+    val id: String,
+    @SerialName("created_at")
+    val createdAt: String,
+    @SerialName("follower_id")
+    val followerId: String,
+    @SerialName("followed_id")
+    val followedId: String
+)
 
 class UserDatasourceImpl(
     private val supabase: SupabaseClient,
@@ -60,7 +72,30 @@ class UserDatasourceImpl(
             
             val user = users.firstOrNull() ?: throw Exception("User not found")
             
-            ResponseModel.Success(user)
+            val currentUserId = dataStore.userId.firstOrNull()
+                ?: throw Exception("User ID not found")
+            
+            val isFollowingResult =
+                supabase.from("follows").select(Columns.ALL) {
+                    filter {
+                        eq("follower_id", currentUserId)
+                        eq("followed_id", userId)
+                    }
+                }
+            
+            val isFollowing =
+                Json.decodeFromString<List<Follow>>(isFollowingResult.data)
+            
+            Log.d(
+                "UserDataSourceImpl",
+                "isFollowing: ${isFollowing}"
+            )
+            
+            val userFollow = user.copy(
+                isFollow = isFollowing.isNotEmpty()
+            )
+            
+            ResponseModel.Success(userFollow)
             
         } catch (e: Throwable) {
             ResponseModel.Error(e.message ?: "Something went wrong...")
