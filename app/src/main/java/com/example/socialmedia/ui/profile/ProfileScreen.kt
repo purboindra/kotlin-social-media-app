@@ -121,7 +121,9 @@ fun ProfileScreen(
                         )
                         12.VerticalSpacer()
                         ProfileActionButtons(
-                            isCurrentUser = userId == currentUserId
+                            isCurrentUser = userId == currentUserId,
+                            isFollow =  user.isFollow,
+                            onFollow = {}
                         )
                         8.VerticalSpacer()
                         /// INSIGHT
