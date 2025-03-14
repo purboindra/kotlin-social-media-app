@@ -31,7 +31,7 @@ fun ProfileActionButtons(
         AppElevatedButton(
             enabled = enabled,
             onClick = onFollow,
-            text = if (isFollow) "Following" else "Follow",
+            text = if (isFollow) "Unfollow" else "Follow",
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(6.dp)
         )
