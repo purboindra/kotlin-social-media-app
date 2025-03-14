@@ -46,7 +46,7 @@ fun ProfileHeaderCompose(
                 .background(Color.LightGray.copy(0.5f)),
             contentAlignment = Alignment.Center
         ) {
-            if (userModel.profilePicture == null) Icon(
+            if (userModel.profilePicture.isNullOrBlank()) Icon(
                 Icons.Outlined.Person,
                 contentDescription = "Profile",
                 modifier = Modifier.size(48.dp),
