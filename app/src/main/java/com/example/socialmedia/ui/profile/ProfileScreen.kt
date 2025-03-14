@@ -42,7 +42,6 @@ import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.PostGridCompose
 import com.example.socialmedia.ui.components.ProfileActionButtons
 import com.example.socialmedia.ui.components.ProfileHeaderCompose
-import com.example.socialmedia.ui.components.ProfileHeaderComposeParams
 import com.example.socialmedia.ui.components.TabContent
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.viewmodel.AuthViewModel
@@ -110,10 +109,7 @@ fun ProfileScreen(
                 ) {
                     item {
                         ProfileHeaderCompose(
-                            ProfileHeaderComposeParams(
-                                userName = user.username ?: "",
-                                profilePicture = user.profilePicture ?: "",
-                            )
+                           userModel = user
                         )
                         8.VerticalSpacer()
                         Text(

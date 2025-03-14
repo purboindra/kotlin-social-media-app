@@ -24,17 +24,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.example.socialmedia.data.model.UserModel
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
 
-data class ProfileHeaderComposeParams(
-    val userName: String,
-    val profilePicture: String,
-)
 
 @Composable
 fun ProfileHeaderCompose(
-    params: ProfileHeaderComposeParams
+    userModel: UserModel
 ) {
     Row(
         modifier = Modifier
@@ -49,39 +46,41 @@ fun ProfileHeaderCompose(
                 .background(Color.LightGray.copy(0.5f)),
             contentAlignment = Alignment.Center
         ) {
-            if (params.profilePicture.isBlank()) Icon(
+            if (userModel.profilePicture == null) Icon(
                 Icons.Outlined.Person,
                 contentDescription = "Profile",
                 modifier = Modifier.size(48.dp),
                 tint = Color.Gray,
             ) else AsyncImage(
-                model = params.profilePicture,
-                contentDescription = params.userName,
+                model = userModel.profilePicture,
+                contentDescription = userModel.username,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
         }
         15.HorizontalSpacer()
         Column {
-            Text(params.userName, style = MaterialTheme.typography.titleSmall.copy(
-                fontWeight = FontWeight.SemiBold,
-            ))
+            Text(
+                userModel.username ?: "", style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.SemiBold,
+                )
+            )
             8.VerticalSpacer()
             Row(
                 horizontalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier.fillMaxWidth()
-                ) {
+            ) {
                 ProfileStatus(
                     "Posts",
-                    value = "54"
+                    value = (userModel.posts?.size ?: 0).toString()
                 )
                 ProfileStatus(
                     "Followers",
-                    value = "923"
+                    value = (userModel.followers?.size ?: 0).toString()
                 )
                 ProfileStatus(
                     "Following",
-                    value = "411"
+                    value = (userModel.following?.size ?: 0).toString()
                 )
             }
         }
