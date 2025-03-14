@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.datastore.dataStore
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CreateFollowModel
+import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.UserModel
 import io.github.jan.supabase.SupabaseClient
@@ -92,7 +93,44 @@ class UserDatasourceImpl(
                 isFollow = isFollowing.isNotEmpty()
             )
 
-            ResponseModel.Success(userFollow)
+            val followersResult = supabase.from("follows").select(Columns.ALL, {
+                filter {
+                    eq("followed_id", currentUserId)
+                }
+            })
+
+            val followers = Json.decodeFromString<List<Follow>>(followersResult.data)
+
+            val followingResult = supabase.from("follows").select(Columns.ALL, {
+                filter {
+                    eq("follower_id", currentUserId)
+                }
+            })
+
+            val following = Json.decodeFromString<List<Follow>>(followingResult.data)
+
+            val followingIds = following.map { it.followedId }
+            val followersIds = followers.map { it.followerId }
+
+            val resultFollow = userFollow.copy(
+                followers = followersIds,
+                following = followingIds
+            )
+
+            val postsResult = supabase.from("posts").select(Columns.ALL, {
+                filter {
+                    eq("user", currentUserId)
+                }
+            })
+
+            val post = Json.decodeFromString<List<PostModel>>(postsResult.data)
+            val userPostIds = post.map { it.user.id }
+
+            val resultPost = resultFollow.copy(
+                posts = userPostIds
+            )
+
+            ResponseModel.Success(resultPost)
 
         } catch (e: Throwable) {
             ResponseModel.Error(e.message ?: "Something went wrong...")
