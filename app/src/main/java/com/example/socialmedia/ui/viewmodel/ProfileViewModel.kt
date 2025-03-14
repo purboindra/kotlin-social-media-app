@@ -21,42 +21,66 @@ class ProfileViewModel @Inject constructor(
     private val userUseCase: UserUsecase,
     private val dataStore: AppDataStore
 ) : ViewModel() {
-    
+
     private val _userState = MutableStateFlow<State<UserModel>>(State.Idle)
     val userState = _userState.asStateFlow()
-    
+
     private val _profilePicture = MutableStateFlow<String?>(null)
     val profilePicture = _profilePicture.asStateFlow()
-    
+
     private val _username = MutableStateFlow<String?>(null)
     val username = _username.asStateFlow()
-    
-    private val _followState = MutableStateFlow(false)
+
+    private val _followState = MutableStateFlow<State<Boolean>>(State.Idle)
     val followState = _followState.asStateFlow()
-    
+
     fun getProfilePicture() = viewModelScope.launch {
         dataStore.profilePicture.collectLatest { state ->
             _profilePicture.value = state
         }
     }
-    
+
     fun getUserName() = viewModelScope.launch {
         dataStore.username.collectLatest { state ->
             _username.value = state
         }
     }
-    
+
     val userId: StateFlow<String?> = dataStore.userId.stateIn(
         viewModelScope, SharingStarted.Lazily, ""
     )
-    
+
     fun fetchUserById(userId: String) = viewModelScope.launch {
         userUseCase.fetchUserById(userId).collectLatest { state ->
             _userState.value = state
         }
     }
-    
+
     fun invokeFollow(userId: String) = viewModelScope.launch {
-    
+        _followState.value = State.Loading
+
+        val currentState = _userState.value
+
+        if (currentState is State.Success) {
+            val isCurrentlyFollowing = currentState.data.isFollow
+
+            val followFlow = if (isCurrentlyFollowing) {
+                userUseCase.unFollowUser(userId)
+            } else {
+                userUseCase.followUser(userId)
+            }
+
+            followFlow.collectLatest { state ->
+                _followState.value = state
+
+                if (state is State.Success) {
+                    _userState.value = currentState.copy(
+                        data = currentState.data.copy(isFollow = !isCurrentlyFollowing)
+                    )
+                }
+            }
+        }
     }
+
+
 }
