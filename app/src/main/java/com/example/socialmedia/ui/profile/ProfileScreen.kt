@@ -64,9 +64,10 @@ fun ProfileScreen(
     val currentUserId by profileViewModel.userId.collectAsState()
     val logoutState by authViewModel.logoutState.collectAsState()
     val userState by profileViewModel.userState.collectAsState()
-    
+    val followState by profileViewModel.followState.collectAsState()
+
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    
+
     val tabList = listOf(
         TabContentModel(
             imageVector = Icons.Outlined.GridOn,
@@ -81,17 +82,17 @@ fun ProfileScreen(
             contentDescription = "Tag"
         ),
     )
-    
+
     LaunchedEffect(logoutState) {
         if (logoutState is State.Success) {
             navHostController.navigate(Screens.Login.route)
         }
     }
-    
+
     LaunchedEffect(Unit) {
         profileViewModel.fetchUserById(userId)
     }
-    
+
     Scaffold { paddingValues ->
         when (userState) {
             is State.Success -> {
@@ -122,8 +123,11 @@ fun ProfileScreen(
                         12.VerticalSpacer()
                         ProfileActionButtons(
                             isCurrentUser = userId == currentUserId,
-                            isFollow =  user.isFollow,
-                            onFollow = {}
+                            isFollow = user.isFollow,
+                            onFollow = {
+                                profileViewModel.invokeFollow(userId)
+                            },
+                            enabled = followState !is State.Loading
                         )
                         8.VerticalSpacer()
                         /// INSIGHT
@@ -170,9 +174,9 @@ fun ProfileScreen(
                             },
                         ) {
                             tabList.forEachIndexed { index, tabContentModel ->
-                                
+
                                 val hasSelect = index == selectedTabIndex
-                                
+
                                 TabContent(
                                     imageVector = tabContentModel.imageVector,
                                     contentDescription = tabContentModel.contentDescription,
@@ -186,10 +190,10 @@ fun ProfileScreen(
                         /// BODY CONTENT
                         PostGridCompose()
                     }
-                    
+
                 }
             }
-            
+
             is State.Failure -> {
                 val message = (userState as State.Failure).throwable.message
                 Box(
@@ -199,7 +203,7 @@ fun ProfileScreen(
                     Text(message ?: "Unknown Error Occurred")
                 }
             }
-            
+
             else -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
