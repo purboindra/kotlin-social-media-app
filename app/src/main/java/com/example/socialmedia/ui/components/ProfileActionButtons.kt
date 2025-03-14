@@ -24,10 +24,12 @@ import androidx.compose.ui.unit.dp
 fun ProfileActionButtons(
     isCurrentUser: Boolean,
     isFollow: Boolean,
-    onFollow: () -> Unit
+    onFollow: () -> Unit,
+    enabled: Boolean,
 ) {
     if (!isCurrentUser) {
         AppElevatedButton(
+            enabled = enabled,
             onClick = onFollow,
             text = if (isFollow) "Following" else "Follow",
             modifier = Modifier.fillMaxWidth(),
@@ -48,7 +50,7 @@ fun ProfileActionButtons(
                 Text("Edit Profile")
             }
         )
-        
+
         AppOutlinedButton(
             modifier = Modifier.weight(1f),
             onClick = {},
@@ -56,7 +58,7 @@ fun ProfileActionButtons(
                 Text("Bagikan Profile")
             }
         )
-        
+
         OutlinedButton(
             onClick = {},
             modifier = Modifier.width(56.dp),
