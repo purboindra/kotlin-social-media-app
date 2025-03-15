@@ -64,9 +64,10 @@ fun ProfileScreen(
     val logoutState by authViewModel.logoutState.collectAsState()
     val userState by profileViewModel.userState.collectAsState()
     val followState by profileViewModel.followState.collectAsState()
-
+    val postsState by profileViewModel.postsState.collectAsState()
+    
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-
+    
     val tabList = listOf(
         TabContentModel(
             imageVector = Icons.Outlined.GridOn,
@@ -81,17 +82,18 @@ fun ProfileScreen(
             contentDescription = "Tag"
         ),
     )
-
+    
     LaunchedEffect(logoutState) {
         if (logoutState is State.Success) {
             navHostController.navigate(Screens.Login.route)
         }
     }
-
+    
     LaunchedEffect(Unit) {
         profileViewModel.fetchUserById(userId)
+        profileViewModel.fetchPostsById(userId)
     }
-
+    
     Scaffold { paddingValues ->
         when (userState) {
             is State.Success -> {
@@ -109,7 +111,7 @@ fun ProfileScreen(
                 ) {
                     item {
                         ProfileHeaderCompose(
-                           userModel = user
+                            userModel = user
                         )
                         8.VerticalSpacer()
                         Text(
@@ -119,7 +121,7 @@ fun ProfileScreen(
                         12.VerticalSpacer()
                         ProfileActionButtons(
                             isCurrentUser = userId == currentUserId,
-                            isFollow = user.isFollow,
+                            isFollow = user.isFollow?:false,
                             onFollow = {
                                 profileViewModel.invokeFollow(userId)
                             },
@@ -170,9 +172,9 @@ fun ProfileScreen(
                             },
                         ) {
                             tabList.forEachIndexed { index, tabContentModel ->
-
+                                
                                 val hasSelect = index == selectedTabIndex
-
+                                
                                 TabContent(
                                     imageVector = tabContentModel.imageVector,
                                     contentDescription = tabContentModel.contentDescription,
@@ -184,12 +186,43 @@ fun ProfileScreen(
                             }
                         }
                         /// BODY CONTENT
-                        PostGridCompose()
+                        when (postsState) {
+                            is State.Success -> {
+                                val data = (postsState as State.Success).data
+                                if (data.isEmpty()) Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("No Post Yet")
+                                } else
+                                    PostGridCompose(data)
+                            }
+                            
+                            is State.Failure -> {
+                                val message =
+                                    (postsState as State.Failure).throwable.message
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(message ?: "Unknown Error Occurred")
+                                }
+                            }
+                            
+                            else -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
                     }
-
+                    
                 }
             }
-
+            
             is State.Failure -> {
                 val message = (userState as State.Failure).throwable.message
                 Box(
@@ -199,7 +232,7 @@ fun ProfileScreen(
                     Text(message ?: "Unknown Error Occurred")
                 }
             }
-
+            
             else -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
