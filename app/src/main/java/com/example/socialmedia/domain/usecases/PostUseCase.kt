@@ -1,6 +1,7 @@
 package com.example.socialmedia.domain.usecases
 
 import com.example.socialmedia.data.datasource_impl.FetchLikesModel
+import com.example.socialmedia.data.datasource_impl.SavedPostModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.State
@@ -48,6 +49,10 @@ class PostUseCase(private val postRepository: PostRepository) {
         comment: String
     ): Flow<State<Boolean>> {
         return postRepository.createComment(id, comment)
+    }
+    
+    suspend fun fetchSavedPostsByUserId(userId: String): Flow<State<List<SavedPostModel>>> {
+        return postRepository.fetchSavedPostsByUserId(userId)
     }
     
     suspend fun savedPost(id: String): Flow<State<SavePostResult>> {

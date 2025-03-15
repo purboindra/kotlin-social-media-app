@@ -11,6 +11,7 @@ import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.UploadImageModel
+import com.example.socialmedia.data.model.UserModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
@@ -56,6 +57,18 @@ data class FetchLikesModel(
     val post: PostModelLikes,
     @SerialName("user_id")
     val user: UserModelLikes
+)
+
+@Serializable
+data class SavedPostModel(
+    @SerialName("id")
+    val id: String,
+    @SerialName("created_at")
+    val createdAt: String,
+    @SerialName("post_id")
+    val post: PostModel,
+    @SerialName("user_id")
+    val user: UserModel
 )
 
 class PostDataSourceImpl(
@@ -478,6 +491,40 @@ class PostDataSourceImpl(
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error create comment", e)
             throw e
+        }
+    }
+    
+    override suspend fun fetchSavedPostsByUserId(userId: String): ResponseModel<List<SavedPostModel>> {
+        return try {
+            val postsResult = supabase.from("saved_posts").select(
+                columns = Columns.raw(
+                    """
+                        id,
+                        created_at,
+                        post_id(
+                            image_path
+                        ),
+                        user_id(
+                                full_name,
+                                profile_picture
+                         )
+                    """.trimIndent()
+                )
+            ) {
+                filter {
+                    eq("user_id", userId)
+                }
+                order("created_at", Order.DESCENDING)
+            }
+            
+            val posts =
+                Json.decodeFromString<List<SavedPostModel>>(postsResult.data)
+            
+            ResponseModel.Success(posts)
+            
+        } catch (e: Exception) {
+            Log.e("PostDataSourceImpl", "Error fetch saved posts", e)
+            ResponseModel.Error(e.message ?: "Something went wrong...")
         }
     }
     

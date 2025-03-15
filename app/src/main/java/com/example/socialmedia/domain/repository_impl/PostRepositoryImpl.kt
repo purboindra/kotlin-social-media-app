@@ -2,6 +2,7 @@ package com.example.socialmedia.domain.repository_impl
 
 import com.example.socialmedia.data.datasource.PostDatasource
 import com.example.socialmedia.data.datasource_impl.FetchLikesModel
+import com.example.socialmedia.data.datasource_impl.SavedPostModel
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.SavePostResult
@@ -112,6 +113,14 @@ class PostRepositoryImpl(
             throw e
         }
     }
+    
+    override suspend fun fetchSavedPostsByUserId(userId: String): Flow<State<List<SavedPostModel>>> =
+        flow {
+            when (val result = postDataSource.fetchSavedPostsByUserId(userId)) {
+                is ResponseModel.Success -> emit(State.Success(result.value))
+                is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
+            }
+        }
     
     override suspend fun savedPost(id: String): Flow<State<SavePostResult>> =
         flow {

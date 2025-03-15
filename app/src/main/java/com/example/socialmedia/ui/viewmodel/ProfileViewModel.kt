@@ -2,6 +2,7 @@ package com.example.socialmedia.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.socialmedia.data.datasource_impl.SavedPostModel
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.State
@@ -35,6 +36,10 @@ class ProfileViewModel @Inject constructor(
     private val _postsState =
         MutableStateFlow<State<List<PostModel>>>(State.Idle)
     val postsState = _postsState.asStateFlow()
+    
+    private val _savedPostsState =
+        MutableStateFlow<State<List<SavedPostModel>>>(State.Idle)
+    val savedPostsState = _savedPostsState.asStateFlow()
     
     private val _username = MutableStateFlow<String?>(null)
     val username = _username.asStateFlow()
@@ -70,12 +75,18 @@ class ProfileViewModel @Inject constructor(
         }
     }
     
+    fun fetchSavedPostsByUserId(userId: String) = viewModelScope.launch {
+        postUseCase.fetchSavedPostsByUserId(userId).collectLatest { state ->
+            _savedPostsState.value = state
+        }
+    }
+    
     fun invokeFollow(userId: String) = viewModelScope.launch {
         _followState.value = State.Loading
         
         val currentState = _userState.value
         
-        val currentUserId = dataStore.userId.firstOrNull()?:""
+        val currentUserId = dataStore.userId.firstOrNull() ?: ""
         
         if (currentState is State.Success) {
             val isCurrentlyFollowing = currentState.data.isFollow
