@@ -39,9 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.socialmedia.data.model.State
-import com.example.socialmedia.ui.components.PostGridCompose
 import com.example.socialmedia.ui.components.ProfileActionButtons
 import com.example.socialmedia.ui.components.ProfileHeaderCompose
+import com.example.socialmedia.ui.components.ProfilePostGridCompose
+import com.example.socialmedia.ui.components.ProfileReelsCompose
+import com.example.socialmedia.ui.components.ProfileTaggedPostsCompose
 import com.example.socialmedia.ui.components.TabContent
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.viewmodel.AuthViewModel
@@ -64,7 +66,6 @@ fun ProfileScreen(
     val logoutState by authViewModel.logoutState.collectAsState()
     val userState by profileViewModel.userState.collectAsState()
     val followState by profileViewModel.followState.collectAsState()
-    val postsState by profileViewModel.postsState.collectAsState()
     
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     
@@ -121,7 +122,7 @@ fun ProfileScreen(
                         12.VerticalSpacer()
                         ProfileActionButtons(
                             isCurrentUser = userId == currentUserId,
-                            isFollow = user.isFollow?:false,
+                            isFollow = user.isFollow ?: false,
                             onFollow = {
                                 profileViewModel.invokeFollow(userId)
                             },
@@ -186,36 +187,21 @@ fun ProfileScreen(
                             }
                         }
                         /// BODY CONTENT
-                        when (postsState) {
-                            is State.Success -> {
-                                val data = (postsState as State.Success).data
-                                if (data.isEmpty()) Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("No Post Yet")
-                                } else
-                                    PostGridCompose(data)
+                        when (selectedTabIndex) {
+                            0 -> {
+                                ProfilePostGridCompose(
+                                    profileViewModel
+                                )
                             }
                             
-                            is State.Failure -> {
-                                val message =
-                                    (postsState as State.Failure).throwable.message
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(message ?: "Unknown Error Occurred")
-                                }
+                            1 -> {
+                                ProfileReelsCompose(
+                                    profileViewModel, userId
+                                )
                             }
                             
                             else -> {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
+                                ProfileTaggedPostsCompose()
                             }
                         }
                     }
