@@ -127,7 +127,9 @@ fun PostCardCompose(
                 )
             }
             5.VerticalSpacer()
-            LikedByTextCompose()
+            LikedByTextCompose(
+                isLiked = postModel.hasLike?:false
+            )
             5.VerticalSpacer()
             ExpandableCaptionCompose(
                 text = postModel.caption,

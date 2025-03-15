@@ -9,7 +9,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 
 @Composable
-fun LikedByTextCompose() {
+fun LikedByTextCompose(
+    isLiked: Boolean
+) {
     val annotatedText = buildAnnotatedString {
         append("Liked by ")
         withStyle(
@@ -30,8 +32,8 @@ fun LikedByTextCompose() {
             }
         }
     }
-
-    Text(
+    
+    if (isLiked) Text(
         "You liked this post",
         style = MaterialTheme.typography.labelSmall
     )
