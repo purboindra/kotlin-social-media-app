@@ -146,6 +146,8 @@ fun PostCardCompose(
                                 comment = item.comment,
                                 author = item.user.fullName ?: "-",
                                 imageUrl = item.user.profilePicture ?: "",
+                                navHostController = navHostController,
+                                userId = item.user.id
                             )
                         }
                     }
