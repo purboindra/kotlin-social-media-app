@@ -2,15 +2,14 @@ package com.example.socialmedia.data.datasource_impl
 
 import UserDatasource
 import android.util.Log
-import androidx.datastore.dataStore
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CreateFollowModel
-import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.UserModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Count
 import io.github.jan.supabase.postgrest.query.filter.TextSearchType
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.SerialName
@@ -65,9 +64,7 @@ class UserDatasourceImpl(
                 }
             }
             
-            val data = result.data
-            
-            val users = Json.decodeFromString<List<UserModel>>(data)
+            val users = Json.decodeFromString<List<UserModel>>(result.data)
             
             val user = users.firstOrNull() ?: throw Exception("User not found")
             
@@ -96,26 +93,26 @@ class UserDatasourceImpl(
             val followingIds = following.map { it.followedId }
             val followersIds = followers.map { it.followerId }
             
+            val count = supabase.from("posts")
+                .select {
+                    filter {
+                        eq("user", userId)
+                    }
+                    count(Count.EXACT)
+                }.countOrNull()
+            
+            val userPostIds = List((count ?: 0).toInt()) { index ->
+                "${userId}_$index"
+            }
+            
             val resultFollow = user.copy(
                 followers = followersIds,
                 following = followingIds,
-                isFollow = followersIds.contains(currentUserId)
-            )
-            
-            val postsResult = supabase.from("posts").select(Columns.ALL, {
-                filter {
-                    eq("user", currentUserId)
-                }
-            })
-            
-            val post = Json.decodeFromString<List<PostModel>>(postsResult.data)
-            val userPostIds = post.map { it.user.id }
-            
-            val resultPost = resultFollow.copy(
+                isFollow = followersIds.contains(currentUserId),
                 posts = userPostIds
             )
             
-            ResponseModel.Success(resultPost)
+            ResponseModel.Success(resultFollow)
             
         } catch (e: Throwable) {
             ResponseModel.Error(e.message ?: "Something went wrong...")
