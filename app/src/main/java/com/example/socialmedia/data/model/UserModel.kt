@@ -36,6 +36,6 @@ data class UserModel(
     val posts: List<String>? = null,
     @SerialName("bio")
     val bio: String? = null,
-    val isFollow: Boolean = false
+    val isFollow: Boolean? = false
 )
 
