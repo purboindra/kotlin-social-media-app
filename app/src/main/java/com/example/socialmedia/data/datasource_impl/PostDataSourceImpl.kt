@@ -8,6 +8,7 @@ import com.example.socialmedia.data.model.CreatePostModel
 import com.example.socialmedia.data.model.CreateSavePostModel
 import com.example.socialmedia.data.model.LikeModel
 import com.example.socialmedia.data.model.PostModel
+import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.UploadImageModel
 import io.github.jan.supabase.SupabaseClient
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.util.UUID
 import kotlin.time.Duration.Companion.minutes
@@ -244,6 +246,92 @@ class PostDataSourceImpl(
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error fetching all posts", e)
             throw e
+        }
+    }
+    
+    override suspend fun fetchPostsById(userId: String): ResponseModel<List<PostModel>> {
+        return try {
+            val columns = Columns.raw(
+                """
+    id,
+    created_at,
+    caption,
+    user (
+      id,
+      full_name,
+      profile_picture
+    ),
+    image_key,
+    image_path,
+    tagged_location,
+    tagged_users
+    """.trimIndent()
+            )
+            
+            val rawPost = supabase.from("posts").select(
+                columns
+            ) {
+                filter {
+                    eq("user", userId)
+                }
+                order("created_at", Order.DESCENDING)
+            }
+            
+            val posts = Json.decodeFromString<List<PostModel>>(rawPost.data)
+            
+            val bucket = supabase.storage.from("posts")
+            
+            val updatedPost = posts.map { post ->
+                
+                val url = try {
+                    bucket.createSignedUrl(
+                        path = post.imagePath,
+                        expiresIn = 5.minutes
+                    )
+                } catch (e: RestException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url RestException",
+                        e
+                    )
+                    ""
+                } catch (e: HttpRequestException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url HttpRequestException",
+                        e
+                    )
+                    ""
+                } catch (e: HttpRequestTimeoutException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url HttpRequestTimeoutException",
+                        e
+                    )
+                    ""
+                } catch (e: Exception) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url Exception",
+                        e
+                    )
+                    ""
+                }
+                post.copy(imageUrl = url)
+            }
+            
+            ResponseModel.Success(updatedPost)
+            
+        } catch (e: SerializationException) {
+            Log.e(
+                "PostDataSourceImpl JSON Debug",
+                "JSON parsing error: ${e.message}",
+                e
+            )
+            ResponseModel.Error(e.message ?: "Something went wrong...")
+        } catch (e: Exception) {
+            Log.e("PostDataSourceImpl", "Error fetching posts by id", e)
+            ResponseModel.Error(e.message ?: "Something went wrong...")
         }
     }
     

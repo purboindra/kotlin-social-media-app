@@ -2,6 +2,7 @@ package com.example.socialmedia.data.datasource
 
 import com.example.socialmedia.data.datasource_impl.FetchLikesModel
 import com.example.socialmedia.data.model.PostModel
+import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.UploadImageModel
 
@@ -14,6 +15,7 @@ interface PostDatasource {
     ): Result<Boolean>
     
     suspend fun fetchAllPosts(): Result<List<PostModel>>
+    suspend fun fetchPostsById(userId: String): ResponseModel<List<PostModel>>
     suspend fun createLike(id: String): Result<Boolean>
     suspend fun deleteLike(id: String): Result<Boolean>
     suspend fun fetchAllLikes(): Result<List<FetchLikesModel>>

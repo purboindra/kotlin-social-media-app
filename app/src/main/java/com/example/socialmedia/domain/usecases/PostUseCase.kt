@@ -27,6 +27,10 @@ class PostUseCase(private val postRepository: PostRepository) {
         return postRepository.fetchAllPosts()
     }
     
+    suspend fun fetchPostsById(userId: String): Flow<State<List<PostModel>>> {
+        return postRepository.fetchPostsById(userId)
+    }
+    
     suspend fun createLike(id: String): Flow<State<Boolean>> {
         return postRepository.createLike(id)
     }

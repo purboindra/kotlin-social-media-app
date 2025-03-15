@@ -3,6 +3,7 @@ package com.example.socialmedia.domain.repository_impl
 import com.example.socialmedia.data.datasource.PostDatasource
 import com.example.socialmedia.data.datasource_impl.FetchLikesModel
 import com.example.socialmedia.data.model.PostModel
+import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.SavePostResult
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UploadImageModel
@@ -47,6 +48,15 @@ class PostRepositoryImpl(
         }
     }
     
+    override suspend fun fetchPostsById(userId: String): Flow<State<List<PostModel>>> =
+        flow {
+            emit(State.Loading)
+            when (val result = postDataSource.fetchPostsById(userId)) {
+                is ResponseModel.Success -> emit(State.Success(result.value))
+                is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
+            }
+        }
+    
     override suspend fun createLike(id: String): Flow<State<Boolean>> = flow {
         try {
             val result = postDataSource.createLike(id)
@@ -73,18 +83,19 @@ class PostRepositoryImpl(
         }
     }
     
-    override suspend fun fetchAllLikes(): Flow<State<List<FetchLikesModel>>> = flow {
-        try {
-            val result = postDataSource.fetchAllLikes()
-            result.onSuccess {
-                emit(State.Success(it))
-            }.onFailure {
-                emit(State.Failure(it))
+    override suspend fun fetchAllLikes(): Flow<State<List<FetchLikesModel>>> =
+        flow {
+            try {
+                val result = postDataSource.fetchAllLikes()
+                result.onSuccess {
+                    emit(State.Success(it))
+                }.onFailure {
+                    emit(State.Failure(it))
+                }
+            } catch (e: Exception) {
+                throw e
             }
-        } catch (e: Exception) {
-            throw e
         }
-    }
     
     override suspend fun createComment(
         id: String, comment: String

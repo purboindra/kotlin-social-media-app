@@ -3,8 +3,10 @@ package com.example.socialmedia.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmedia.data.db.local.AppDataStore
+import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UserModel
+import com.example.socialmedia.domain.usecases.PostUseCase
 import com.example.socialmedia.domain.usecases.UserUsecase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userUseCase: UserUsecase,
+    private val postUseCase: PostUseCase,
     private val dataStore: AppDataStore
 ) : ViewModel() {
     
@@ -27,6 +30,10 @@ class ProfileViewModel @Inject constructor(
     
     private val _profilePicture = MutableStateFlow<String?>(null)
     val profilePicture = _profilePicture.asStateFlow()
+    
+    private val _postsState =
+        MutableStateFlow<State<List<PostModel>>>(State.Idle)
+    val postsState = _postsState.asStateFlow()
     
     private val _username = MutableStateFlow<String?>(null)
     val username = _username.asStateFlow()
@@ -50,6 +57,12 @@ class ProfileViewModel @Inject constructor(
         viewModelScope, SharingStarted.Lazily, ""
     )
     
+    fun fetchPostsById(userId: String) = viewModelScope.launch {
+        postUseCase.fetchPostsById(userId).collectLatest { state ->
+            _postsState.value = state
+        }
+    }
+    
     fun fetchUserById(userId: String) = viewModelScope.launch {
         userUseCase.fetchUserById(userId).collectLatest { state ->
             _userState.value = state
@@ -64,7 +77,7 @@ class ProfileViewModel @Inject constructor(
         if (currentState is State.Success) {
             val isCurrentlyFollowing = currentState.data.isFollow
             
-            val followFlow = if (isCurrentlyFollowing) {
+            val followFlow = if (isCurrentlyFollowing == true) {
                 userUseCase.unFollowUser(userId)
             } else {
                 userUseCase.followUser(userId)
@@ -80,7 +93,7 @@ class ProfileViewModel @Inject constructor(
                     val following = currentState.data.following?.toMutableList()
                         ?: mutableListOf()
                     
-                    if (!isCurrentlyFollowing) {
+                    if (isCurrentlyFollowing != true) {
                         followers.add(userId)
                     } else {
                         followers.remove(userId)
@@ -88,7 +101,7 @@ class ProfileViewModel @Inject constructor(
                     
                     _userState.value = currentState.copy(
                         data = currentState.data.copy(
-                            isFollow = !isCurrentlyFollowing,
+                            isFollow = !(isCurrentlyFollowing ?: false),
                             followers = followers,
                             following = following,
                         )
