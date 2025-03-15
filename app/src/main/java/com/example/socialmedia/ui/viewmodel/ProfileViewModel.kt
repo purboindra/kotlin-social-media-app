@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -74,10 +75,12 @@ class ProfileViewModel @Inject constructor(
         
         val currentState = _userState.value
         
+        val currentUserId = dataStore.userId.firstOrNull()?:""
+        
         if (currentState is State.Success) {
             val isCurrentlyFollowing = currentState.data.isFollow
             
-            val followFlow = if (isCurrentlyFollowing == true) {
+            val followFlow = if (isCurrentlyFollowing) {
                 userUseCase.unFollowUser(userId)
             } else {
                 userUseCase.followUser(userId)
@@ -93,24 +96,21 @@ class ProfileViewModel @Inject constructor(
                     val following = currentState.data.following?.toMutableList()
                         ?: mutableListOf()
                     
-                    if (isCurrentlyFollowing != true) {
-                        followers.add(userId)
+                    if (!isCurrentlyFollowing) {
+                        followers.add(currentUserId)
                     } else {
-                        followers.remove(userId)
+                        followers.remove(currentUserId)
                     }
                     
                     _userState.value = currentState.copy(
                         data = currentState.data.copy(
-                            isFollow = !(isCurrentlyFollowing ?: false),
+                            isFollow = !isCurrentlyFollowing,
                             followers = followers,
                             following = following,
                         )
                     )
-                    
                 }
             }
         }
     }
-    
-    
 }
