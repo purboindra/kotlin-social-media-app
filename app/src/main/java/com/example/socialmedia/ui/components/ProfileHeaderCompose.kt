@@ -1,6 +1,7 @@
 package com.example.socialmedia.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,15 +24,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.socialmedia.data.model.UserModel
+import com.example.socialmedia.utils.ConnectionType
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
 
 
 @Composable
 fun ProfileHeaderCompose(
-    userModel: UserModel
+    userModel: UserModel,
+    navHostController: NavHostController
 ) {
     Row(
         modifier = Modifier
@@ -61,7 +65,8 @@ fun ProfileHeaderCompose(
         15.HorizontalSpacer()
         Column {
             Text(
-                userModel.username ?: "", style = MaterialTheme.typography.titleSmall.copy(
+                userModel.username ?: "",
+                style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.SemiBold,
                 )
             )
@@ -76,11 +81,17 @@ fun ProfileHeaderCompose(
                 )
                 ProfileStatus(
                     "Followers",
-                    value = (userModel.followers?.size ?: 0).toString()
+                    value = (userModel.followers?.size ?: 0).toString(),
+                    onTap = {
+                        navHostController.navigate("/follows-screen?userId=${userModel.id}&type=${ConnectionType.FOLLOWERS.name}")
+                    }
                 )
                 ProfileStatus(
                     "Following",
-                    value = (userModel.following?.size ?: 0).toString()
+                    value = (userModel.following?.size ?: 0).toString(),
+                    onTap = {
+                        navHostController.navigate("/follows-screen?userId=${userModel.id}&type=${ConnectionType.FOLLOWING.name}")
+                    }
                 )
             }
         }
@@ -91,8 +102,11 @@ fun ProfileHeaderCompose(
 private fun ProfileStatus(
     label: String,
     value: String,
+    onTap: () -> Unit = {}
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { onTap() }) {
         Text(
             value, style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.SemiBold,
