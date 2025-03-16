@@ -42,7 +42,7 @@ import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.ProfileActionButtons
 import com.example.socialmedia.ui.components.ProfileHeaderCompose
 import com.example.socialmedia.ui.components.ProfilePostGridCompose
-import com.example.socialmedia.ui.components.ProfileReelsCompose
+import com.example.socialmedia.ui.components.ProfileSavedPostsCompose
 import com.example.socialmedia.ui.components.ProfileTaggedPostsCompose
 import com.example.socialmedia.ui.components.TabContent
 import com.example.socialmedia.ui.navigation.Screens
@@ -195,7 +195,7 @@ fun ProfileScreen(
                             }
                             
                             1 -> {
-                                ProfileReelsCompose(
+                                ProfileSavedPostsCompose(
                                     profileViewModel, userId
                                 )
                             }
