@@ -1,3 +1,4 @@
+import com.example.socialmedia.data.model.FollowsUserModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.UserModel
 
@@ -6,4 +7,6 @@ interface UserDatasource {
     suspend fun fetchUserById(userId: String): ResponseModel<UserModel>
     suspend fun followUser(userId: String): ResponseModel<Boolean>
     suspend fun unFollowUser(userId: String): ResponseModel<Boolean>
+    suspend fun fetchUserFollowing(userId: String): ResponseModel<List<FollowsUserModel>>
+    suspend fun fetchUserFollowers(userId: String): ResponseModel<List<FollowsUserModel>>
 }

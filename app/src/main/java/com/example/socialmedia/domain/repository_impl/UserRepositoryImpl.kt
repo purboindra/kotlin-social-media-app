@@ -1,6 +1,7 @@
 package com.example.socialmedia.domain.repository_impl
 
 import UserDatasource
+import com.example.socialmedia.data.model.FollowsUserModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UserModel
@@ -43,6 +44,22 @@ class UserRepositoryImpl(
             emit(State.Loading)
             when (val result = userDatasource.unFollowUser(userId)) {
                 is ResponseModel.Success -> emit(State.Success(true))
+                is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
+            }
+        }
+    
+    override suspend fun fetchUserFollowing(userId: String): Flow<State<List<FollowsUserModel>>> =
+        flow {
+            when (val result = userDatasource.fetchUserFollowing(userId)) {
+                is ResponseModel.Success -> emit(State.Success(result.value))
+                is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
+            }
+        }
+    
+    override suspend fun fetchUserFollowers(userId: String): Flow<State<List<FollowsUserModel>>> =
+        flow {
+            when (val result = userDatasource.fetchUserFollowers(userId)) {
+                is ResponseModel.Success -> emit(State.Success(result.value))
                 is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
             }
         }

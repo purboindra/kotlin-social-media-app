@@ -4,6 +4,7 @@ import UserDatasource
 import android.util.Log
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CreateFollowModel
+import com.example.socialmedia.data.model.FollowsUserModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.UserModel
 import io.github.jan.supabase.SupabaseClient
@@ -152,6 +153,92 @@ class UserDatasourceImpl(
             
         } catch (e: Throwable) {
             Log.e("UserDataSourceImpl", "Error Un Follow User: ${e.message}")
+            ResponseModel.Error(e.message ?: "Something went wrong...")
+        }
+    }
+    
+    override suspend fun fetchUserFollowing(userId: String): ResponseModel<List<FollowsUserModel>> {
+        return try {
+            val result = supabase.from("follows").select(
+                columns = Columns.raw(
+                    """
+                        id,
+                        created_at,
+                        followed_id (
+                        id,
+                        username,
+                        email,
+                        avatar,
+                        created_at
+                        ),
+                        follower_id(
+                        id,
+                        username,
+                        email,
+                        avatar,
+                        created_at
+                        )
+                    """.trimIndent()
+                )
+            ) {
+                filter {
+                    eq("follower_id", userId)
+                }
+            }
+            
+            val following =
+                Json.decodeFromString<List<FollowsUserModel>>(result.data)
+            
+            ResponseModel.Success(following)
+            
+        } catch (e: Throwable) {
+            Log.e(
+                "UserDataSourceImpl",
+                "Error Fetch User Following: ${e.message}"
+            )
+            ResponseModel.Error(e.message ?: "Something went wrong...")
+        }
+    }
+    
+    override suspend fun fetchUserFollowers(userId: String): ResponseModel<List<FollowsUserModel>> {
+        return try {
+            val result = supabase.from("follows").select(
+                columns = Columns.raw(
+                    """
+                        id,
+                        created_at,
+                        followed_id (
+                        id,
+                        username,
+                        email,
+                        avatar,
+                        created_at
+                        ),
+                        follower_id(
+                        id,
+                        username,
+                        email,
+                        avatar,
+                        created_at
+                        )
+                    """.trimIndent()
+                )
+            ) {
+                filter {
+                    eq("followed_id", userId)
+                }
+            }
+            
+            val following =
+                Json.decodeFromString<List<FollowsUserModel>>(result.data)
+            
+            ResponseModel.Success(following)
+            
+        } catch (e: Throwable) {
+            Log.e(
+                "UserDataSourceImpl",
+                "Error Fetch User Followers: ${e.message}"
+            )
             ResponseModel.Error(e.message ?: "Something went wrong...")
         }
     }

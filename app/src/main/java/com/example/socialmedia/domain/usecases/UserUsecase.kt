@@ -1,5 +1,6 @@
 package com.example.socialmedia.domain.usecases
 
+import com.example.socialmedia.data.model.FollowsUserModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UserModel
 import com.example.socialmedia.domain.repository.UserRepository
@@ -22,5 +23,13 @@ class UserUsecase(
     
     suspend fun unFollowUser(userId: String): Flow<State<Boolean>> {
         return userRepository.unFollowUser(userId)
+    }
+    
+    suspend fun fetchUserFollowing(userId: String): Flow<State<List<FollowsUserModel>>> {
+        return userRepository.fetchUserFollowing(userId)
+    }
+    
+    suspend fun fetchUserFollowers(userId: String): Flow<State<List<FollowsUserModel>>> {
+        return userRepository.fetchUserFollowers(userId)
     }
 }
