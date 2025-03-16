@@ -7,19 +7,21 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.socialmedia.data.model.State
@@ -27,7 +29,10 @@ import com.example.socialmedia.ui.viewmodel.ProfileViewModel
 import kotlin.math.ceil
 
 @Composable
-fun ProfileReelsCompose(profileViewModel: ProfileViewModel, userId: String) {
+fun ProfileSavedPostsCompose(
+    profileViewModel: ProfileViewModel,
+    userId: String
+) {
     
     val savedPostsState by profileViewModel.savedPostsState.collectAsState()
     
@@ -42,18 +47,40 @@ fun ProfileReelsCompose(profileViewModel: ProfileViewModel, userId: String) {
     
     when (savedPostsState) {
         is State.Failure -> {
-            Text(text = "Error")
+            val message = (savedPostsState as State.Failure).throwable.message
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    message ?: "Unknown Error Occurred",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Red
+                    )
+                )
+            }
         }
         
         is State.Loading -> {
-            CircularProgressIndicator()
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
         
         is State.Success -> {
             val posts = (savedPostsState as State.Success).data
             
             if (posts.isEmpty()) {
-                Text(text = "No Post Yet")
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "No Post Yet")
+                }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
@@ -63,12 +90,11 @@ fun ProfileReelsCompose(profileViewModel: ProfileViewModel, userId: String) {
                         .fillMaxWidth()
                         .height(totalHeight.dp)
                 ) {
-                    itemsIndexed(posts) { index, item ->
+                    itemsIndexed(posts) { _, item ->
                         Box(
                             modifier = Modifier
                                 .aspectRatio(1f)
                                 .background(Color.LightGray)
-                                .padding(vertical = 4.dp)
                         ) {
                             AsyncImage(
                                 model = item.post.imageUrl,
