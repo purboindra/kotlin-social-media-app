@@ -552,13 +552,6 @@ class PostDataSourceImpl(
     override suspend fun deleteSavedPost(id: String): SavePostResult {
         Log.d("PostDataSourceImpl","Delete Save Post Called: $id")
         return try {
-            
-            supabase.from("saved_posts").delete {
-                filter {
-                    eq("post_id", id)
-                }
-            }
-            
             supabase.from("saved_posts").delete {
                 filter {
                     eq("post_id", id)
