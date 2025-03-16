@@ -77,7 +77,7 @@ class PostViewModel @Inject constructor(
             val updatedPosts = currentState.data.map { post ->
                 if (post.id == id) {
                     post.copy(
-                        hasSaved = !(post.hasSaved)
+                        hasSaved = !post.hasSaved
                     )
                 } else {
                     post
@@ -86,49 +86,44 @@ class PostViewModel @Inject constructor(
             
             _postsState.value = State.Success(updatedPosts)
             
-            updatedPosts.firstOrNull()?.let {
-                if (it.hasSaved) {
-                    val result = postUseCase.savedPost(id)
-                    
-                    result.collectLatest { state ->
-                        _savedPostState.value = state
-                        
-                        if (state is State.Failure) {
-                            _postsState.value = State.Success(
-                                currentState.data.map { post ->
-                                    if (post.id == id) {
-                                        post.copy(hasSaved = !post.hasSaved)
-                                    } else {
-                                        post
+            for (post in updatedPosts) {
+                if (post.id == id) {
+                    if (post.hasSaved) {
+                        val result = postUseCase.savedPost(id)
+                        result.collectLatest { state ->
+                            _savedPostState.value = state
+                            if (state is State.Failure) {
+                                _postsState.value = State.Success(
+                                    currentState.data.map { post ->
+                                        if (post.id == id) {
+                                            post.copy(hasSaved = !post.hasSaved)
+                                        } else {
+                                            post
+                                        }
                                     }
-                                    
-                                }
-                            )
+                                )
+                            }
                         }
-                    }
-                } else {
-                    val result = postUseCase.deleteSavedPost(id)
-                    
-                    result.collectLatest { state ->
-                        _savedPostState.value = state
-                        
-                        if (state is State.Failure) {
-                            _postsState.value = State.Success(
-                                currentState.data.map { post ->
-                                    if (post.id == id) {
-                                        post.copy(hasSaved = !post.hasSaved)
-                                    } else {
-                                        post
+                    } else {
+                        val result = postUseCase.deleteSavedPost(id)
+                        result.collectLatest { state ->
+                            _savedPostState.value = state
+                            if (state is State.Failure) {
+                                _postsState.value = State.Success(
+                                    currentState.data.map { post ->
+                                        if (post.id == id) {
+                                            post.copy(hasSaved = !post.hasSaved)
+                                        } else {
+                                            post
+                                        }
+                                        
                                     }
-                                    
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
             }
-            
-            
         }
     }
     
