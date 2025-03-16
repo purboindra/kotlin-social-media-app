@@ -34,8 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -54,6 +56,7 @@ import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer
 import com.example.socialmedia.utils.imageLoader
+import kotlinx.coroutines.launch
 import shimmerLoading
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +76,8 @@ fun HomeScreen(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val clipboardManager = LocalClipboardManager.current
+    
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     
@@ -133,16 +138,29 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-                    
                 }
                 15.VerticalSpacer()
                 Row(modifier = Modifier.padding(horizontal = 12.dp)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.Link,
-                            contentDescription = "Copy Linkg",
-                            modifier = Modifier.size(18.dp)
-                        )
+                        IconButton(
+                            onClick = {
+                                val annotatedString = buildAnnotatedString {
+                                    append("Hello World!")
+                                }
+                                clipboardManager.setText(annotatedString)
+                                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                    if (!sheetState.isVisible) {
+                                        showBottomSheet = false
+                                    }
+                                }
+                            },
+                        ) {
+                            Icon(
+                                Icons.Default.Link,
+                                contentDescription = "Copy Link",
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
                         Text("Copy Link")
                     }
                 }
