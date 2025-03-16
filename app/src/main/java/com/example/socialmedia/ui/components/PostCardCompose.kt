@@ -26,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.socialmedia.data.model.PostModel
 import com.example.socialmedia.icons.MyIconPack
 import com.example.socialmedia.icons.myiconpack.Message
@@ -39,7 +38,8 @@ fun PostCardCompose(
     horizontalPadding: Dp,
     postModel: PostModel,
     postViewModel: PostViewModel,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    onShareAction: (imageUrl: String) -> Unit,
 ) {
     
     fun onClickProfile() {
@@ -110,7 +110,9 @@ fun PostCardCompose(
                     
                     5.HorizontalSpacer()
                     IconButton(
-                        onClick = {},
+                        onClick = {
+                            onShareAction(postModel.imageUrl ?: "")
+                        },
                         modifier = Modifier.size(24.dp)
                     
                     ) {
@@ -128,7 +130,7 @@ fun PostCardCompose(
             }
             5.VerticalSpacer()
             LikedByTextCompose(
-                isLiked = postModel.hasLike?:false
+                isLiked = postModel.hasLike ?: false
             )
             5.VerticalSpacer()
             ExpandableCaptionCompose(
