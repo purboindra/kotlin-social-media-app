@@ -111,12 +111,11 @@ class PostDataSourceImpl(
             val userId = datastore.userId.firstOrNull()
                 ?: return@coroutineScope Result.failure(Exception("User ID not found"))
             
-            val columnsLikes = Columns.list("user_id", "post_id")
-            val columnsSavedPost = Columns.list("user_id", "post_id")
+            val columns = Columns.list("user_id", "post_id")
             
             val fetchLikes = async {
                 supabase.from("likes").select(
-                    columnsLikes
+                    columns
                 ) {
                     filter {
                         eq("user_id", userId)
@@ -126,7 +125,7 @@ class PostDataSourceImpl(
             
             val fetchSavedPosts = async {
                 supabase.from("saved_posts")
-                    .select(columnsSavedPost) {
+                    .select(columns) {
                         filter { eq("user_id", userId) }
                     }
             }
@@ -529,6 +528,7 @@ class PostDataSourceImpl(
     }
     
     override suspend fun savedPost(id: String): SavePostResult {
+        Log.d("PostDataSourceImpl","Saved Post Called: $id")
         return try {
             
             val userId = datastore.userId.firstOrNull()
@@ -550,6 +550,7 @@ class PostDataSourceImpl(
     }
     
     override suspend fun deleteSavedPost(id: String): SavePostResult {
+        Log.d("PostDataSourceImpl","Delete Save Post Called: $id")
         return try {
             
             supabase.from("saved_posts").delete {
@@ -567,6 +568,7 @@ class PostDataSourceImpl(
             return SavePostResult.Success
             
         } catch (e: Exception) {
+            Log.e("PostDataSourceImpl", "Error delete post", e)
             SavePostResult.Error(message = e.message ?: "Error deleting post")
         }
     }
