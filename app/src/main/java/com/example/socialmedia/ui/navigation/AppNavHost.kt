@@ -58,7 +58,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             composable(Screens.Reels.route) {
                 ReelsScreen(navController)
             }
-            composable("/follows-screen?userId={userId}?type={type}",
+            composable("/follows-screen?userId={userId}&type={type}",
                 arguments = listOf(
                     navArgument(
                         "userId",
