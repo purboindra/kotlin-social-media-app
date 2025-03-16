@@ -112,7 +112,8 @@ fun ProfileScreen(
                 ) {
                     item {
                         ProfileHeaderCompose(
-                            userModel = user
+                            userModel = user,
+                            navHostController
                         )
                         8.VerticalSpacer()
                         Text(
