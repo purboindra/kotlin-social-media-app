@@ -27,6 +27,7 @@ import com.example.socialmedia.ui.search.SearchScreen
 import com.example.socialmedia.ui.splash.SplashScreen
 import com.example.socialmedia.ui.story.StoryVideoScreen
 import com.example.socialmedia.ui.viewmodel.SharedFileViewModel
+import com.example.socialmedia.utils.ConnectionType
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
@@ -57,17 +58,28 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             composable(Screens.Reels.route) {
                 ReelsScreen(navController)
             }
-            composable("/follows-screen?userId={userId}", arguments = listOf(
-                navArgument(
-                    "userId",
-                ) {
-                    type = NavType.StringType
-                    nullable = false
-                    defaultValue = ""
-                }
-            )) { backStackEntry ->
+            composable("/follows-screen?userId={userId}?type={type}",
+                arguments = listOf(
+                    navArgument(
+                        "userId",
+                    ) {
+                        type = NavType.StringType
+                        nullable = false
+                        defaultValue = ""
+                    },
+                    navArgument(
+                        "type",
+                    ) {
+                        type = NavType.StringType
+                        nullable = false
+                        defaultValue = ConnectionType.FOLLOWING.name
+                    }
+                )) { backStackEntry ->
                 val userId = backStackEntry.arguments?.getString("userId") ?: ""
-                FollowScreen(userId = userId, navController)
+                val typeString = backStackEntry.arguments?.getString("type") ?: ConnectionType.FOLLOWING.name
+                val type = ConnectionType.fromString(typeString) ?: ConnectionType.FOLLOWING
+                
+                FollowScreen(userId = userId, type = type, navController)
             }
             composable("/profile?userId={userId}", arguments = listOf(
                 navArgument("userId") {
