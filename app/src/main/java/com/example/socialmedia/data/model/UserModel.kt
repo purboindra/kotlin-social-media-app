@@ -5,6 +5,18 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class FollowsUserModel(
+    @SerialName("id")
+    val id: String,
+    @SerialName("created_at")
+    val createdAt: String,
+    @SerialName("follower_id")
+    val userFollow: UserModel,
+    @SerialName("followed_id")
+    val userFollowed: UserModel
+)
+
+@Serializable
 data class UserModel(
     @SerialName("id")
     val id: String,
