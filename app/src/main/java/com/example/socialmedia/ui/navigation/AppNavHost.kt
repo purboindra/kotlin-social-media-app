@@ -13,6 +13,7 @@ import androidx.navigation.createGraph
 import androidx.navigation.navArgument
 import com.example.socialmedia.ui.add_post.CreateCaptionScreen
 import com.example.socialmedia.ui.camera.CameraPreviewScreen
+import com.example.socialmedia.ui.follows.FollowScreen
 import com.example.socialmedia.ui.home.HomeScreen
 import com.example.socialmedia.ui.insta_story.InstaStoryPreviewScreen
 import com.example.socialmedia.ui.insta_story.InstaStoryScreen
@@ -56,6 +57,18 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             composable(Screens.Reels.route) {
                 ReelsScreen(navController)
             }
+            composable("/follows-screen?userId={userId}", arguments = listOf(
+                navArgument(
+                    "userId",
+                ) {
+                    type = NavType.StringType
+                    nullable = false
+                    defaultValue = ""
+                }
+            )) { backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                FollowScreen(userId = userId, navController)
+            }
             composable("/profile?userId={userId}", arguments = listOf(
                 navArgument("userId") {
                     type = NavType.StringType
@@ -63,12 +76,13 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     defaultValue = ""
                 }
             )) { backStackEntry ->
-                val userId = backStackEntry?.arguments?.getString("userId") ?: ""
+                val userId =
+                    backStackEntry.arguments?.getString("userId") ?: ""
                 ProfileScreen(navController, userId = userId)
             }
             composable(Screens.CameraPreview.route) {
                 val sharedFileViewModel: SharedFileViewModel = hiltViewModel()
-
+                
                 CameraPreviewScreen(
                     navController,
                     sharedFileViewModel = sharedFileViewModel
@@ -119,24 +133,24 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                         type = NavType.StringType
                         nullable = true
                         defaultValue = null
-
+                        
                     },
                     navArgument("videoUri") {
                         type = NavType.StringType
                         nullable = true
                         defaultValue = null
-
+                        
                     }
                 )
             ) {
                 BackHandler(true) {
                 }
                 CreateCaptionScreen(navController)
-
+                
             }
         }
     }
-
+    
     NavHost(
         navController = navController,
         graph = navGraph
