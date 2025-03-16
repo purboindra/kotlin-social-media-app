@@ -168,14 +168,14 @@ class UserDatasourceImpl(
                         id,
                         username,
                         email,
-                        avatar,
+                        profile_picture,
                         created_at
                         ),
                         follower_id(
                         id,
                         username,
                         email,
-                        avatar,
+                       profile_picture,
                         created_at
                         )
                     """.trimIndent()
@@ -211,14 +211,14 @@ class UserDatasourceImpl(
                         id,
                         username,
                         email,
-                        avatar,
+                        profile_picture,
                         created_at
                         ),
                         follower_id(
                         id,
                         username,
                         email,
-                        avatar,
+                       profile_picture,
                         created_at
                         )
                     """.trimIndent()
