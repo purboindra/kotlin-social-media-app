@@ -501,9 +501,19 @@ class PostDataSourceImpl(
                         id,
                         created_at,
                         post_id(
-                            image_path
+                            image_path,
+                           id,
+                           caption,
+                           image_key,
+                           created_at,
+                           user(
+                               id,
+                               full_name,
+                               profile_picture
+                           )
                         ),
                         user_id(
+                                id,
                                 full_name,
                                 profile_picture
                          )
@@ -519,7 +529,56 @@ class PostDataSourceImpl(
             val posts =
                 Json.decodeFromString<List<SavedPostModel>>(postsResult.data)
             
-            ResponseModel.Success(posts)
+            val bucket = supabase.storage.from("posts")
+            
+            val updatedPost = posts.map { post ->
+                
+                val url = try {
+                    bucket.createSignedUrl(
+                        path = post.post.imagePath,
+                        expiresIn = 5.minutes
+                    )
+                } catch (e: RestException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url RestException",
+                        e
+                    )
+                    ""
+                } catch (e: HttpRequestException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url HttpRequestException",
+                        e
+                    )
+                    ""
+                } catch (e: HttpRequestTimeoutException) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url HttpRequestTimeoutException",
+                        e
+                    )
+                    ""
+                } catch (e: Exception) {
+                    Log.e(
+                        "PostDataSourceImpl",
+                        "Error creating signed url Exception",
+                        e
+                    )
+                    ""
+                }
+                post.post.copy(imageUrl = url)
+            }
+            
+            val updatedPosts = posts.map { post ->
+                post.copy(
+                    post = post.post.copy(
+                        imageUrl = updatedPost.find { it.id == post.post.id }?.imageUrl
+                    )
+                )
+            }
+            
+            ResponseModel.Success(updatedPosts)
             
         } catch (e: Exception) {
             Log.e("PostDataSourceImpl", "Error fetch saved posts", e)
@@ -528,7 +587,7 @@ class PostDataSourceImpl(
     }
     
     override suspend fun savedPost(id: String): SavePostResult {
-        Log.d("PostDataSourceImpl","Saved Post Called: $id")
+        Log.d("PostDataSourceImpl", "Saved Post Called: $id")
         return try {
             
             val userId = datastore.userId.firstOrNull()
@@ -550,7 +609,7 @@ class PostDataSourceImpl(
     }
     
     override suspend fun deleteSavedPost(id: String): SavePostResult {
-        Log.d("PostDataSourceImpl","Delete Save Post Called: $id")
+        Log.d("PostDataSourceImpl", "Delete Save Post Called: $id")
         return try {
             supabase.from("saved_posts").delete {
                 filter {
