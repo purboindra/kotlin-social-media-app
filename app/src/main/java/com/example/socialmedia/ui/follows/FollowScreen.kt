@@ -99,7 +99,12 @@ fun FollowScreen(
                             .padding(horizontal = 12.dp)
                     )
                     5.VerticalSpacer()
-                    LazyColumn {
+                    if (data.isEmpty()) Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No User Found")
+                    } else LazyColumn {
                         items(data) { item ->
                             
                             val user =
