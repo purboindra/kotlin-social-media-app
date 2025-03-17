@@ -2,25 +2,36 @@ package com.example.socialmedia.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.FollowsUserModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.domain.usecases.UserUsecase
 import com.example.socialmedia.utils.ConnectionType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class FollowsViewModel @Inject constructor(
-    private val userUseCase: UserUsecase
+    private val userUseCase: UserUsecase,
+    private val appDataStore: AppDataStore,
 ) : ViewModel() {
     
     private val _followsState =
         MutableStateFlow<State<List<FollowsUserModel>>>(State.Idle)
     val followsState = _followsState.asStateFlow()
+    
+    val username: StateFlow<String?> = appDataStore.username.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        ""
+    )
     
     fun invokeFollows(userId: String, type: ConnectionType) =
         viewModelScope.launch {
