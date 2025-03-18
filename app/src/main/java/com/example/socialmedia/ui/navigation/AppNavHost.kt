@@ -21,6 +21,7 @@ import com.example.socialmedia.ui.like.LikeScreen
 import com.example.socialmedia.ui.login.LoginScreen
 import com.example.socialmedia.ui.main.MainScreen
 import com.example.socialmedia.ui.profile.ProfileScreen
+import com.example.socialmedia.ui.profile.edit.EditProfileScreen
 import com.example.socialmedia.ui.reels.ReelsScreen
 import com.example.socialmedia.ui.register.RegisterScreen
 import com.example.socialmedia.ui.search.SearchScreen
@@ -76,8 +77,10 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     }
                 )) { backStackEntry ->
                 val userId = backStackEntry.arguments?.getString("userId") ?: ""
-                val typeString = backStackEntry.arguments?.getString("type") ?: ConnectionType.FOLLOWING.name
-                val type = ConnectionType.fromString(typeString) ?: ConnectionType.FOLLOWING
+                val typeString = backStackEntry.arguments?.getString("type")
+                    ?: ConnectionType.FOLLOWING.name
+                val type = ConnectionType.fromString(typeString)
+                    ?: ConnectionType.FOLLOWING
                 
                 FollowScreen(userId = userId, type = type, navController)
             }
@@ -158,7 +161,24 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 BackHandler(true) {
                 }
                 CreateCaptionScreen(navController)
-                
+            }
+            composable(
+                "edit_profile?userId={userId}",
+                arguments = listOf(
+                    navArgument(
+                        "userId"
+                    ) {
+                        type = NavType.StringType
+                        nullable = false
+                        defaultValue = ""
+                    }
+                )
+            ) { backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                EditProfileScreen(
+                    userId = userId,
+                    navHostController = navController
+                )
             }
         }
     }
