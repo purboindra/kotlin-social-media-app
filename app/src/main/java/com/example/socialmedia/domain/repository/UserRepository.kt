@@ -10,6 +10,13 @@ interface UserRepository {
     suspend fun fetchUserById(userId: String): Flow<State<UserModel>>
     suspend fun followUser(userId: String): Flow<State<Boolean>>
     suspend fun unFollowUser(userId: String): Flow<State<Boolean>>
-    suspend fun fetchUserFollowing(userId: String): Flow<State<List<FollowsUserModel>>>
-    suspend fun fetchUserFollowers(userId: String): Flow<State<List<FollowsUserModel>>>
+    suspend fun fetchUserFollowing(
+        userId: String,
+        query: String?
+    ): Flow<State<List<FollowsUserModel>>>
+    
+    suspend fun fetchUserFollowers(
+        userId: String,
+        query: String?
+    ): Flow<State<List<FollowsUserModel>>>
 }

@@ -157,11 +157,14 @@ class UserDatasourceImpl(
         }
     }
     
-    override suspend fun fetchUserFollowing(userId: String): ResponseModel<List<FollowsUserModel>> {
+    override suspend fun fetchUserFollowing(
+        userId: String,
+        query: String?
+    ): ResponseModel<List<FollowsUserModel>> {
         return try {
-            val result = supabase.from("follows").select(
-                columns = Columns.raw(
-                    """
+            val baseQuery = supabase.from("follows")
+            val rawColumns = Columns.raw(
+                """
                         id,
                         created_at,
                         followed_id (
@@ -179,15 +182,56 @@ class UserDatasourceImpl(
                         created_at
                         )
                     """.trimIndent()
+            )
+            
+            if (!query.isNullOrBlank()) {
+                val resultUser =
+                    supabase.from("users").select {
+                        filter {
+                            textSearch(
+                                "username_email",
+                                query ,
+                                TextSearchType.NONE
+                            )
+                        }
+                    }
+                
+                Log.d(
+                    "UserDataSourceImpl",
+                    "Fetch User Following: ${resultUser.data}"
                 )
+                
+                val user =
+                    Json.decodeFromString<List<UserModel>>(resultUser.data)
+                
+                Log.d("UserDataSourceImpl", "Fetch User Following: $user")
+            }
+            
+            val result = baseQuery.select(
+                columns = rawColumns
             ) {
                 filter {
                     eq("follower_id", userId)
                 }
             }
             
+            Log.d("UserDataSourceImpl", "Fetch User Following: ${result.data}")
+            
             val following =
                 Json.decodeFromString<List<FollowsUserModel>>(result.data)
+            
+            
+//            if (!query.isNullOrBlank()) {
+//                val userList = user
+//
+//                val followingIds = following.map { it.userFollowed.id }.toSet()
+//                val filteredUsers = userList.filter { it.id in followingIds }
+//
+//                Log.d(
+//                    "UserDataSourceImpl",
+//                    "Following Ids: $followingIds, Filtered Users: $filteredUsers"
+//                )
+//            }
             
             ResponseModel.Success(following)
             
@@ -200,11 +244,14 @@ class UserDatasourceImpl(
         }
     }
     
-    override suspend fun fetchUserFollowers(userId: String): ResponseModel<List<FollowsUserModel>> {
+    override suspend fun fetchUserFollowers(
+        userId: String,
+        query: String?
+    ): ResponseModel<List<FollowsUserModel>> {
         return try {
-            val result = supabase.from("follows").select(
-                columns = Columns.raw(
-                    """
+            val baseQuery = supabase.from("follows")
+            val rawColumns = Columns.raw(
+                """
                         id,
                         created_at,
                         followed_id (
@@ -222,12 +269,21 @@ class UserDatasourceImpl(
                         created_at
                         )
                     """.trimIndent()
-                )
-            ) {
-                filter {
-                    eq("followed_id", userId)
+            )
+            
+            val result =
+                if (!query.isNullOrBlank()) baseQuery.select(columns = rawColumns) {
+                    filter {
+                        eq("followed_id", userId)
+                        textSearch("username_email", query, TextSearchType.NONE)
+                    }
+                } else baseQuery.select(
+                    columns = rawColumns
+                ) {
+                    filter {
+                        eq("followed_id", userId)
+                    }
                 }
-            }
             
             val following =
                 Json.decodeFromString<List<FollowsUserModel>>(result.data)

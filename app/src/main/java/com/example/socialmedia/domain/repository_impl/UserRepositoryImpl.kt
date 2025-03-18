@@ -48,17 +48,25 @@ class UserRepositoryImpl(
             }
         }
     
-    override suspend fun fetchUserFollowing(userId: String): Flow<State<List<FollowsUserModel>>> =
+    override suspend fun fetchUserFollowing(
+        userId: String,
+        query: String?
+    ): Flow<State<List<FollowsUserModel>>> =
         flow {
-            when (val result = userDatasource.fetchUserFollowing(userId)) {
+            when (val result =
+                userDatasource.fetchUserFollowing(userId, query)) {
                 is ResponseModel.Success -> emit(State.Success(result.value))
                 is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
             }
         }
     
-    override suspend fun fetchUserFollowers(userId: String): Flow<State<List<FollowsUserModel>>> =
+    override suspend fun fetchUserFollowers(
+        userId: String,
+        query: String?
+    ): Flow<State<List<FollowsUserModel>>> =
         flow {
-            when (val result = userDatasource.fetchUserFollowers(userId)) {
+            when (val result =
+                userDatasource.fetchUserFollowers(userId, query)) {
                 is ResponseModel.Success -> emit(State.Success(result.value))
                 is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
             }

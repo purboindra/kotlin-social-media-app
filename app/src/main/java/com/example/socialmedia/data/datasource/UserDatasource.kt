@@ -7,6 +7,13 @@ interface UserDatasource {
     suspend fun fetchUserById(userId: String): ResponseModel<UserModel>
     suspend fun followUser(userId: String): ResponseModel<Boolean>
     suspend fun unFollowUser(userId: String): ResponseModel<Boolean>
-    suspend fun fetchUserFollowing(userId: String): ResponseModel<List<FollowsUserModel>>
-    suspend fun fetchUserFollowers(userId: String): ResponseModel<List<FollowsUserModel>>
+    suspend fun fetchUserFollowing(
+        userId: String,
+        query: String?
+    ): ResponseModel<List<FollowsUserModel>>
+    
+    suspend fun fetchUserFollowers(
+        userId: String,
+        query: String?
+    ): ResponseModel<List<FollowsUserModel>>
 }

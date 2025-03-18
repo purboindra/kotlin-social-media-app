@@ -53,8 +53,10 @@ fun FollowScreen(
     
     val followsState by followsViewModel.followsState.collectAsState()
     val username by followsViewModel.username.collectAsState()
+    val queryState by followsViewModel.queryState.collectAsState()
     
     LaunchedEffect(Unit) {
+        followsViewModel.observeQueryChange(type)
         followsViewModel.invokeFollows(userId, type)
     }
     
@@ -86,19 +88,21 @@ fun FollowScreen(
             )
         }
     ) { paddingValues ->
-        when (followsState) {
-            is State.Success -> {
-                val data = (followsState as State.Success).data
-                Column(modifier = Modifier.padding(paddingValues)) {
-                    AppOutlinedTextField(
-                        query = "",
-                        onValueChange = {},
-                        placeholderText = "Search user...",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp)
-                    )
-                    5.VerticalSpacer()
+        Column(modifier = Modifier.padding(paddingValues)) {
+            AppOutlinedTextField(
+                query = queryState ?: "",
+                onValueChange = {
+                    followsViewModel.onChangeQuery(it)
+                },
+                placeholderText = "Search user...",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+            )
+            5.VerticalSpacer()
+            when (followsState) {
+                is State.Success -> {
+                    val data = (followsState as State.Success).data
                     if (data.isEmpty()) Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -135,26 +139,29 @@ fun FollowScreen(
                         }
                     }
                 }
-            }
-            
-            is State.Failure -> {
-                val message = (followsState as State.Failure).throwable.message
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(message ?: "Unknown Error Occurred")
+                
+                is State.Failure -> {
+                    val message =
+                        (followsState as State.Failure).throwable.message
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(message ?: "Unknown Error Occurred")
+                    }
+                }
+                
+                else -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
             }
             
-            else -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
         }
+        
     }
 }
