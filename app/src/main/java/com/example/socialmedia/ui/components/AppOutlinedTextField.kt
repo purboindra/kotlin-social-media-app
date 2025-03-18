@@ -38,6 +38,8 @@ fun AppOutlinedTextField(
     isError: Boolean? = null,
     validator: ((String) -> String?)? = null,
     shape: Shape? = null,
+    maxLines: Int = 1,
+    singleLine:Boolean = true,
 ) {
     
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -49,16 +51,17 @@ fun AppOutlinedTextField(
                 onValueChange(it)
                 errorMessage = validator?.invoke(it)
             },
+            maxLines = maxLines,
             modifier = modifier ?: Modifier.fillMaxWidth(),
             shape = shape ?: RoundedCornerShape(roundedCornerShape),
             colors = colors ?: OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = BluePrimary,
                 unfocusedBorderColor = GrayPrimary,
             ),
-            singleLine = true,
+            singleLine = singleLine,
             placeholder = placeholder ?: {
                 Text(
-                    placeholderText ,
+                    placeholderText,
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = GrayPrimary,
                     )
