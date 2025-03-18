@@ -30,17 +30,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.socialmedia.data.model.State
-import com.example.socialmedia.ui.components.AppOutlinedTextField
 import com.example.socialmedia.ui.viewmodel.FollowsViewModel
 import com.example.socialmedia.utils.ConnectionType
 import com.example.socialmedia.utils.HorizontalSpacer
-import com.example.socialmedia.utils.VerticalSpacer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,12 +52,11 @@ fun FollowScreen(
     
     val followsState by followsViewModel.followsState.collectAsState()
     val username by followsViewModel.username.collectAsState()
-    val queryState by followsViewModel.queryState.collectAsState()
-    
     LaunchedEffect(Unit) {
         followsViewModel.observeQueryChange(type)
         followsViewModel.invokeFollows(userId, type)
     }
+    
     
     Scaffold(
         topBar = {
@@ -70,7 +68,9 @@ fun FollowScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         IconButton(
-                            onClick = {}
+                            onClick = {
+                                navHostController.popBackStack()
+                            }
                         ) {
                             Icon(
                                 Icons.Default.ChevronLeft,
@@ -89,17 +89,15 @@ fun FollowScreen(
         }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
-            AppOutlinedTextField(
-                query = queryState ?: "",
-                onValueChange = {
-                    followsViewModel.onChangeQuery(it)
-                },
-                placeholderText = "Search user...",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
+            
+            Text(
+                if (type == ConnectionType.FOLLOWING) "Following" else "Followers",
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                ),
+                modifier = Modifier.padding(12.dp)
             )
-            5.VerticalSpacer()
+            
             when (followsState) {
                 is State.Success -> {
                     val data = (followsState as State.Success).data

@@ -29,7 +29,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +68,7 @@ fun ProfileScreen(
     val logoutState by authViewModel.logoutState.collectAsState()
     val userState by profileViewModel.userState.collectAsState()
     val followState by profileViewModel.followState.collectAsState()
+    var isLoaded by rememberSaveable { mutableStateOf(false) }
     
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     
@@ -91,8 +94,11 @@ fun ProfileScreen(
     }
     
     LaunchedEffect(Unit) {
-        profileViewModel.fetchUserById(userId)
-        profileViewModel.fetchPostsById(userId)
+        if (!isLoaded) {
+            profileViewModel.fetchUserById(userId)
+            profileViewModel.fetchPostsById(userId)
+            isLoaded = true
+        }
     }
     
     Scaffold { paddingValues ->

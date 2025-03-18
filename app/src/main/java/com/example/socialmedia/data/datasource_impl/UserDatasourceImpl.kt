@@ -184,29 +184,6 @@ class UserDatasourceImpl(
                     """.trimIndent()
             )
             
-            if (!query.isNullOrBlank()) {
-                val resultUser =
-                    supabase.from("users").select {
-                        filter {
-                            textSearch(
-                                "username_email",
-                                query ,
-                                TextSearchType.NONE
-                            )
-                        }
-                    }
-                
-                Log.d(
-                    "UserDataSourceImpl",
-                    "Fetch User Following: ${resultUser.data}"
-                )
-                
-                val user =
-                    Json.decodeFromString<List<UserModel>>(resultUser.data)
-                
-                Log.d("UserDataSourceImpl", "Fetch User Following: $user")
-            }
-            
             val result = baseQuery.select(
                 columns = rawColumns
             ) {
@@ -215,23 +192,8 @@ class UserDatasourceImpl(
                 }
             }
             
-            Log.d("UserDataSourceImpl", "Fetch User Following: ${result.data}")
-            
             val following =
                 Json.decodeFromString<List<FollowsUserModel>>(result.data)
-            
-            
-//            if (!query.isNullOrBlank()) {
-//                val userList = user
-//
-//                val followingIds = following.map { it.userFollowed.id }.toSet()
-//                val filteredUsers = userList.filter { it.id in followingIds }
-//
-//                Log.d(
-//                    "UserDataSourceImpl",
-//                    "Following Ids: $followingIds, Filtered Users: $filteredUsers"
-//                )
-//            }
             
             ResponseModel.Success(following)
             
