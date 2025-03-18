@@ -129,11 +129,13 @@ fun ProfileScreen(
                         12.VerticalSpacer()
                         ProfileActionButtons(
                             isCurrentUser = userId == currentUserId,
-                            isFollow = user.isFollow ?: false,
+                            isFollow = user.isFollow,
                             onFollow = {
                                 profileViewModel.invokeFollow(userId)
                             },
-                            enabled = followState !is State.Loading
+                            enabled = followState !is State.Loading,
+                            userId = userId,
+                            navHostController = navHostController
                         )
                         8.VerticalSpacer()
                         /// INSIGHT
