@@ -19,6 +19,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun ProfileActionButtons(
@@ -26,7 +28,10 @@ fun ProfileActionButtons(
     isFollow: Boolean,
     onFollow: () -> Unit,
     enabled: Boolean,
+    userId: String,
+    navHostController: NavHostController
 ) {
+    
     if (!isCurrentUser) {
         AppElevatedButton(
             enabled = enabled,
@@ -45,12 +50,14 @@ fun ProfileActionButtons(
     ) {
         AppOutlinedButton(
             modifier = Modifier.weight(1f),
-            onClick = {},
+            onClick = {
+                navHostController.navigate("edit_profile?userId=$userId")
+            },
             content = {
                 Text("Edit Profile")
             }
         )
-
+        
         AppOutlinedButton(
             modifier = Modifier.weight(1f),
             onClick = {},
@@ -58,7 +65,7 @@ fun ProfileActionButtons(
                 Text("Bagikan Profile")
             }
         )
-
+        
         OutlinedButton(
             onClick = {},
             modifier = Modifier.width(56.dp),
