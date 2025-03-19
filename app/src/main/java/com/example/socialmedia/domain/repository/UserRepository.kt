@@ -1,5 +1,6 @@
 package com.example.socialmedia.domain.repository
 
+import android.net.Uri
 import com.example.socialmedia.data.model.FollowsUserModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UserModel
@@ -19,4 +20,11 @@ interface UserRepository {
         userId: String,
         query: String?
     ): Flow<State<List<FollowsUserModel>>>
+    
+    suspend fun updateUser(
+        userId: String,
+        profilePicture: Uri?,
+        bio: String,
+        username: String
+    ): Flow<State<Boolean>>
 }

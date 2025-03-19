@@ -20,6 +20,9 @@ class EditProfileViewModel @Inject constructor(
     private val _userState = MutableStateFlow<State<UserModel>>(State.Idle)
     val userState = _userState.asStateFlow()
     
+    private val _updatedUserState = MutableStateFlow<State<Boolean>>(State.Idle)
+    val updatedUserState = _updatedUserState.asStateFlow()
+    
     private val _userNameState = MutableStateFlow<String>("")
     val userNameState = _userNameState
     
@@ -32,6 +35,17 @@ class EditProfileViewModel @Inject constructor(
     
     fun onBioChange(bio: String) {
         _bioState.value = bio
+    }
+    
+    fun updatedUser(userId: String) = viewModelScope.launch {
+        userUsecase.userDateUser(
+            userId,
+            bio = _bioState.value,
+            profilePicture = null,
+            username = _userNameState.value
+        ).collectLatest { state ->
+            _updatedUserState.value = state
+        }
     }
     
     fun fetchUserById(userId: String) = viewModelScope.launch {

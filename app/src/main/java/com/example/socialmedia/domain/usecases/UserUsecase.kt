@@ -1,5 +1,6 @@
 package com.example.socialmedia.domain.usecases
 
+import android.net.Uri
 import com.example.socialmedia.data.model.FollowsUserModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.data.model.UserModel
@@ -37,5 +38,19 @@ class UserUsecase(
         query: String?
     ): Flow<State<List<FollowsUserModel>>> {
         return userRepository.fetchUserFollowers(userId, query)
+    }
+    
+    suspend fun userDateUser(
+        userId: String,
+        profilePicture: Uri?,
+        bio: String,
+        username: String
+    ): Flow<State<Boolean>> {
+        return userRepository.updateUser(
+            userId,
+            profilePicture,
+            bio,
+            username
+        )
     }
 }

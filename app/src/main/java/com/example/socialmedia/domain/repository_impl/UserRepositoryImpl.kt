@@ -1,6 +1,7 @@
 package com.example.socialmedia.domain.repository_impl
 
 import UserDatasource
+import android.net.Uri
 import com.example.socialmedia.data.model.FollowsUserModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.State
@@ -71,4 +72,18 @@ class UserRepositoryImpl(
                 is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
             }
         }
+    
+    override suspend fun updateUser(
+        userId: String,
+        profilePicture: Uri?,
+        bio: String,
+        username: String
+    ): Flow<State<Boolean>> = flow {
+        emit(State.Loading)
+        when (val result =
+            userDatasource.updateUser(userId, profilePicture, bio, username)) {
+            is ResponseModel.Success -> emit(State.Success(true))
+            is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
+        }
+    }
 }

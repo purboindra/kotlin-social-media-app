@@ -1,7 +1,9 @@
 package com.example.socialmedia.data.datasource_impl
 
 import UserDatasource
+import android.net.Uri
 import android.util.Log
+import coil3.network.HttpException
 import com.example.socialmedia.data.db.local.AppDataStore
 import com.example.socialmedia.data.model.CreateFollowModel
 import com.example.socialmedia.data.model.FollowsUserModel
@@ -13,8 +15,10 @@ import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Count
 import io.github.jan.supabase.postgrest.query.filter.TextSearchType
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.io.IOException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 @Serializable
@@ -252,11 +256,48 @@ class UserDatasourceImpl(
             
             ResponseModel.Success(following)
             
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             Log.e(
                 "UserDataSourceImpl",
                 "Error Fetch User Followers: ${e.message}"
             )
+            ResponseModel.Error(e.message ?: "Something went wrong...")
+        }
+        
+    }
+    
+    override suspend fun updateUser(
+        userId: String,
+        profilePicture: Uri?,
+        bio: String,
+        username: String
+    ): ResponseModel<Boolean> {
+        return try {
+            
+            val updatedData = mapOf(
+                "username" to username,
+                "bio" to bio
+            )
+            
+            supabase.from("users").update(
+                updatedData
+            ) {
+                filter {
+                    eq("id", userId)
+                }
+            }
+            
+            ResponseModel.Success(true)
+        } catch (e: IOException) {
+            Log.e("UserDataSourceImpl", "Network Error: ${e.message}", e)
+            ResponseModel.Error("Network error. Check your connection.")
+        } catch (e: SerializationException) {
+            Log.e("TAG", "Parsing error")
+            ResponseModel.Error(
+                e.message ?: "Something went wrong while parse data..."
+            )
+        } catch (e: Exception) {
+            Log.e("TAG", "Unexpected error: ${e.message}")
             ResponseModel.Error(e.message ?: "Something went wrong...")
         }
     }

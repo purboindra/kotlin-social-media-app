@@ -1,3 +1,4 @@
+import android.net.Uri
 import com.example.socialmedia.data.model.FollowsUserModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.UserModel
@@ -16,4 +17,11 @@ interface UserDatasource {
         userId: String,
         query: String?
     ): ResponseModel<List<FollowsUserModel>>
+    
+    suspend fun updateUser(
+        userId: String,
+        profilePicture: Uri? = null,
+        bio: String,
+        username: String
+    ): ResponseModel<Boolean>
 }

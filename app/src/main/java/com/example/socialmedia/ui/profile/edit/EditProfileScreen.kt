@@ -44,6 +44,7 @@ fun EditProfileScreen(
     val userState by editProfileViewModel.userState.collectAsState()
     val username by editProfileViewModel.userNameState.collectAsState()
     val bio by editProfileViewModel.bioState.collectAsState()
+    val updatedUserState by editProfileViewModel.updatedUserState.collectAsState()
     
     LaunchedEffect(Unit) {
         editProfileViewModel.fetchUserById(userId)
@@ -52,8 +53,12 @@ fun EditProfileScreen(
     Scaffold(bottomBar = {
         if (userState is State.Success) {
             AppElevatedButton(
-                onClick = {},
-                text = "Save",
+                onClick = {
+                    editProfileViewModel.updatedUser(userId)
+                },
+                enabled = updatedUserState !is State.Loading,
+                text = if (updatedUserState is State.Loading) "Loading..." else
+                    "Save",
                 modifier = Modifier
                     .fillMaxWidth()
                     .safeContentPadding()
