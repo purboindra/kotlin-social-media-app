@@ -13,6 +13,7 @@ import androidx.navigation.createGraph
 import androidx.navigation.navArgument
 import com.example.socialmedia.ui.add_post.CreateCaptionScreen
 import com.example.socialmedia.ui.camera.CameraPreviewScreen
+import com.example.socialmedia.ui.direct_message.DirectMessageScreen
 import com.example.socialmedia.ui.follows.FollowScreen
 import com.example.socialmedia.ui.home.HomeScreen
 import com.example.socialmedia.ui.insta_story.InstaStoryPreviewScreen
@@ -176,6 +177,22 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             ) { backStackEntry ->
                 val userId = backStackEntry.arguments?.getString("userId") ?: ""
                 EditProfileScreen(
+                    userId = userId,
+                    navHostController = navController
+                )
+            }
+            composable("direct_message?userId={userId}", arguments = listOf(
+                navArgument(
+                    "userId"
+                
+                ) {
+                    type = NavType.StringType
+                    nullable = false
+                    defaultValue = ""
+                }
+            )) { backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                DirectMessageScreen(
                     userId = userId,
                     navHostController = navController
                 )
