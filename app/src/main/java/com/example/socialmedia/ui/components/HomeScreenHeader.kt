@@ -34,11 +34,11 @@ import com.example.socialmedia.utils.HorizontalSpacer
 fun HomeScreenHeader(
     navHostController: NavHostController,
     instaStoryViewModel: InstastoryViewModel,
+    userId:String
 ) {
     
     val navBackStackEntry = navHostController.currentBackStackEntry
     val imageUri = navBackStackEntry?.savedStateHandle?.get<String>("imageUri")
-    
     val context = LocalContext.current
     
     LaunchedEffect(imageUri) {
@@ -77,13 +77,14 @@ fun HomeScreenHeader(
                 modifier = Modifier.size(32.dp).clickable {
                     navHostController.navigate(Screens.LikeScreen.route)
                 }
-            
             )
             8.HorizontalSpacer()
             Image(
                 MyIconPack.Message,
                 contentDescription = "Direct Message",
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp).clickable {
+                    navHostController.navigate("direct_message?userId=$userId")
+                }
             )
         }
     }
