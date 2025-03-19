@@ -122,6 +122,7 @@ dependencies {
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.3"))
     implementation(libs.postgrest.kt)
     implementation(libs.storage.kt)
+    implementation(libs.realtime.kt)
     
     // KTOR
     implementation(libs.ktor.client)
@@ -146,6 +147,7 @@ dependencies {
     // JBCRYPT
     implementation(libs.jbcrypt)
     
+    // CREDENTIALS OR GOOGLE
     implementation(libs.credentials)
     implementation(libs.googleid)
     implementation(libs.play.service.auth)
