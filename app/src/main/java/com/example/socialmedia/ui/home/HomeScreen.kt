@@ -69,6 +69,7 @@ fun HomeScreen(
     
     val horizontalPadding = 8.dp
     val postState by postViewModel.postState.collectAsState()
+    val userId by instaStoryViewModel.userId.collectAsState()
     var isLoaded by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     
@@ -148,11 +149,12 @@ fun HomeScreen(
                                     append("Hello World!")
                                 }
                                 clipboardManager.setText(annotatedString)
-                                scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                    if (!sheetState.isVisible) {
-                                        showBottomSheet = false
+                                scope.launch { sheetState.hide() }
+                                    .invokeOnCompletion {
+                                        if (!sheetState.isVisible) {
+                                            showBottomSheet = false
+                                        }
                                     }
-                                }
                             },
                         ) {
                             Icon(
@@ -174,7 +176,11 @@ fun HomeScreen(
             .nestedScroll(rememberNestedScrollInteropConnection())
     ) {
         item {
-            HomeScreenHeader(navController, instaStoryViewModel)
+            HomeScreenHeader(
+                navController,
+                instaStoryViewModel,
+                userId = userId ?: ""
+            )
             10.VerticalSpacer()
         }
         item {

@@ -18,8 +18,11 @@ import com.example.socialmedia.utils.PostHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,6 +30,7 @@ import javax.inject.Inject
 class InstastoryViewModel @Inject constructor(
     private val instaStoryUseCase: InstaStoryUseCase,
     private val fileUseCase: FileUseCase,
+    private val appDataStore: AppDataStore,
 ) : ViewModel() {
     private val _image = MutableStateFlow<Uri?>(null)
     val image = _image.asStateFlow()
@@ -44,6 +48,12 @@ class InstastoryViewModel @Inject constructor(
     
     private val _currentUserId = MutableStateFlow<String?>(null)
     val currentUserId = _currentUserId.asStateFlow()
+    
+    val userId: StateFlow<String?> = appDataStore.userId.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        null
+    )
     
     fun selectImage(uri: Uri) {
         _image.value = uri
@@ -78,35 +88,39 @@ class InstastoryViewModel @Inject constructor(
                 return@launch
             }
             
-            fileUseCase.uploadFile(imageBytes,"instastories").collectLatest { state ->
-                
-                when (state) {
-                    is State.Success -> {
-                        val image = state.data
-                        image?.let {
-                            val uploadImageModel = UploadImageModel(
-                                id = it.id,
-                                key = it.key,
-                                path = it.path
-                            )
-                            instaStoryUseCase.createInstaStory(uploadImageModel)
-                                .collectLatest { instaStoryState ->
-                                    _postInstaStoryState.value = instaStoryState
-                                }
+            fileUseCase.uploadFile(imageBytes, "instastories")
+                .collectLatest { state ->
+                    
+                    when (state) {
+                        is State.Success -> {
+                            val image = state.data
+                            image?.let {
+                                val uploadImageModel = UploadImageModel(
+                                    id = it.id,
+                                    key = it.key,
+                                    path = it.path
+                                )
+                                instaStoryUseCase.createInstaStory(
+                                    uploadImageModel
+                                )
+                                    .collectLatest { instaStoryState ->
+                                        _postInstaStoryState.value =
+                                            instaStoryState
+                                    }
+                            }
                         }
+                        
+                        is State.Failure -> {
+                            Log.e(
+                                "Create Insta Story",
+                                "Error uploading file: ${state.throwable.message}"
+                            )
+                            _postInstaStoryState.value =
+                                State.Failure(state.throwable)
+                        }
+                        
+                        else -> {}
                     }
-                    
-                    is State.Failure -> {
-                        Log.e(
-                            "Create Insta Story",
-                            "Error uploading file: ${state.throwable.message}"
-                        )
-                        _postInstaStoryState.value =
-                            State.Failure(state.throwable)
-                    }
-                    
-                    else -> {}
                 }
-            }
         }
 }
