@@ -13,11 +13,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,14 +34,18 @@ import coil3.compose.AsyncImage
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.AppElevatedButton
 import com.example.socialmedia.ui.components.AppOutlinedTextField
+import com.example.socialmedia.ui.components.AppSnackbar
 import com.example.socialmedia.ui.viewmodel.EditProfileViewModel
+import com.example.socialmedia.ui.viewmodel.SnackbarViewModel
 import com.example.socialmedia.utils.VerticalSpacer
+import kotlinx.coroutines.launch
 
 @Composable
 fun EditProfileScreen(
     userId: String,
     navHostController: NavHostController,
-    editProfileViewModel: EditProfileViewModel = hiltViewModel()
+    editProfileViewModel: EditProfileViewModel = hiltViewModel(),
+    snackbarViewModel: SnackbarViewModel = hiltViewModel(),
 ) {
     
     val userState by editProfileViewModel.userState.collectAsState()
@@ -46,11 +53,43 @@ fun EditProfileScreen(
     val bio by editProfileViewModel.bioState.collectAsState()
     val updatedUserState by editProfileViewModel.updatedUserState.collectAsState()
     
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarConfig by snackbarViewModel.snackbarState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    
     LaunchedEffect(Unit) {
         editProfileViewModel.fetchUserById(userId)
     }
     
-    Scaffold(bottomBar = {
+    LaunchedEffect(updatedUserState) {
+        if (updatedUserState is State.Success) {
+            coroutineScope.launch {
+                snackbarViewModel.showSnackbar(
+                    "Successfully Edit Profile",
+                    isError = false
+                )
+            }
+            navHostController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("profileUpdated", true)
+            navHostController.popBackStack()
+            
+        } else if (updatedUserState is State.Failure) {
+            val message = (updatedUserState as State.Failure).throwable.message
+            coroutineScope.launch {
+                snackbarViewModel.showSnackbar(
+                    message ?: "Unknown Error Occurred",
+                    isError = true
+                )
+            }
+        }
+    }
+    
+    Scaffold(
+        snackbarHost = {
+            AppSnackbar(snackbarHostState, snackbarConfig)
+        },
+        bottomBar = {
         if (userState is State.Success) {
             AppElevatedButton(
                 onClick = {

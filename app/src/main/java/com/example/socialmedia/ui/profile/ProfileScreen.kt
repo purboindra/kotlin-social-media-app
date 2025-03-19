@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.ui.components.ProfileActionButtons
 import com.example.socialmedia.ui.components.ProfileHeaderCompose
@@ -71,6 +72,7 @@ fun ProfileScreen(
     var isLoaded by rememberSaveable { mutableStateOf(false) }
     
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val backstackEntry = navHostController.currentBackStackEntryAsState().value
     
     val tabList = listOf(
         TabContentModel(
@@ -99,6 +101,16 @@ fun ProfileScreen(
             profileViewModel.fetchPostsById(userId)
             isLoaded = true
         }
+    }
+    
+    LaunchedEffect(backstackEntry) {
+        backstackEntry?.savedStateHandle?.get<Boolean>("profileUpdated")
+            ?.let { updated ->
+                if (updated) {
+                    profileViewModel.fetchUserById(userId)
+                    backstackEntry.savedStateHandle.remove<Boolean>("profileUpdated")
+                }
+            }
     }
     
     Scaffold { paddingValues ->
@@ -135,7 +147,10 @@ fun ProfileScreen(
                             },
                             enabled = followState !is State.Loading,
                             userId = userId,
-                            navHostController = navHostController
+                            navHostController = navHostController,
+                            onEdit = {
+                                navHostController.navigate("edit_profile?userId=$userId")
+                            }
                         )
                         8.VerticalSpacer()
                         /// INSIGHT

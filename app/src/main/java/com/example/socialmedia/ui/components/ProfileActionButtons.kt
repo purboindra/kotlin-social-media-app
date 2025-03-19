@@ -27,6 +27,7 @@ fun ProfileActionButtons(
     isCurrentUser: Boolean,
     isFollow: Boolean,
     onFollow: () -> Unit,
+    onEdit:()->Unit,
     enabled: Boolean,
     userId: String,
     navHostController: NavHostController
@@ -51,7 +52,7 @@ fun ProfileActionButtons(
         AppOutlinedButton(
             modifier = Modifier.weight(1f),
             onClick = {
-                navHostController.navigate("edit_profile?userId=$userId")
+               onEdit()
             },
             content = {
                 Text("Edit Profile")
