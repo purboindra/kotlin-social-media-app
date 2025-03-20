@@ -6,6 +6,7 @@ import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.SendMessageModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.realtime.broadcastFlow
 import io.github.jan.supabase.realtime.channel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 
 class MessageDatasourceImpl(
     private val supabaseClient: SupabaseClient,
@@ -74,4 +76,34 @@ class MessageDatasourceImpl(
                 channel.subscribe(blockUntilSubscribed = true)
             }
     }
+    
+    override suspend fun fetchMessages(
+    ): ResponseModel<List<SendMessageModel>> {
+        return try {
+            
+            val userId = appDataStore.userId.firstOrNull()
+                ?: throw Exception("User ID not found")
+            
+            val result = supabaseClient.from("messages").select(
+                columns = Columns.ALL
+            ) {
+                filter {
+                    eq("sender_id", userId)
+                }
+            }
+            
+            val data = result.data
+            val messages = Json.decodeFromString<List<SendMessageModel>>(data)
+            ResponseModel.Success(messages)
+        } catch (e: SerializationException) {
+            ResponseModel.Error(
+                e.message ?: "Something went wrong while parse data..."
+            )
+        } catch (e: IOException) {
+            ResponseModel.Error(e.message ?: "Something went wrong...")
+        } catch (e: Exception) {
+            ResponseModel.Error(e.message ?: "Something went wrong...")
+        }
+    }
+    
 }

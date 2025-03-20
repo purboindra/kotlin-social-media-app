@@ -17,4 +17,6 @@ interface MessageDatasource {
         chatId: String, coroutineScope: CoroutineScope,
         onMessageReceived: (SendMessageModel) -> Unit
     ): Job
+    
+    suspend fun fetchMessages(): ResponseModel<List<SendMessageModel>>
 }

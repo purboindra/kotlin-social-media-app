@@ -27,4 +27,8 @@ class MessageUseCase(
     fun stopSubscription() {
         messageRepository.stopSubscription()
     }
+    
+    suspend fun fetchMessages(): Flow<State<List<SendMessageModel>>> {
+        return messageRepository.fetchMessages()
+    }
 }

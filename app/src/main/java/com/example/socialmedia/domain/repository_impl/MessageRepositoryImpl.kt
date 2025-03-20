@@ -43,6 +43,13 @@ class MessageRepositoryImpl(
     }
     
     override fun stopSubscription() {
-    
     }
+    
+    override suspend fun fetchMessages(): Flow<State<List<SendMessageModel>>> =
+        flow {
+            when (val result = messageDatasource.fetchMessages()) {
+                is ResponseModel.Success -> emit(State.Success(result.value))
+                is ResponseModel.Error -> emit(State.Failure(Throwable(result.message)))
+            }
+        }
 }

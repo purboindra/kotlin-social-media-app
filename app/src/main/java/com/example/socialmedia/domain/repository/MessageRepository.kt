@@ -14,10 +14,12 @@ interface MessageRepository {
         message: String,
     ): Flow<State<Boolean>>
     
-     fun subscribeToMessages(
+    fun subscribeToMessages(
         chatId: String,
         coroutineScope: CoroutineScope,
     ): Flow<List<SendMessageModel>>
     
     fun stopSubscription()
+    
+    suspend fun fetchMessages(): Flow<State<List<SendMessageModel>>>
 }
