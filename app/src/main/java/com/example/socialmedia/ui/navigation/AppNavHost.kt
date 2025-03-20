@@ -21,6 +21,7 @@ import com.example.socialmedia.ui.insta_story.InstaStoryScreen
 import com.example.socialmedia.ui.like.LikeScreen
 import com.example.socialmedia.ui.login.LoginScreen
 import com.example.socialmedia.ui.main.MainScreen
+import com.example.socialmedia.ui.message.MessagesScreen
 import com.example.socialmedia.ui.profile.ProfileScreen
 import com.example.socialmedia.ui.profile.edit.EditProfileScreen
 import com.example.socialmedia.ui.reels.ReelsScreen
@@ -196,6 +197,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     userId = userId,
                     navHostController = navController
                 )
+            }
+            composable(Screens.Messages.route) {
+                MessagesScreen()
             }
         }
     }
