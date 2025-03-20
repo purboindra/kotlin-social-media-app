@@ -1,4 +1,4 @@
-package com.example.socialmedia.ui.direct_message
+package com.example.socialmedia.ui.message
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -14,7 +14,7 @@ fun DirectMessageScreen(
 ) {
     Scaffold { paddingValues ->
         Text(
-            "Direct Message Screen",
+            "Direct Message Screen $userId",
             modifier = Modifier.padding(paddingValues)
         )
     }

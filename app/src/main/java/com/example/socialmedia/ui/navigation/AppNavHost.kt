@@ -13,7 +13,7 @@ import androidx.navigation.createGraph
 import androidx.navigation.navArgument
 import com.example.socialmedia.ui.add_post.CreateCaptionScreen
 import com.example.socialmedia.ui.camera.CameraPreviewScreen
-import com.example.socialmedia.ui.direct_message.DirectMessageScreen
+import com.example.socialmedia.ui.message.DirectMessageScreen
 import com.example.socialmedia.ui.follows.FollowScreen
 import com.example.socialmedia.ui.home.HomeScreen
 import com.example.socialmedia.ui.insta_story.InstaStoryPreviewScreen
