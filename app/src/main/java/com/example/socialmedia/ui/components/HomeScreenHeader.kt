@@ -83,7 +83,7 @@ fun HomeScreenHeader(
                 MyIconPack.Message,
                 contentDescription = "Direct Message",
                 modifier = Modifier.size(32.dp).clickable {
-                    navHostController.navigate("direct_message?userId=$userId")
+                    navHostController.navigate(Screens.Messages.route)
                 }
             )
         }
