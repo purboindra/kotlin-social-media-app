@@ -199,7 +199,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 )
             }
             composable(Screens.Messages.route) {
-                MessagesScreen()
+                MessagesScreen(navHostController = navController)
             }
         }
     }

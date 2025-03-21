@@ -35,9 +35,9 @@ class UserDatasourceImpl(
 ) : UserDatasource {
     override suspend fun fetchAllUsers(query: String?): ResponseModel<List<UserModel>> {
         return try {
-            
+
             val baseQuery = supabase.from("users")
-            
+
             val result = if (query != null) {
                 baseQuery.select {
                     filter {
@@ -47,20 +47,23 @@ class UserDatasourceImpl(
             } else {
                 baseQuery.select()
             }
-            
+
             val data = result.data
-            
+
+            Log.d("Users", data)
+
             val users = Json.decodeFromString<List<UserModel>>(data)
-            
+
             ResponseModel.Success(users)
         } catch (e: Throwable) {
+            Log.e("UserDataSourceImpl", "Error fetch all users: $e")
             ResponseModel.Error(e.message ?: "Something went wrong...")
         }
     }
-    
+
     override suspend fun fetchUserById(userId: String): ResponseModel<UserModel> {
         return try {
-            
+
             val result = supabase.from("users").select(
                 columns = Columns.ALL
             ) {
@@ -68,36 +71,36 @@ class UserDatasourceImpl(
                     eq("id", userId)
                 }
             }
-            
+
             val users = Json.decodeFromString<List<UserModel>>(result.data)
-            
+
             val user = users.firstOrNull() ?: throw Exception("User not found")
-            
+
             val currentUserId = dataStore.userId.firstOrNull()
                 ?: throw Exception("User ID not found")
-            
-            
+
+
             val followersResult = supabase.from("follows").select(Columns.ALL) {
                 filter {
                     eq("followed_id", userId)
                 }
             }
-            
+
             val followers =
                 Json.decodeFromString<List<Follow>>(followersResult.data)
-            
+
             val followingResult = supabase.from("follows").select(Columns.ALL) {
                 filter {
                     eq("follower_id", userId)
                 }
             }
-            
+
             val following =
                 Json.decodeFromString<List<Follow>>(followingResult.data)
-            
+
             val followingIds = following.map { it.followedId }
             val followersIds = followers.map { it.followerId }
-            
+
             val count = supabase.from("posts")
                 .select {
                     filter {
@@ -105,62 +108,62 @@ class UserDatasourceImpl(
                     }
                     count(Count.EXACT)
                 }.countOrNull()
-            
+
             val userPostIds = List((count ?: 0).toInt()) { index ->
                 "${userId}_$index"
             }
-            
+
             val resultFollow = user.copy(
                 followers = followersIds,
                 following = followingIds,
                 isFollow = followersIds.contains(currentUserId),
                 posts = userPostIds
             )
-            
+
             ResponseModel.Success(resultFollow)
-            
+
         } catch (e: Throwable) {
             ResponseModel.Error(e.message ?: "Something went wrong...")
         }
     }
-    
+
     override suspend fun followUser(userId: String): ResponseModel<Boolean> {
         return try {
-            
+
             val currentUserId = dataStore.userId.firstOrNull()
                 ?: throw Exception("User ID not found")
-            
+
             val createFollowModel = CreateFollowModel(
                 followedId = userId, followerId = currentUserId
             )
-            
+
             supabase.from("follows").insert(createFollowModel)
-            
+
             ResponseModel.Success(true)
-            
+
         } catch (e: Throwable) {
             Log.e("UserDataSourceImpl", "Error Follow User: ${e.message}")
             ResponseModel.Error(e.message ?: "Something went wrong...")
         }
     }
-    
+
     override suspend fun unFollowUser(userId: String): ResponseModel<Boolean> {
         return try {
-            
+
             supabase.from("follows").delete {
                 filter {
                     eq("followed_id", userId)
                 }
             }
-            
+
             ResponseModel.Success(true)
-            
+
         } catch (e: Throwable) {
             Log.e("UserDataSourceImpl", "Error Un Follow User: ${e.message}")
             ResponseModel.Error(e.message ?: "Something went wrong...")
         }
     }
-    
+
     override suspend fun fetchUserFollowing(
         userId: String,
         query: String?
@@ -187,7 +190,7 @@ class UserDatasourceImpl(
                         )
                     """.trimIndent()
             )
-            
+
             val result = baseQuery.select(
                 columns = rawColumns
             ) {
@@ -195,12 +198,12 @@ class UserDatasourceImpl(
                     eq("follower_id", userId)
                 }
             }
-            
+
             val following =
                 Json.decodeFromString<List<FollowsUserModel>>(result.data)
-            
+
             ResponseModel.Success(following)
-            
+
         } catch (e: Throwable) {
             Log.e(
                 "UserDataSourceImpl",
@@ -209,7 +212,7 @@ class UserDatasourceImpl(
             ResponseModel.Error(e.message ?: "Something went wrong...")
         }
     }
-    
+
     override suspend fun fetchUserFollowers(
         userId: String,
         query: String?
@@ -236,7 +239,7 @@ class UserDatasourceImpl(
                         )
                     """.trimIndent()
             )
-            
+
             val result =
                 if (!query.isNullOrBlank()) baseQuery.select(columns = rawColumns) {
                     filter {
@@ -250,12 +253,12 @@ class UserDatasourceImpl(
                         eq("followed_id", userId)
                     }
                 }
-            
+
             val following =
                 Json.decodeFromString<List<FollowsUserModel>>(result.data)
-            
+
             ResponseModel.Success(following)
-            
+
         } catch (e: Exception) {
             Log.e(
                 "UserDataSourceImpl",
@@ -263,9 +266,9 @@ class UserDatasourceImpl(
             )
             ResponseModel.Error(e.message ?: "Something went wrong...")
         }
-        
+
     }
-    
+
     override suspend fun updateUser(
         userId: String,
         profilePicture: Uri?,
@@ -273,12 +276,12 @@ class UserDatasourceImpl(
         username: String
     ): ResponseModel<Boolean> {
         return try {
-            
+
             val updatedData = mapOf(
                 "username" to username,
                 "bio" to bio
             )
-            
+
             supabase.from("users").update(
                 updatedData
             ) {
@@ -286,7 +289,7 @@ class UserDatasourceImpl(
                     eq("id", userId)
                 }
             }
-            
+
             ResponseModel.Success(true)
         } catch (e: IOException) {
             Log.e("UserDataSourceImpl", "Network Error: ${e.message}", e)

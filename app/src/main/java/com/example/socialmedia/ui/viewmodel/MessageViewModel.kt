@@ -23,6 +23,8 @@ class MessageViewModel @Inject constructor(
     
     private val _sendMessageState = MutableStateFlow<State<Boolean>>(State.Idle)
     val sendMessageState = _sendMessageState.asStateFlow()
+
+
     
     fun fetchMessages() {
         viewModelScope.launch {

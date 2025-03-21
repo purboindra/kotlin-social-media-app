@@ -1,5 +1,6 @@
 package com.example.socialmedia.ui.message
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,27 +16,78 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.socialmedia.data.model.State
+import com.example.socialmedia.data.model.UserModel
+import com.example.socialmedia.ui.components.AppFloatingActionButton
+import com.example.socialmedia.ui.components.dialog.AppDialogUsers
 import com.example.socialmedia.ui.viewmodel.MessageViewModel
+import com.example.socialmedia.ui.viewmodel.SearchViewModel
 import com.example.socialmedia.utils.VerticalSpacer
 
 @Composable
 fun MessagesScreen(
-    messageViewModel: MessageViewModel = hiltViewModel()
+    messageViewModel: MessageViewModel = hiltViewModel(),
+    searchViewModel: SearchViewModel = hiltViewModel(),
+    navHostController: NavHostController
 ) {
-    
+
     val messagesState by messageViewModel.messagesState.collectAsState()
-    
+    val searchState by searchViewModel.searchState.collectAsState()
+    val query by searchViewModel.queryState.collectAsState()
+    var openAlertDialog = remember { mutableStateOf(false) }
+    var selectedUser by remember { mutableStateOf<UserModel?>(null) }
+
     LaunchedEffect(Unit) {
         messageViewModel.fetchMessages()
     }
-    
-    Scaffold { paddingValues ->
+
+    LaunchedEffect(selectedUser) {
+        selectedUser?.let {
+            navHostController.navigate("direct_message?userId=${it.id}")
+        }
+    }
+
+    when {
+        openAlertDialog.value -> {
+            AppDialogUsers(
+                query = query,
+                loading = searchState is State.Loading,
+                onValueChange = {
+                    searchViewModel.onChangeQuery(
+                        it
+                    )
+                },
+                users = if (searchState is State.Success) (searchState as State.Success).data else emptyList(),
+                onTap = {
+                    Log.d("Dialog User", "User: ${it.fullName}")
+                    selectedUser = it
+                },
+                onDismissRequest = {
+                    openAlertDialog.value = !openAlertDialog.value
+                }
+            )
+        }
+    }
+
+    Scaffold(
+        floatingActionButton = {
+            AppFloatingActionButton(
+                onClick = {
+                    openAlertDialog.value = true
+                },
+                contentDescription = "Add Message"
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -68,7 +120,7 @@ fun MessagesScreen(
                         }
                     }
                 }
-                
+
                 is State.Failure -> {
                     val message =
                         (messagesState as State.Failure).throwable.message
@@ -79,7 +131,7 @@ fun MessagesScreen(
                         Text(message ?: "Unknown Error Occurred")
                     }
                 }
-                
+
                 else -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),

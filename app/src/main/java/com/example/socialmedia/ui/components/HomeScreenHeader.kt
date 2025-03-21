@@ -23,8 +23,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.socialmedia.R
-import com.example.socialmedia.icons.MyIconPack
-import com.example.socialmedia.icons.myiconpack.Message
+import com.example.socialmedia.ui.MyIconPack
+import com.example.socialmedia.ui.myiconpack.Message
 import com.example.socialmedia.ui.navigation.Screens
 import com.example.socialmedia.ui.viewmodel.HomeViewModel
 import com.example.socialmedia.ui.viewmodel.InstastoryViewModel
