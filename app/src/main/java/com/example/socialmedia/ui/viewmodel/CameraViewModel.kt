@@ -43,6 +43,9 @@ class CameraViewModel @Inject constructor() : ViewModel() {
     private val _isRecording = MutableStateFlow(false)
     val isRecording: StateFlow<Boolean> = _isRecording
     
+    private val _isLoadingBindCamera = MutableStateFlow(false)
+    val isLoadingBindCamera: StateFlow<Boolean> = _isLoadingBindCamera
+    
     private var surfaceMateringPointFactory: SurfaceOrientedMeteringPointFactory? =
         null
     private var cameraControl: CameraControl? = null
@@ -150,6 +153,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         appContext: Context,
         lifecycleOwner: LifecycleOwner
     ): Nothing = withContext(Dispatchers.Main) {
+        _isLoadingBindCamera.value = true
         val processCameraProvider =
             ProcessCameraProvider.awaitInstance(appContext)
         
@@ -160,27 +164,28 @@ class CameraViewModel @Inject constructor() : ViewModel() {
             .build()
         
         // INITIALIZE CAMERA FOR VIDEO
-        val recorder = Recorder.Builder().setQualitySelector(
-            QualitySelector.from(Quality.HD)
-        ).build()
-        
-        videoCapture = VideoCapture.withOutput(recorder)
+//        val recorder = Recorder.Builder().setQualitySelector(
+//            QualitySelector.from(Quality.HD)
+//        ).build()
+
+//        videoCapture = VideoCapture.withOutput(recorder)
         
         val camera = processCameraProvider.bindToLifecycle(
             lifecycleOwner,
             cameraSelector,
             cameraPreviewUseCase,
             imageCapture,
-            videoCapture
+//            videoCapture
         )
         
         cameraControl = camera.cameraControl
-        
+        _isLoadingBindCamera.value = false
         try {
             awaitCancellation()
         } finally {
             processCameraProvider.unbindAll()
             cameraControl = null
+            
         }
     }
     
