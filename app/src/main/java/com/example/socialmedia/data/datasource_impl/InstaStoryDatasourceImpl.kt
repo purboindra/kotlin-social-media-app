@@ -19,6 +19,8 @@ import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -35,6 +37,7 @@ class InstaStoryDatasourceImpl(
     private val datastore: AppDataStore
 ) : InstaStoryDatasource {
     
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun fetchAllInstaStories(): ResponseModel<List<InstaStory>> {
         
         val instastories: MutableList<InstaStory> = mutableListOf()
@@ -70,8 +73,14 @@ class InstaStoryDatasourceImpl(
             
             val parsedData = Json.decodeFromString<List<InstaStoryModel>>(data)
             
-            val updateInstaStories = parsedData.map { instastory ->
-                Log.d("PostDataSourceImpl", "InstaStory: $instastory")
+            val getUnExpiresInstastories = parsedData.filter {
+                val formatter = DateTimeFormatter.ISO_DATE_TIME
+                val expiresAt = ZonedDateTime.parse(it.expiresAt,formatter)
+                val dateNow = ZonedDateTime.parse(Clock.System.now().toString(),formatter)
+                expiresAt.isAfter(dateNow)
+            }
+            
+            val updateInstaStories = getUnExpiresInstastories.map { instastory ->
                 val url = try {
                     bucket.createSignedUrl(
                         path = instastory.contentPath,
@@ -129,6 +138,7 @@ class InstaStoryDatasourceImpl(
                     )
                 )
                 val userGroup = groupedStories[userId]
+                
                 userGroup?.instastories?.add(instastory)
             }
             
