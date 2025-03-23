@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
 import androidx.navigation.navArgument
+import com.example.socialmedia.data.model.UserModel
 import com.example.socialmedia.ui.add_post.CreateCaptionScreen
 import com.example.socialmedia.ui.camera.CameraPreviewScreen
 import com.example.socialmedia.ui.message.DirectMessageScreen
@@ -31,6 +32,7 @@ import com.example.socialmedia.ui.splash.SplashScreen
 import com.example.socialmedia.ui.story.StoryVideoScreen
 import com.example.socialmedia.ui.viewmodel.SharedFileViewModel
 import com.example.socialmedia.utils.ConnectionType
+import kotlinx.serialization.json.Json
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
@@ -182,19 +184,19 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     navHostController = navController
                 )
             }
-            composable("direct_message?userId={userId}", arguments = listOf(
+            composable("direct_message?user={user}", arguments = listOf(
                 navArgument(
-                    "userId"
-                
+                    "user"
                 ) {
                     type = NavType.StringType
                     nullable = false
                     defaultValue = ""
                 }
             )) { backStackEntry ->
-                val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                val jsonUser = backStackEntry.arguments?.getString("user") ?: ""
+                val user = Json.decodeFromString<UserModel>(jsonUser)
                 DirectMessageScreen(
-                    userId = userId,
+                    user,
                     navHostController = navController
                 )
             }

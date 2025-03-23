@@ -1,5 +1,6 @@
 package com.example.socialmedia.ui.message
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,6 +34,7 @@ import com.example.socialmedia.ui.components.dialog.AppDialogUsers
 import com.example.socialmedia.ui.viewmodel.MessageViewModel
 import com.example.socialmedia.ui.viewmodel.SearchViewModel
 import com.example.socialmedia.utils.VerticalSpacer
+import kotlinx.serialization.json.Json
 
 @Composable
 fun MessagesScreen(
@@ -39,23 +42,31 @@ fun MessagesScreen(
     searchViewModel: SearchViewModel = hiltViewModel(),
     navHostController: NavHostController
 ) {
-
+    
     val messagesState by messageViewModel.messagesState.collectAsState()
     val searchState by searchViewModel.searchState.collectAsState()
     val query by searchViewModel.queryState.collectAsState()
-    var openAlertDialog = remember { mutableStateOf(false) }
+    val openAlertDialog = remember { mutableStateOf(false) }
     var selectedUser by remember { mutableStateOf<UserModel?>(null) }
-
+    
     LaunchedEffect(Unit) {
         messageViewModel.fetchMessages()
     }
-
+    
     LaunchedEffect(selectedUser) {
         selectedUser?.let {
-            navHostController.navigate("direct_message?userId=${it.id}")
+            val jsonUser = Uri.encode(Json.encodeToString(it))
+            navHostController.navigate("direct_message?user=${jsonUser}")
         }
     }
-
+    
+    DisposableEffect(Unit) {
+        onDispose {
+            Log.d("MessageScreen", "Unsubscribing to message")
+            messageViewModel.unSubscribeToMessage()
+        }
+    }
+    
     when {
         openAlertDialog.value -> {
             AppDialogUsers(
@@ -77,7 +88,7 @@ fun MessagesScreen(
             )
         }
     }
-
+    
     Scaffold(
         floatingActionButton = {
             AppFloatingActionButton(
@@ -120,7 +131,7 @@ fun MessagesScreen(
                         }
                     }
                 }
-
+                
                 is State.Failure -> {
                     val message =
                         (messagesState as State.Failure).throwable.message
@@ -131,7 +142,7 @@ fun MessagesScreen(
                         Text(message ?: "Unknown Error Occurred")
                     }
                 }
-
+                
                 else -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),

@@ -4,19 +4,23 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SendMessageModel(
+data class MessageModel(
+    @SerialName("id")
+    val id: String,
+    @SerialName("created_at")
+    val createdAt: String,
     @SerialName("message")
     val message: String,
     @SerialName("sender_id")
     val senderId: String,
     @SerialName("receiver_id")
     val receiverId: String,
-    @SerialName("status")
-    val status: String = "",
     @SerialName("chat_id")
-    val chatId: String = "",
+    val chatId: String,
+    @SerialName("status")
+    val status: String? = null,
     @SerialName("media_url")
-    val mediaUrl: String = "",
+    val mediaUrl: String? = null,
     @SerialName("deleted")
-    val deleted: Boolean = false
+    val deleted: Boolean? = null
 )

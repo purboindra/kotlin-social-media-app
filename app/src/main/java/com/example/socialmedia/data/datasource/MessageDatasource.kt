@@ -1,10 +1,10 @@
 package com.example.socialmedia.data.datasource
 
+import com.example.socialmedia.data.model.MessageModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.SendMessageModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 
 interface MessageDatasource {
     suspend fun sendMessage(
@@ -18,5 +18,12 @@ interface MessageDatasource {
         onMessageReceived: (SendMessageModel) -> Unit
     ): Job
     
-    suspend fun fetchMessages(): ResponseModel<List<SendMessageModel>>
+    suspend fun unSubscribeToMessage()
+    
+    suspend fun fetchMessages(): ResponseModel<List<MessageModel>>
+    
+    suspend fun fetchConversation(
+        receiverId: String,
+        senderId: String
+    ): ResponseModel<List<MessageModel>>
 }

@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.socialmedia.data.model.PostModel
-import com.example.socialmedia.ui.MyIconPack
-import com.example.socialmedia.ui.myiconpack.Message
+import com.example.socialmedia.icons.MyIconPack
+import com.example.socialmedia.icons.myiconpack.Message
 import com.example.socialmedia.ui.viewmodel.PostViewModel
 import com.example.socialmedia.utils.HorizontalSpacer
 import com.example.socialmedia.utils.VerticalSpacer

@@ -1,5 +1,6 @@
 package com.example.socialmedia.domain.repository
 
+import com.example.socialmedia.data.model.MessageModel
 import com.example.socialmedia.data.model.ResponseModel
 import com.example.socialmedia.data.model.SendMessageModel
 import com.example.socialmedia.data.model.State
@@ -21,5 +22,12 @@ interface MessageRepository {
     
     fun stopSubscription()
     
-    suspend fun fetchMessages(): Flow<State<List<SendMessageModel>>>
+    suspend fun unSubscribeToMessage()
+    
+    suspend fun fetchMessages(): Flow<State<List<MessageModel>>>
+    
+    suspend fun fetchConversation(
+        receiverId: String,
+        senderId: String
+    ): Flow<State<List<MessageModel>>>
 }

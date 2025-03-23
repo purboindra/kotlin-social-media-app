@@ -1,5 +1,6 @@
 package com.example.socialmedia.domain.usecases
 
+import com.example.socialmedia.data.model.MessageModel
 import com.example.socialmedia.data.model.SendMessageModel
 import com.example.socialmedia.data.model.State
 import com.example.socialmedia.domain.repository.MessageRepository
@@ -28,7 +29,18 @@ class MessageUseCase(
         messageRepository.stopSubscription()
     }
     
-    suspend fun fetchMessages(): Flow<State<List<SendMessageModel>>> {
+    suspend fun fetchMessages(): Flow<State<List<MessageModel>>> {
         return messageRepository.fetchMessages()
+    }
+    
+     suspend fun unSubscribeToMessage() {
+        messageRepository.unSubscribeToMessage()
+    }
+    
+    suspend fun fetchConversation(
+        receiverId: String,
+        senderId: String
+    ): Flow<State<List<MessageModel>>> {
+        return messageRepository.fetchConversation(receiverId, senderId)
     }
 }

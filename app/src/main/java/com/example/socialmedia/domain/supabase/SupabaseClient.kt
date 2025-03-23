@@ -7,17 +7,30 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.serializer.KotlinXSerializer
 import io.github.jan.supabase.storage.Storage
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.seconds
-
 object SupabaseClientModule {
-    
-    // S3 ACCESS KEY 5b8a198d6e74c008e71db7394a0e243f
-    // S3 SECRET KEY a7b7c4b129b20af8727d2d22e9591b6aebc273db78dc23d1540c14564155f60d
     
     private const val SUPABASE_URL = BuildConfig.PROJECT_URL
     private const val SUPABASE_KEY = BuildConfig.PROJECT_API_KEY
     const val SUPABASE_SERVER_CLIENT_ID = BuildConfig.SERVER_CLIENT_ID
+    
+    private val client = HttpClient(CIO) {
+        install(WebSockets)
+        install(ContentNegotiation) {
+            json(Json { prettyPrint = true; isLenient = true })
+        }
+        install(Logging) {
+            level = LogLevel.ALL
+        }
+    }
     
     val supabase = createSupabaseClient(
         supabaseUrl = SUPABASE_URL,
@@ -25,7 +38,9 @@ object SupabaseClientModule {
     ) {
         install(Auth)
         install(Postgrest)
-        install(Realtime)
+        install(Realtime) {
+            reconnectDelay = 5.seconds
+        }
         install(Storage) {
             transferTimeout = 90.seconds
         }

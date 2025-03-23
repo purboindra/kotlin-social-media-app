@@ -4,9 +4,11 @@ import android.util.Log
 import com.example.socialmedia.data.model.State
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.statement.HttpResponse
@@ -21,7 +23,8 @@ import kotlinx.serialization.json.Json
 
 
 abstract class BaseRepository {
-    private val client = HttpClient {
+    private val client = HttpClient(CIO) {
+        install(WebSockets)
         install(ContentNegotiation) {
             json(
                 Json {
