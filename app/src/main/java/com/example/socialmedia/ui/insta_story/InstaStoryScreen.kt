@@ -3,10 +3,13 @@ package com.example.socialmedia.ui.insta_story
 import android.Manifest
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.compose.CameraXViewfinder
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
 import androidx.camera.viewfinder.compose.MutableCoordinateTransformer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -94,7 +97,6 @@ fun InstaStoryScreen(
     val selectedImage by instaStoryViewModel.image.collectAsState()
     
     val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     
     /// CAMERA
@@ -161,7 +163,34 @@ fun InstaStoryScreen(
         cameraViewModel.bindToCamera(context, lifecycleOwner)
     }
     
-    Scaffold { paddingValues ->
+    val selectedImageUri = if (images.isNotEmpty()) {
+        images.first()
+    } else {
+        Uri.EMPTY
+    }
+    
+    Scaffold(bottomBar = {
+        BottomInstastoryCompose(
+            selectedImage = selectedImageUri ?: Uri.EMPTY,
+            navHostController = navHostController,
+            onClick = {
+                showBottomSheet = true
+            },
+            onCapture = {
+                cameraViewModel.imageCapture?.let { imageCapture ->
+                    FileHelper.takePicture(
+                        imageCapture = imageCapture,
+                        onSuccess = {
+                            image = it
+                        },
+                        onError = {},
+                        context,
+                    )
+                }
+            },
+            image
+        )
+    }) { paddingValues ->
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = {
@@ -238,19 +267,8 @@ fun InstaStoryScreen(
         } else Column {
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .background(Color.Black)
-                    .pointerInput(Unit) {
-                        detectDragGestures { change, dragAmount ->
-                            val (x, y) = dragAmount
-                            if (y < -50) {
-                                showBottomSheet = true
-                            }
-                        }
-                    },
-                contentAlignment = Alignment.Center
+                    .weight(1f).background(Color.Gray),
             ) {
-                
                 BodyImageCompose(
                     cameraViewModel = cameraViewModel,
                     isLaodingBindCamera = isLaodingBindCamera,
@@ -280,48 +298,6 @@ fun InstaStoryScreen(
                         }
                     }
                 }
-
-//                if (selectedImage == null) Box(
-//                    modifier = Modifier.fillMaxSize(),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    Text(
-//                        "Swipe up for choose an image",
-//                        style = MaterialTheme.typography.titleLarge.copy(
-//                            color = Color.White
-//                        ),
-//                    )
-//                }
-//                else
-//                    Image(
-//                        painter = rememberAsyncImagePainter(selectedImage),
-//                        contentDescription = "Insta Story Image",
-//                        contentScale = ContentScale.Crop,
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                    )
-                
-                BottomInstastoryCompose(
-                    selectedImage = images.first()
-                        ?: Uri.EMPTY,
-                    navHostController = navHostController,
-                    onClick = {
-                        showBottomSheet = true
-                    },
-                    onCapture = {
-                        cameraViewModel.imageCapture?.let { imageCapture ->
-                            FileHelper.takePicture(
-                                imageCapture = imageCapture,
-                                context,
-                                onSave = {
-                                    image = it
-                                },
-                                onError = {},
-                            )
-                        }
-                    },
-                    image
-                )
             }
         }
     }

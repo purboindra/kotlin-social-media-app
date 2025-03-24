@@ -5,6 +5,9 @@ import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -14,7 +17,9 @@ import android.widget.Toast
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.lifecycle.awaitInstance
@@ -26,13 +31,16 @@ import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
+import androidx.camera.view.LifecycleCameraController
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 import java.io.File
+import java.io.FileOutputStream
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -250,46 +258,58 @@ object FileHelper {
         return newRecording
     }
     
+    fun testTakePhoto(
+        controller: LifecycleCameraController,
+        onPhotoTaken: (Bitmap) -> Unit,
+        context: Context,
+        cameraControl: CameraControl
+    ) {
+        controller.takePicture(
+            ContextCompat.getMainExecutor(context),
+            object : OnImageCapturedCallback() {
+                override fun onCaptureSuccess(image: ImageProxy) {
+                    super.onCaptureSuccess(image)
+                    
+                    val matrix = Matrix().apply {
+                        postRotate(image.imageInfo.rotationDegrees.toFloat())
+                    }
+                    
+                    val rotatedBitmap = Bitmap.createBitmap(
+                        image.toBitmap(),
+                        0,
+                        0,
+                        image.width,
+                        image.height,
+                        matrix,
+                        true
+                    )
+                    
+                    onPhotoTaken(rotatedBitmap)
+                }
+                
+                override fun onError(exception: ImageCaptureException) {
+                    super.onError(exception)
+                    Log.e(
+                        "CameraX",
+                        "Image capture failed: ${exception.message}"
+                    )
+                }
+            }
+        )
+    }
     
     fun takePicture(
         imageCapture: ImageCapture,
+        onSuccess: (Uri) -> Unit,
+        onError: (Exception) -> Unit,
         context: Context,
-        onSave: (Uri) -> Unit,
-        onError: (Exception) -> Unit
     ) {
-        
-        val imageDate = System.currentTimeMillis()
-        
-        val photoFile = File(
-            context.externalMediaDirs.firstOrNull(),
-            "IMG_${imageDate}.jpg"
-        )
-        
-        val name = SimpleDateFormat(imageDate.toString(), Locale.US)
-            .format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(
-                    MediaStore.Images.Media.RELATIVE_PATH,
-                    "Pictures/CameraX-Image"
-                )
-            }
-        }
-        
-        val outputFileOptions = ImageCapture.OutputFileOptions.Builder(
-            photoFile,
-        ).build()
-        
         val cameraExecutor: ExecutorService =
             Executors.newSingleThreadExecutor()
         
         imageCapture.takePicture(
-            outputFileOptions,
             cameraExecutor,
-            
-            object : ImageCapture.OnImageSavedCallback {
+            object : OnImageCapturedCallback() {
                 override fun onError(exception: ImageCaptureException) {
                     onError(exception)
                     Log.e(
@@ -299,14 +319,62 @@ object FileHelper {
                     cameraExecutor.shutdown()
                 }
                 
-                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    val savedUri =
-                        outputFileResults.savedUri ?: Uri.fromFile(photoFile)
-                    onSave(savedUri)
-                    cameraExecutor.shutdown()
+                override fun onCaptureSuccess(image: ImageProxy) {
+                    super.onCaptureSuccess(image)
+                    
+                    try {
+                        val matrix = Matrix().apply {
+                            postRotate(image.imageInfo.rotationDegrees.toFloat())
+                        }
+                        val rotatedBitmap = Bitmap.createBitmap(
+                            image.toBitmap(),
+                            0,
+                            0,
+                            image.width,
+                            image.height,
+                            matrix,
+                            true
+                        )
+                        val uri = bitmapToUri(context, rotatedBitmap)
+                        uri?.let { onSuccess(it) }
+                    } catch (e: Exception) {
+                        onError(e)
+                    }
+//                    finally {
+//                        image.close()
+//                        cameraExecutor.shutdown()
+//                    }
                 }
+                
             }
         )
     }
+    
+    private fun bitmapToUri(context: Context, bitmap: Bitmap): Uri? {
+        return try {
+            val file = File(context.cacheDir, "preview_image.jpg")
+            file.delete()
+            file.createNewFile()
+            
+            val outputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            outputStream.flush()
+            outputStream.close()
+            
+            Uri.fromFile(file)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+    
+    
+    private fun imageProxyToBitmap(image: ImageProxy): Bitmap {
+        val buffer = image.planes[0].buffer
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    }
+    
     
 }

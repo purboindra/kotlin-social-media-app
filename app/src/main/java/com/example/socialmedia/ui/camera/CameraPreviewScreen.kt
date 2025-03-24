@@ -289,22 +289,22 @@ private fun CameraPreviewContent(
             ) {
                 IconButton(
                     onClick = {
-                        cameraViewModel.imageCapture?.let { imgCapture ->
-                            FileHelper.takePicture(
-                                imageCapture = imgCapture,
-                                context = context,
-                                onSave = {
-                                    capturedImageUrl = it
-                                    postViewModel.selectImage(it)
-                                },
-                                onError = {
-                                    Log.e(
-                                        "takePicture",
-                                        "Image capture failed: ${it.message}"
-                                    )
-                                }
-                            )
-                        }
+//                        cameraViewModel.imageCapture?.let { imgCapture ->
+//                            FileHelper.takePicture(
+//                                imageCapture = imgCapture,
+//                                context = context,
+//                                onSave = {
+//                                    capturedImageUrl = it
+//                                    postViewModel.selectImage(it)
+//                                },
+//                                onError = {
+//                                    Log.e(
+//                                        "takePicture",
+//                                        "Image capture failed: ${it.message}"
+//                                    )
+//                                }
+//                            )
+//                        }
                     },
                 ) {
                     Icon(

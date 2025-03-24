@@ -1,6 +1,7 @@
 package com.example.socialmedia.ui.insta_story
 
 import android.net.Uri
+import android.util.Log
 import androidx.camera.compose.CameraXViewfinder
 import androidx.camera.core.SurfaceRequest
 import androidx.camera.viewfinder.compose.MutableCoordinateTransformer
@@ -35,6 +36,9 @@ fun BodyImageCompose(
     cameraViewModel: CameraViewModel,
     setAutoFocusRequest: (Pair<UUID, Offset>) -> Unit,
 ) {
+    
+    Log.d("BodyImageCompose", "surfaceRequest: $surfaceRequest")
+    
     if (isLaodingBindCamera) Box(
         modifier = Modifier
             .fillMaxSize()
