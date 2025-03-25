@@ -55,7 +55,7 @@ class InstastoryViewModel @Inject constructor(
         null
     )
     
-    fun selectImage(uri: Uri) {
+    fun selectImage(uri: Uri?) {
         _image.value = uri
     }
     
