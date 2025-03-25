@@ -55,6 +55,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
 import coil3.compose.rememberAsyncImagePainter
+import com.example.socialmedia.ui.components.CloseIconCompose
 import com.example.socialmedia.ui.theme.BlueLight
 import com.example.socialmedia.ui.theme.BluePrimary
 import com.example.socialmedia.ui.theme.GrayPrimary
@@ -265,31 +266,22 @@ fun InstaStoryScreen(
                 )
 
                 image?.let {
-                    Box(
+                    CloseIconCompose(
                         modifier = Modifier
                             .fillMaxHeight()
                             .safeContentPadding()
-                            .align(Alignment.TopEnd)
-                    ) {
-                        IconButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    cameraViewModel.restartCamera(
-                                        context,
-                                        lifecycleOwner
-                                    )
-                                }
-                                image = null
+                            .align(Alignment.TopEnd),
+                        onClick =
+                        {
+                            coroutineScope.launch {
+                                cameraViewModel.restartCamera(
+                                    context,
+                                    lifecycleOwner
+                                )
                             }
-                        ) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Close",
-                                tint = Color.White,
-                                modifier = Modifier.size(24.dp)
-                            )
+                            image = null
                         }
-                    }
+                    )
                 }
             }
         }
