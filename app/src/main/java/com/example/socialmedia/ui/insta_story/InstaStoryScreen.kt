@@ -71,6 +71,7 @@ fun InstaStoryScreen(
     val isLaodingBindCamera by cameraViewModel.isLoadingBindCamera.collectAsState()
     var autoFocusRequest by remember { mutableStateOf(UUID.randomUUID() to Offset.Unspecified) }
     val lifecycleOwner = LocalLifecycleOwner.current
+    val isFlashOn by cameraViewModel.isFlashOn.collectAsState()
     
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -156,7 +157,12 @@ fun InstaStoryScreen(
                     cameraViewModel.switchCamera(context, lifecycleOwner)
                 }
             },
-            selectedImage
+            image = selectedImage,
+            isFlashOn = isFlashOn,
+            onToggleFlash = {
+                cameraViewModel.toggleFlashLight()
+            }
+        
         )
     }) { paddingValues ->
         if (showBottomSheet) {
