@@ -117,7 +117,8 @@ fun BodyImageCompose(
             Spacer(
                 Modifier
                     .border(2.dp, Color.White, CircleShape)
-                    .size(48.dp))
+                    .size(48.dp)
+            )
         }
     }
 }
