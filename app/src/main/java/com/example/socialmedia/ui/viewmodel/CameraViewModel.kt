@@ -111,8 +111,8 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         _isRecording.value = !_isRecording.value
     }
     
-    fun zoomIn() {
-        cameraControlInstaStory?.setZoomRatio(2.0f)
+    fun setZoom(value: Float) {
+        cameraControl?.setZoomRatio(value)
     }
     
     fun toggleFlashLight() {

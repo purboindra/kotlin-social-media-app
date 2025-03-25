@@ -159,10 +159,12 @@ fun InstaStoryScreen(
             },
             image = selectedImage,
             isFlashOn = isFlashOn,
+            onZoom = {
+                cameraViewModel.setZoom(it)
+            },
             onToggleFlash = {
                 cameraViewModel.toggleFlashLight()
             }
-        
         )
     }) { paddingValues ->
         if (showBottomSheet) {
