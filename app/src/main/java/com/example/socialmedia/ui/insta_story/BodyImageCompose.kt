@@ -1,5 +1,6 @@
 package com.example.socialmedia.ui.insta_story
 
+import android.graphics.Color
 import android.net.Uri
 import android.util.Log
 import androidx.camera.compose.CameraXViewfinder
@@ -16,7 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -36,9 +39,7 @@ fun BodyImageCompose(
     cameraViewModel: CameraViewModel,
     setAutoFocusRequest: (Pair<UUID, Offset>) -> Unit,
 ) {
-    
-    Log.d("BodyImageCompose", "surfaceRequest: $surfaceRequest")
-    
+
     if (isLaodingBindCamera) Box(
         modifier = Modifier
             .fillMaxSize()
@@ -54,6 +55,7 @@ fun BodyImageCompose(
         val coordinateTransformer = remember {
             MutableCoordinateTransformer()
         }
+
         if (image == null) CameraXViewfinder(
             surfaceRequest = request,
             coordinateTransformer = coordinateTransformer,
@@ -71,9 +73,7 @@ fun BodyImageCompose(
             painter = rememberAsyncImagePainter(image),
             contentDescription = "Insta Story Image",
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
+            modifier = Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color.Gray)
         )
     }
 }
