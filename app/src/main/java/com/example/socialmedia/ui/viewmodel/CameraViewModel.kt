@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.Surface
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.CameraX
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -14,8 +13,6 @@ import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.core.SurfaceRequest
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.lifecycle.awaitInstance
-import androidx.camera.video.Quality
-import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
@@ -43,6 +40,9 @@ class CameraViewModel @Inject constructor() : ViewModel() {
     
     private val _isRecording = MutableStateFlow(false)
     val isRecording: StateFlow<Boolean> = _isRecording
+    
+    private val _isFlashOn = MutableStateFlow(false)
+    val isFlashOn: StateFlow<Boolean> = _isFlashOn
     
     private val _isLoadingBindCamera = MutableStateFlow(false)
     val isLoadingBindCamera: StateFlow<Boolean> = _isLoadingBindCamera
@@ -107,7 +107,6 @@ class CameraViewModel @Inject constructor() : ViewModel() {
     
     val restartFlow = _restartTrigger.asStateFlow()
     
-    
     fun toggleIsRecording() {
         _isRecording.value = !_isRecording.value
     }
@@ -116,12 +115,11 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         cameraControlInstaStory?.setZoomRatio(2.0f)
     }
     
-    fun disableFlashLight() {
-        cameraControlInstaStory?.enableTorch(false)
-    }
-    
     fun toggleFlashLight() {
-        cameraControlInstaStory?.enableTorch(true)
+        _isFlashOn.value = !_isFlashOn.value
+        cameraControl?.enableTorch(
+            isFlashOn.value
+        )
     }
     
     fun stopRecordingInstaStory() {
@@ -203,7 +201,6 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         } finally {
             processCameraProvider.unbindAll()
             cameraControl = null
-            
         }
     }
     
