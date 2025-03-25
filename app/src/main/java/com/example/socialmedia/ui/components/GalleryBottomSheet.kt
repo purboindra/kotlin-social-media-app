@@ -75,7 +75,11 @@ fun GalleryBottomSheet(
                     ) {
                         RadioButton(
                             selected = selectedImage == imageUri,
-                            onClick = {},
+                            onClick = {
+                                imageUri?.let {
+                                    instaStoryViewModel.selectImage(it)
+                                }
+                            },
                             enabled = false,
                             colors = RadioButtonDefaults.colors(
                                 selectedColor = BluePrimary,
