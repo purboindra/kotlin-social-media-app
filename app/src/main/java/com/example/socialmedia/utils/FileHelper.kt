@@ -258,46 +258,6 @@ object FileHelper {
         return newRecording
     }
     
-    fun testTakePhoto(
-        controller: LifecycleCameraController,
-        onPhotoTaken: (Bitmap) -> Unit,
-        context: Context,
-        cameraControl: CameraControl
-    ) {
-        controller.takePicture(
-            ContextCompat.getMainExecutor(context),
-            object : OnImageCapturedCallback() {
-                override fun onCaptureSuccess(image: ImageProxy) {
-                    super.onCaptureSuccess(image)
-                    
-                    val matrix = Matrix().apply {
-                        postRotate(image.imageInfo.rotationDegrees.toFloat())
-                    }
-                    
-                    val rotatedBitmap = Bitmap.createBitmap(
-                        image.toBitmap(),
-                        0,
-                        0,
-                        image.width,
-                        image.height,
-                        matrix,
-                        true
-                    )
-                    
-                    onPhotoTaken(rotatedBitmap)
-                }
-                
-                override fun onError(exception: ImageCaptureException) {
-                    super.onError(exception)
-                    Log.e(
-                        "CameraX",
-                        "Image capture failed: ${exception.message}"
-                    )
-                }
-            }
-        )
-    }
-    
     fun takePicture(
         imageCapture: ImageCapture,
         onSuccess: (Uri) -> Unit,
@@ -306,7 +266,6 @@ object FileHelper {
     ) {
         val cameraExecutor: ExecutorService =
             Executors.newSingleThreadExecutor()
-        
         imageCapture.takePicture(
             cameraExecutor,
             object : OnImageCapturedCallback() {
@@ -339,11 +298,10 @@ object FileHelper {
                         uri?.let { onSuccess(it) }
                     } catch (e: Exception) {
                         onError(e)
+                    } finally {
+                        image.close()
+                        cameraExecutor.shutdown()
                     }
-//                    finally {
-//                        image.close()
-//                        cameraExecutor.shutdown()
-//                    }
                 }
                 
             }
