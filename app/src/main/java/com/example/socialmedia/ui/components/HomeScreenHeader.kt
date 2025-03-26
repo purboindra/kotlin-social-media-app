@@ -34,7 +34,7 @@ import com.example.socialmedia.utils.HorizontalSpacer
 fun HomeScreenHeader(
     navHostController: NavHostController,
     instaStoryViewModel: InstastoryViewModel,
-    userId:String
+    userId: String
 ) {
     
     val navBackStackEntry = navHostController.currentBackStackEntry
@@ -74,17 +74,11 @@ fun HomeScreenHeader(
             Icon(
                 Icons.Outlined.FavoriteBorder,
                 contentDescription = "Favorite",
-                modifier = Modifier.size(32.dp).clickable {
-                    navHostController.navigate(Screens.LikeScreen.route)
-                }
-            )
-            8.HorizontalSpacer()
-            Image(
-                MyIconPack.Message,
-                contentDescription = "Direct Message",
-                modifier = Modifier.size(32.dp).clickable {
-                    navHostController.navigate(Screens.Messages.route)
-                }
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable {
+                        navHostController.navigate(Screens.LikeScreen.route)
+                    }
             )
         }
     }
