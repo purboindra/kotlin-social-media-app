@@ -1,5 +1,7 @@
 package com.example.socialmedia.ui.like
 
+import android.graphics.Color
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,8 +35,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.example.socialmedia.data.model.State
+import com.example.socialmedia.ui.theme.BluePrimary
+import com.example.socialmedia.ui.theme.GrayPrimary
 import com.example.socialmedia.ui.viewmodel.PostViewModel
+import com.example.socialmedia.utils.imageLoader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,13 +49,14 @@ fun LikeScreen(
     postViewModel: PostViewModel = hiltViewModel<PostViewModel>(),
     navHostController: NavHostController
 ) {
-
+    
     val likesState by postViewModel.allLikesState.collectAsState()
-
+    val context = LocalContext.current
+    
     LaunchedEffect(Unit) {
         postViewModel.fetchAllLikes()
     }
-
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,19 +107,24 @@ fun LikeScreen(
                         content = {
                             items(items) { like ->
                                 AsyncImage(
-                                    model = like.post.imageUrl,
-                                    contentScale = ContentScale.Crop,
-                                    contentDescription = null,
+                                    model = ImageRequest.Builder(context).data(
+                                        like.post.imageUrl
+                                    ).crossfade(true).build(),
+                                    contentDescription = "",
+                                    imageLoader = imageLoader(context),
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .wrapContentHeight()
+                                        .background(
+                                            GrayPrimary
+                                        )
                                 )
                             }
                         },
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-
+                
                 is State.Failure -> {
                     val errorMessage =
                         (likesState as State.Failure).throwable.message
@@ -119,7 +133,7 @@ fun LikeScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-
+                
                 is State.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -128,9 +142,9 @@ fun LikeScreen(
                         CircularProgressIndicator()
                     }
                 }
-
+                
                 else -> {
-
+                
                 }
             }
         }
