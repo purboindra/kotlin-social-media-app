@@ -1,9 +1,11 @@
 package com.example.socialmedia.ui.viewmodel
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.view.Surface
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
@@ -11,6 +13,7 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.core.SurfaceRequest
+import androidx.camera.core.ZoomState
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.lifecycle.awaitInstance
 import androidx.camera.video.Recorder
@@ -37,36 +40,45 @@ import javax.inject.Inject
 class CameraViewModel @Inject constructor() : ViewModel() {
     private val _surfaceRequest = MutableStateFlow<SurfaceRequest?>(null)
     val surfaceRequest: StateFlow<SurfaceRequest?> = _surfaceRequest
-    
+
     private val _isRecording = MutableStateFlow(false)
     val isRecording: StateFlow<Boolean> = _isRecording
-    
+
     private val _isFlashOn = MutableStateFlow(false)
     val isFlashOn: StateFlow<Boolean> = _isFlashOn
-    
+
     private val _isLoadingBindCamera = MutableStateFlow(false)
     val isLoadingBindCamera: StateFlow<Boolean> = _isLoadingBindCamera
-    
+
     private var surfaceMateringPointFactory: SurfaceOrientedMeteringPointFactory? =
         null
     private var cameraControl: CameraControl? = null
     private var cameraControlInstaStory: CameraControl? = null
-    
+
     private var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-    
+
+    private var _processCameraProvider: ProcessCameraProvider? = null
+    val processCameraProvider: ProcessCameraProvider? = _processCameraProvider
+
     var imageCapture: ImageCapture? = null
-    
+
     private val _recordedVideoUri = MutableStateFlow<Uri?>(null)
     val recordedVideoUri: StateFlow<Uri?> = _recordedVideoUri
-    
+
     private val _videoDuration = MutableStateFlow<Long>(0)
     val videoDuration: StateFlow<Long> = _videoDuration
-    
+
     private var videoCapture: VideoCapture<Recorder>? = null
     private var recording: Recording? = null
-    
+
+    private val _minZoom = MutableStateFlow(1f)
+    val minZoom = _minZoom.asStateFlow()
+
+    private val _maxZoom = MutableStateFlow(5f)
+    val maxZoom = _maxZoom.asStateFlow()
+
     private val _restartTrigger = MutableStateFlow(false)
-    
+
     private val cameraPreviewUseCase = Preview.Builder().build().apply {
         setSurfaceProvider { newSurfaceRequest ->
             _surfaceRequest.update { newSurfaceRequest }
@@ -76,52 +88,72 @@ class CameraViewModel @Inject constructor() : ViewModel() {
             )
         }
     }
-    
+
+
     suspend fun restartCamera(
         context: Context, lifecycleOwner: LifecycleOwner
     ) = withContext(Dispatchers.Main) {
-        val processCameraProvider =
+        _processCameraProvider =
             ProcessCameraProvider.awaitInstance(context)
-        processCameraProvider.unbindAll()
-        
+        _processCameraProvider?.unbindAll()
+
         val newPreview = Preview.Builder().build().apply {
             setSurfaceProvider { newSurfaceRequest ->
                 _surfaceRequest.update { newSurfaceRequest }
             }
         }
-        
+
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .setTargetRotation(Surface.ROTATION_0)
             .build()
-        
-        val camera = processCameraProvider.bindToLifecycle(
+
+        val camera = _processCameraProvider?.bindToLifecycle(
             lifecycleOwner,
             cameraSelector,
             newPreview,
             imageCapture
         )
-        
-        cameraControl = camera.cameraControl
+
+
+
+        cameraControl = camera?.cameraControl
     }
-    
+
     val restartFlow = _restartTrigger.asStateFlow()
-    
+
     fun toggleIsRecording() {
         _isRecording.value = !_isRecording.value
     }
-    
-    fun setZoom(value: Float) {
-        cameraControl?.setZoomRatio(value)
+
+    private fun initZoom(camera: Camera) {
+        val zoomState = camera.cameraInfo.zoomState.value
+        _minZoom.value = zoomState?.minZoomRatio ?: 1f
+        _maxZoom.value = zoomState?.maxZoomRatio ?: 5f
     }
-    
+
+    @SuppressLint("RestrictedApi")
+    fun setZoom(value: Float) {
+
+        val debugValue = mapOf(
+            "minZoom" to _minZoom.value,
+            "maxZoom" to _maxZoom.value,
+            "value" to value,
+            "cameraControlNotNull" to (cameraControl != null).toString()
+        )
+
+        Log.d("Cameraviewmodel", "Debug set zoom: $debugValue")
+
+        cameraControl?.setLinearZoom(value)
+    }
+
     fun toggleFlashLight() {
         _isFlashOn.value = !_isFlashOn.value
         cameraControl?.enableTorch(
             isFlashOn.value
         )
     }
-    
+
     fun stopRecordingInstaStory() {
         viewModelScope.launch {
             Log.d("CameraViewModel", "Stopping recording...")
@@ -131,7 +163,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
             recording = null
         }
     }
-    
+
     fun startRecordingInstaStory(context: Context) {
         videoCapture?.let { vc ->
             viewModelScope.launch {
@@ -164,88 +196,83 @@ class CameraViewModel @Inject constructor() : ViewModel() {
             }
         } ?: Log.e("CameraViewModel", "Video capture is not bound yet")
     }
-    
+
     suspend fun bindToCamera(
         appContext: Context,
         lifecycleOwner: LifecycleOwner
     ): Nothing = withContext(Dispatchers.Main) {
         _isLoadingBindCamera.value = true
-        val processCameraProvider =
+        _processCameraProvider =
             ProcessCameraProvider.awaitInstance(appContext)
-        
+
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
             .setTargetRotation(Surface.ROTATION_0)
             .setFlashMode(ImageCapture.FLASH_MODE_ON)
             .build()
-        
-        // INITIALIZE CAMERA FOR VIDEO
-//        val recorder = Recorder.Builder().setQualitySelector(
-//            QualitySelector.from(Quality.HD)
-//        ).build()
 
-//        videoCapture = VideoCapture.withOutput(recorder)
-        
-        val camera = processCameraProvider.bindToLifecycle(
+        val camera = _processCameraProvider?.bindToLifecycle(
             lifecycleOwner,
             cameraSelector,
             cameraPreviewUseCase,
             imageCapture,
-//            videoCapture
         )
-        
-        cameraControl = camera.cameraControl
+
+        cameraControl = camera?.cameraControl
+
+        camera?.let { initZoom(it) }
+
         _isLoadingBindCamera.value = false
         try {
             awaitCancellation()
         } finally {
-            processCameraProvider.unbindAll()
+            _processCameraProvider?.unbindAll()
             cameraControl = null
         }
     }
-    
+
     suspend fun switchCamera(
         appContext: Context,
         lifecycleOwner: LifecycleOwner
     ) = withContext(Dispatchers.Main) {
         val processCameraProvider =
             ProcessCameraProvider.awaitInstance(appContext)
-        
+
         cameraSelector =
             if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
                 CameraSelector.DEFAULT_FRONT_CAMERA
             } else {
                 CameraSelector.DEFAULT_BACK_CAMERA
             }
-        
+
         processCameraProvider.unbindAll()
-        
+
         val newPreview = Preview.Builder().build().apply {
             setSurfaceProvider { newSurfaceRequest ->
                 _surfaceRequest.update { newSurfaceRequest }
             }
         }
-        
+
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .setTargetRotation(Surface.ROTATION_0)
             .build()
-        
+
         val camera = processCameraProvider.bindToLifecycle(
             lifecycleOwner,
             cameraSelector,
             newPreview,
             imageCapture
         )
-        
         cameraControl = camera.cameraControl
+        camera?.let { initZoom(it) }
     }
-    
+
     fun stopRecording() {
         recording?.stop()
         recording = null
     }
-    
+
     fun captureVideo(context: Context, onVideoSaved: (Uri) -> Unit) {
         recording = FileHelper.captureVideo(
             onVideoSaved = onVideoSaved,
@@ -257,7 +284,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
             recording,
         )
     }
-    
+
     fun tapToFocus(tapCoords: Offset) {
         val point =
             surfaceMateringPointFactory?.createPoint(tapCoords.x, tapCoords.y)
@@ -266,7 +293,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
             cameraControl?.startFocusAndMetering(meteringAction)
         }
     }
-    
+
     fun resetVideoDuration() {
         _videoDuration.value = 0
     }

@@ -57,22 +57,22 @@ fun InstaStoryScreen(
     val context = LocalContext.current
     val permissionGranted = remember { mutableStateOf(false) }
     var loadingPermission by remember { mutableStateOf(false) }
-    
+
     val images by instaStoryViewModel.images.collectAsState()
     val selectedImage by instaStoryViewModel.image.collectAsState()
-    
+
     val coroutineScope = rememberCoroutineScope()
-    
+
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
-    
+
     /// CAMERA
     val surfaceRequest by cameraViewModel.surfaceRequest.collectAsState()
     val isLaodingBindCamera by cameraViewModel.isLoadingBindCamera.collectAsState()
     var autoFocusRequest by remember { mutableStateOf(UUID.randomUUID() to Offset.Unspecified) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val isFlashOn by cameraViewModel.isFlashOn.collectAsState()
-    
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
@@ -91,7 +91,7 @@ fun InstaStoryScreen(
             }
         }
     )
-    
+
     val requiredPermission =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             arrayOf(
@@ -106,7 +106,7 @@ fun InstaStoryScreen(
                 Manifest.permission.READ_EXTERNAL_STORAGE,
             )
         }
-    
+
     LaunchedEffect(Unit) {
         loadingPermission = true
         if (!PermissionHelper.hasMediaPermissions(context)) {
@@ -122,17 +122,17 @@ fun InstaStoryScreen(
         }
         loadingPermission = false
     }
-    
+
     LaunchedEffect(lifecycleOwner) {
         cameraViewModel.bindToCamera(context, lifecycleOwner)
     }
-    
+
     val thumbnailGalleryImage = if (images.isNotEmpty()) {
         images.first()
     } else {
         Uri.EMPTY
     }
-    
+
     Scaffold(bottomBar = {
         BottomInstastoryCompose(
             selectedImage = thumbnailGalleryImage ?: Uri.EMPTY,
@@ -162,6 +162,7 @@ fun InstaStoryScreen(
             onZoom = {
                 cameraViewModel.setZoom(it)
             },
+            cameraViewModel = cameraViewModel,
             onToggleFlash = {
                 cameraViewModel.toggleFlashLight()
             }
@@ -176,7 +177,7 @@ fun InstaStoryScreen(
                 instaStoryViewModel = instaStoryViewModel
             )
         }
-        
+
         if (loadingPermission) Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -208,7 +209,7 @@ fun InstaStoryScreen(
                     setAutoFocusRequest = { autoFocusRequest = it },
                     surfaceRequest = surfaceRequest,
                 )
-                
+
                 selectedImage?.let {
                     CloseIconCompose(
                         modifier = Modifier
@@ -224,7 +225,7 @@ fun InstaStoryScreen(
                                     lifecycleOwner
                                 )
                             }
-                            
+
                             /// LOGIC IF IMAGE WAS SELECTED FROM GALLERY
                             selectedImage?.let {
                                 instaStoryViewModel.selectImage(null)
