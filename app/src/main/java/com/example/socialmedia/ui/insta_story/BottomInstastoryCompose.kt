@@ -51,6 +51,7 @@ fun BottomInstastoryCompose(
     var sliderPosition by remember { mutableFloatStateOf(0f) }
     val minZoom by cameraViewModel.minZoom.collectAsState()
     val maxZoom by cameraViewModel.maxZoom.collectAsState()
+    val hasFlashUnit by cameraViewModel.hasFlashUnit.collectAsState()
 
     Box(
         modifier = Modifier
@@ -104,6 +105,7 @@ fun BottomInstastoryCompose(
                             onSwitch,
                             onToggleFlash,
                             isFlashOn = isFlashOn,
+                            hasFlashUnit,
                         )
                     } else {
                         AppElevatedButton(

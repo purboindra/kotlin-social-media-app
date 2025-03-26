@@ -47,6 +47,9 @@ class CameraViewModel @Inject constructor() : ViewModel() {
     private val _isFlashOn = MutableStateFlow(false)
     val isFlashOn: StateFlow<Boolean> = _isFlashOn
 
+    private val _hasFlashUnit = MutableStateFlow(false)
+    val hasFlashUnit: StateFlow<Boolean> = _hasFlashUnit
+
     private val _isLoadingBindCamera = MutableStateFlow(false)
     val isLoadingBindCamera: StateFlow<Boolean> = _isLoadingBindCamera
 
@@ -221,6 +224,8 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         cameraControl = camera?.cameraControl
 
         camera?.let { initZoom(it) }
+
+        _hasFlashUnit.value = camera?.cameraInfo?.hasFlashUnit() ?: false
 
         _isLoadingBindCamera.value = false
         try {

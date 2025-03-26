@@ -29,6 +29,7 @@ fun CameraActionButtons(
     onSwitch: () -> Unit,
     onToggleFlash: () -> Unit,
     isFlashOn: Boolean,
+    hasFlashUnit: Boolean,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -66,7 +67,7 @@ fun CameraActionButtons(
                 }
         )
         18.HorizontalSpacer()
-        Icon(
+        if (hasFlashUnit) Icon(
             if (isFlashOn) Icons.Default.FlashOff else Icons.Default.FlashOn,
             contentDescription = "Toggle Flash",
             tint = Color.White,
