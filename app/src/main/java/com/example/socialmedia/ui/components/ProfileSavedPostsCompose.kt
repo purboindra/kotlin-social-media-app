@@ -109,7 +109,12 @@ fun ProfileSavedPostsCompose(
         }
         
         else -> {
-            CircularProgressIndicator()
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
     }
 }
