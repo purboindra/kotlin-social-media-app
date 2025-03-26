@@ -147,7 +147,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
 
         Log.d("Cameraviewmodel", "Debug set zoom: $debugValue")
 
-        cameraControl?.setLinearZoom(value)
+        cameraControl?.setZoomRatio(value)
     }
 
     fun toggleFlashLight() {
@@ -270,7 +270,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
             imageCapture
         )
         cameraControl = camera.cameraControl
-        camera?.let { initZoom(it) }
+        initZoom(camera)
     }
 
     fun stopRecording() {

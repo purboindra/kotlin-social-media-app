@@ -57,7 +57,6 @@ fun BodyImageCompose(
     val autofocusCoords =
         remember(autofocusRequestId) { autofocusRequest.second }
     
-    Log.d("BodyImageCompose", "showAutofocusIndicator: $showAutofocusIndicator")
     
     if (showAutofocusIndicator) {
         LaunchedEffect(autofocusRequestId) {
@@ -99,7 +98,7 @@ fun BodyImageCompose(
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
-                .background(androidx.compose.ui.graphics.Color.Gray)
+                .background(Color.Gray)
         )
         
         AnimatedVisibility(
