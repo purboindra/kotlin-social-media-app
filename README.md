@@ -7,6 +7,13 @@ You need declare your environment variable's inside gradle.properties file. Thes
 - SERVER_CLIENT_ID
 - PROJECT_API_KEY
 
+## Tech Stack:
+- Supabase
+- Navigatation Compose for Navigation
+- CameraX
+- Hilt for Dependency Injection
+- Data Store for Local Storage
+
 ## Features:
 - Login by google
 - Login by credential
